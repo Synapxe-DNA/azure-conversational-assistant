@@ -82,7 +82,7 @@ either you or they can follow these steps:
 
 1. Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
-2. Run `azd init -t azure-search-openai-demo` or clone this repository.
+2. Clone this repository.
 
 3. Run `azd env refresh -e {environment name}`
    They will need the azd environment name, subscription ID, and location to run this command. You can find those values in your `.azure/{env name}/.env` file. This will populate their azd environment's `.env` file with all the settings needed to run the app locally.
