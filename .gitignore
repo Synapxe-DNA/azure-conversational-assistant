@@ -110,6 +110,7 @@ celerybeat.pid
 
 # Environments
 .env
+*.env
 .venv
 env/
 venv/
@@ -149,3 +150,10 @@ static/
 data/**/*.md5
 
 .DS_Store
+
+# IDE files
+.idea/
+.vs-code/
+
+# Angular stuff
+.angular/
