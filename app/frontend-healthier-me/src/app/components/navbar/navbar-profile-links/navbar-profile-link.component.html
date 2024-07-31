@@ -1,0 +1,33 @@
+<a
+  #profileLink
+  href="/chat/{{ profile.id }}"
+  class="
+tw-transition-all
+tw-rounded-lg
+tw-flex tw-flex-row tw-justify-start tw-items-center
+tw-gap-3
+tw-mx-2
+tw-px-4 tw-py-3
+tw-cursor-pointer
+{{ isActive ? 'tw-bg-gray-100' : 'tw-bg-white hover:bg-gray-50' }}
+"
+>
+  <img
+    ngSrc="/profiles/general.svg"
+    height="40"
+    width="40"
+    class="tw-rounded-full"
+    alt=""
+  />
+  <div class="tw-flex tw-flex-col tw-justify-start tw-items-stretch">
+    <span class="tw-capitalize">{{ profile.name }}</span>
+    <span class="tw-lowercase first-letter:tw-capitalize tw-text-sm tw-opacity-60">{{
+      getProfileDescription()
+    }}</span>
+  </div>
+</a>
+<p-contextMenu
+  *ngIf="profile.id"
+  [target]="profileLink"
+  [model]="contextMenuItems"
+/>
