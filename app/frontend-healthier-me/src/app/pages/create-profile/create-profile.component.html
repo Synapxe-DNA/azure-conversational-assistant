@@ -1,0 +1,60 @@
+
+<div class="
+tw-w-full tw-h-full
+tw-flex tw-flex-col tw-justify-center tw-items-center
+tw-bg-emerald-200
+">
+
+    <p-card header="Create your profile">
+        <form [formGroup]="profileForm" class="tw-w-[60ch] tw-grid tw-grid-cols-1 tw-gap-4">
+            <div class="tw-flex tw-flex-col tw-gap-2">
+                <label for="profile-type">This profile is for</label>
+                <p-selectButton styleClass="tw-w-full [&>*]:tw-w-[50%]"
+                id="profile-type"
+                formControlName="profile_type"
+                [options]="profileTypeOptions"
+                optionLabel="label"
+                optionValue="value"
+                />
+            </div>
+            <div class="tw-flex tw-flex-col tw-gap-2">
+                <label for="profile-name">Profile name</label>
+                <input
+                        pInputText
+                        id="profile-name"
+                        formControlName="name" />
+            </div>
+
+            <div class="tw-flex tw-flex-col tw-gap-2">
+                <label for="user-age">Gender</label>
+                <p-dropdown
+                        styleClass="tw-w-full"
+                        id="user-age"
+                        [options]="profileGenderOptions"
+                        placeholder="Gender"
+                        formControlName="gender" />
+            </div>
+            <div class="tw-flex tw-flex-col tw-gap-2">
+                <label for="profile-age">Age</label>
+                <p-inputNumber
+                    id="profile-age"
+                    formControlName="age"
+                    styleClass="tw-w-full"
+                    [min]="0"
+                />
+            </div>
+            <div class="tw-flex tw-flex-col tw-gap-2">
+                <label for="profile-preexist">Do {{profileForm.value?.profile_type !== "OTHERS"?'you':'they'}} have any pre-existing conditions?</label>
+                <textarea
+                        class="tw-resize-none"
+                        pInputTextarea
+                        id="profile-preexist"
+                        formControlName="existing_condition"
+                        [rows]="6"
+                ></textarea>
+            </div>
+            <p-button (click)="createProfile()" class="tw-w-full" styleClass="tw-w-full" label="Create profile"/>
+        </form>
+    </p-card>
+
+</div>

@@ -1,0 +1,11 @@
+<div class="tw-container tw-flex ">
+    @for (source of sources; track source) {
+    <div class="tw-mr-1 tw-bg-gray-100 tw-justify-center tw-w-1/4 tw-max-h-[240px] tw-p-2 tw-rounded-xl">
+        <a href={{source.url}}>
+            <img class="tw-w-max" src={{source.cover_image_url}} alt="">
+            <h3 class="tw-overflow-hidden tw-whitespace-nowrap tw-text-nowrap tw-text-ellipsis">{{source.title}}</h3>
+            <p class="tw-overflow-hidden tw-text-ellipsis tw-h-20">{{source.description}}</p>
+        </a>
+    </div>
+}
+</div>

@@ -1,0 +1,36 @@
+<div
+class="
+tw-bg-emerald-600 tw-w-full tw-h-full
+tw-flex tw-flex-col tw-justify-center tw-items-center
+tw-gap-[20dvh]
+tw-relative
+">
+  <span class="tw-text-white tw-font-bold tw-text-4xl">HealthierME</span>
+  <app-waveform [bars]="8" />
+  <div class="button-group">
+    <app-secondary-button (click)="prefChatModeToText()" type="chat"></app-secondary-button>
+    <app-microphone-button (click)="handleMicButtonClick()" [state]="micState"></app-microphone-button>
+    <app-secondary-button type="profile"></app-secondary-button>
+  </div>
+
+    <div class="
+    tw-absolute tw-bottom-6 tw-right-6
+    ">
+        <button (click)="preferenceOverlayPanel.toggle($event)" class="tw-text-white tw-pt-3">
+            <lucide-icon name="settings" class="tw-text-white"></lucide-icon>
+        </button>
+    </div>
+</div>
+
+<p-overlayPanel #preferenceOverlayPanel>
+    <div class="
+    tw-grid tw-grid-cols-6 tw-justify-items-end
+    ">
+        <label class="tw-w-full tw-col-span-5" id="interrupt">Interrupt with my voice</label>
+        <p-inputSwitch (onChange)="prefVoiceInterrupt($event)" [(ngModel)]="voiceInterrupt" ariaLabelledBy="interrupt"></p-inputSwitch>
+        <label class="tw-w-full tw-col-span-5" id="detect-start">Detect voice start</label>
+        <p-inputSwitch (onChange)="prefVoiceStart($event)" [(ngModel)]="voiceDetectStart" ariaLabelledBy="detect-start"></p-inputSwitch>
+        <label class="tw-w-full tw-col-span-5" id="detect-end">Detect voice end</label>
+        <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd" ariaLabelledBy="detect-end"></p-inputSwitch>
+    </div>
+</p-overlayPanel>
