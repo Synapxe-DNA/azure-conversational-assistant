@@ -5,7 +5,6 @@ import logging
 import mimetypes
 import os
 import time
-from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
@@ -29,6 +28,7 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
+from blueprints.frontend_blueprint import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
@@ -76,38 +76,21 @@ from quart import (
     current_app,
     jsonify,
     make_response,
+    redirect,
     request,
     send_file,
-    send_from_directory,
 )
 from quart_cors import cors
 
-bp = Blueprint("routes", __name__, static_folder="static")
+bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 
 
 @bp.route("/")
-async def index():
-    return await bp.send_static_file("index.html")
-
-
-# Empty page is recommended for login redirect to work.
-# See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/initialization.md#redirecturi-considerations for more information
-@bp.route("/redirect")
-async def redirect():
-    return ""
-
-
-@bp.route("/favicon.ico")
-async def favicon():
-    return await bp.send_static_file("favicon.ico")
-
-
-@bp.route("/assets/<path:path>")
-async def assets(path):
-    return await send_from_directory(Path(__file__).resolve().parent / "static" / "assets", path)
+async def serve_app():
+    return redirect("/app")
 
 
 @bp.route("/content/<path>")
@@ -316,10 +299,10 @@ async def speech():
         logging.exception("Exception in /speech")
         return jsonify({"error": str(e)}), 500
 
+
 @bp.route("/voice", methods=["POST"])
 async def voiceChat():
     return jsonify({"message": "You have post to voice endpoint successfully"}), 200
-
 
 
 @bp.post("/upload")
@@ -662,6 +645,7 @@ async def close_clients():
 def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
+    app.register_blueprint(frontend)
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()
