@@ -440,6 +440,6 @@ yarl==1.9.4
     # via aiohttp
 zipp==3.19.2
     # via importlib-metadata
-
+python-dotenv==1.0.1
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
