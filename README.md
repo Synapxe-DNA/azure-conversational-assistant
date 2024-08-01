@@ -111,3 +111,12 @@ Once in the web app:
 - Try different topics in chat or Q&A context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
+
+## Running backend locally
+
+1. Navigate to the `app` folder
+2. Run `make run-local'
+3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
+
+ [!NOTE]
+ > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.

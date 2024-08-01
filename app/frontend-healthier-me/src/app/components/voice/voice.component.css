@@ -1,0 +1,3 @@
+.button-group {
+  @apply tw-flex tw-justify-center tw-gap-8 tw-items-center;
+}

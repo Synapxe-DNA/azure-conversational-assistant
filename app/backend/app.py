@@ -316,6 +316,11 @@ async def speech():
         logging.exception("Exception in /speech")
         return jsonify({"error": str(e)}), 500
 
+@bp.route("/voice", methods=["POST"])
+async def voiceChat():
+    return jsonify({"message": "You have post to voice endpoint successfully"}), 200
+
+
 
 @bp.post("/upload")
 @authenticated
