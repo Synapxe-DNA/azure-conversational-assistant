@@ -41,6 +41,7 @@ from quart import (
     request,
     send_file,
     send_from_directory,
+    websocket
 )
 from quart_cors import cors
 
@@ -84,6 +85,12 @@ from prepdocs import (
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
+from models.voice import VoiceResponse, VoiceRequest
+from models.chat_history import ChatHistory
+from models.profile import Profile
+from models.source import Source
+import asyncio
+import dataclasses
 
 bp = Blueprint("routes", __name__, static_folder="static")
 # Fix Windows registry issue with mimetypes
@@ -299,6 +306,7 @@ async def speech():
             + "#"
             + current_app.config[CONFIG_SPEECH_SERVICE_TOKEN].token
         )
+
         speech_config = SpeechConfig(auth_token=auth_token, region=current_app.config[CONFIG_SPEECH_SERVICE_LOCATION])
         speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
         speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
@@ -319,11 +327,40 @@ async def speech():
         logging.exception("Exception in /speech")
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/voice", methods=["POST"])
-async def voiceChat():
-    return jsonify({"message": "You have post to voice endpoint successfully"}), 200
+@bp.websocket("/voice")
+async def voice():
+    message = await websocket.receive()    
+    audio = await websocket.receive()
+
+    data_json = json.loads(message)
+    data = VoiceRequest(
+        chat_history= [ChatHistory(role=ch['role'], message=ch['message']) for ch in data_json['chat_history']], 
+        profile=Profile(
+            profile_type=data_json['profile']['profile_type'],
+            user_age=data_json['profile']['user_age'],
+            user_gender=data_json['profile']['user_gender'],
+            user_condition=data_json['profile']['user_condition']
+        )
+    )
 
 
+    with open('backend/test/testaudio.wav', 'rb') as wav_file:
+        await websocket.send(wav_file.read())
+
+    for i in range(10):
+        data = VoiceResponse(
+            message=f"Hello from the server {i}",
+            sources= [Source(
+                title="Source title",
+                url="https://www.example.com",
+                meta_description="Source description",
+                image_url="https://www.example.com/image"
+            )],
+            additional_question_1="Follow up question 1",
+            additional_question_2="Follow up question 2",
+        )
+        await websocket.send(data.model_dump_json())
+        await asyncio.sleep(0.2)
 
 @bp.post("/upload")
 @authenticated
@@ -654,6 +691,7 @@ async def setup_clients():
         )
 
 
+
 @bp.after_app_serving
 async def close_clients():
     await current_app.config[CONFIG_SEARCH_CLIENT].close()
@@ -665,6 +703,7 @@ async def close_clients():
 def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
+    app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()
@@ -682,7 +721,6 @@ def create_app():
     if os.getenv("WEBSITE_HOSTNAME"):  # In production, don't log as heavily
         default_level = "WARNING"
     logging.basicConfig(level=os.getenv("APP_LOG_LEVEL", default_level))
-
     if allowed_origin := os.getenv("ALLOWED_ORIGIN"):
         app.logger.info("CORS enabled for %s", allowed_origin)
         cors(app, allow_origin=allowed_origin, allow_methods=["GET", "POST"])
