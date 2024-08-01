@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { MessageRole } from "../../../types/message.type";
+import { MessageRole, MessageSource } from "../../../types/message.type";
 import { LucideAngularModule } from "lucide-angular";
 import {
   FormControl,
@@ -18,6 +18,24 @@ import { ActivatedRoute } from "@angular/router";
 import { Button } from "primeng/button";
 import { PreferenceService } from "../../../services/preference/preference.service";
 import { ChatMode } from "../../../types/chat-mode.type";
+
+const sources: MessageSource[] = [
+  {
+    title: "When is Your Baby Due?",
+    description: "When is Your Baby Due?",
+    url: "https://www.healthhub.sg/live-healthy/when-is-your-baby-due",
+    cover_image_url:
+      "https://ch-api.healthhub.sg/api/public/content/8692c864101e4603868fb170c00230fe?v=534ae16e&t=livehealthyheaderimage",
+  },
+  {
+    title: "Important Nutrients: What Should You Eat More Of?",
+    description:
+      "Important Nutrients: What Should You Eat More Of? Important Nutrients: What Should You Eat More Of? Important Nutrients: What Should You Eat More Of?",
+    url: "https://www.healthhub.sg/live-healthy/important-nutrients-what-should-you-eat-more-of",
+    cover_image_url:
+      "https://ch-api.healthhub.sg/api/public/content/3885d0458c0a4521beb14ca352730423?v=646204cc&t=livehealthyheaderimage",
+  },
+];
 
 @Component({
   selector: "app-text-input",
@@ -46,12 +64,12 @@ export class TextInputComponent implements OnInit {
     private chatMessageService: ChatMessageService,
     private preferences: PreferenceService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string,
+      this.route.snapshot.paramMap.get("profileId") as string
     );
   }
 
@@ -73,7 +91,20 @@ export class TextInputComponent implements OnInit {
       })
       .then(() => {
         this.questionForm.reset();
+        console.log("here");
+        this.sendSystemMessage();
       })
       .catch(console.error);
+  }
+
+  sendSystemMessage() {
+    this.chatMessageService.insert({
+      id: createId(),
+      profile_id: this.profile?.value?.id || "general",
+      role: MessageRole.System,
+      timestamp: new Date().getTime(),
+      message: "This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response. This is a mock response.",
+      sources: sources,
+    });
   }
 }

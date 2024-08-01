@@ -1,3 +1,7 @@
-<button (click)="copyToClipboard()" class="copy-button">
-  <lucide-icon name="copy" class="copy-icon" aria-hidden="true"></lucide-icon>
-</button>
+<p-button
+    (onclick)="copyToClipboard()"
+    icon="pi pi-clipboard"
+    type="button"
+    [rounded]="true"
+    [text]="true"
+    severity="secondary"/>

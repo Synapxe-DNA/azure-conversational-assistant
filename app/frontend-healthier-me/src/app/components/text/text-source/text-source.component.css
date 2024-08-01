@@ -1,0 +1,38 @@
+/* Hide scrollbar for Chrome, Safari and Opera */
+p::-webkit-scrollbar {
+display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+p {
+-ms-overflow-style: none;  /* IE and Edge */
+scrollbar-width: none;  /* Firefox */
+}
+
+@keyframes slidein {
+    from {
+        transform: scaleY(0%);
+      }
+    
+      to {
+        transform: scaleY(100%);
+      }
+}
+
+@keyframes slideout {
+    from {
+        transform: scaleY(100%);
+      }
+    
+      to {
+        transform: scaleY(0%);
+      }
+}
+
+.tw-animate-slide-in {
+    animation: slidein 1s linear forwards;
+}
+
+.tw-animate-slide-out {
+    animation: slideout 1s linear;
+}
