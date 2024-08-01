@@ -10,10 +10,7 @@ from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import AzureDeveloperCliCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import (
-    SearchFieldDataType,
-    SimpleField,
-)
+from azure.search.documents.indexes.models import SearchFieldDataType, SimpleField
 
 logger = logging.getLogger("manageacl")
 

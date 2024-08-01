@@ -1,7 +1,6 @@
 import io
 
 import pytest
-
 from prepdocslib.htmlparser import LocalHTMLParser
 
 

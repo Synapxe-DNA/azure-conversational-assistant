@@ -138,7 +138,6 @@ class OpenAIEmbeddings(ABC):
         return emb_response.data[0].embedding
 
     async def create_embeddings(self, texts: List[str]) -> List[List[float]]:
-
         dimensions_args: ExtraArgs = (
             {"dimensions": self.open_ai_dimensions}
             if OpenAIEmbeddings.SUPPORTED_DIMENSIONS_MODEL.get(self.open_ai_model_name)

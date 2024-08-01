@@ -5,9 +5,13 @@ import logging
 import mimetypes
 import os
 import time
-from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
+from approaches.approach import Approach
+from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
+from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
+from approaches.retrievethenread import RetrieveThenReadApproach
+from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from azure.cognitiveservices.speech import (
     ResultReason,
     SpeechConfig,
@@ -50,6 +54,7 @@ from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
+from blueprints.frontend_blueprint import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
@@ -77,6 +82,11 @@ from config import (
 from core.authentication import AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
+from openai import AsyncAzureOpenAI, AsyncOpenAI
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 from prepdocs import (
     clean_key_if_exists,
     setup_embeddings_service,
@@ -91,33 +101,28 @@ from models.profile import Profile
 from models.source import Source
 import asyncio
 import dataclasses
+from quart import (
+    Blueprint,
+    Quart,
+    abort,
+    current_app,
+    jsonify,
+    make_response,
+    redirect,
+    request,
+    send_file,
+)
+from quart_cors import cors
 
-bp = Blueprint("routes", __name__, static_folder="static")
+bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 
 
 @bp.route("/")
-async def index():
-    return await bp.send_static_file("index.html")
-
-
-# Empty page is recommended for login redirect to work.
-# See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/initialization.md#redirecturi-considerations for more information
-@bp.route("/redirect")
-async def redirect():
-    return ""
-
-
-@bp.route("/favicon.ico")
-async def favicon():
-    return await bp.send_static_file("favicon.ico")
-
-
-@bp.route("/assets/<path:path>")
-async def assets(path):
-    return await send_from_directory(Path(__file__).resolve().parent / "static" / "assets", path)
+async def serve_app():
+    return redirect("/app")
 
 
 @bp.route("/content/<path>")
@@ -704,6 +709,7 @@ def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
     app = cors(app, allow_origin="*")  # For local testing
+    app.register_blueprint(frontend)
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()

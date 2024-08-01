@@ -6,7 +6,6 @@ from typing import Optional, Union
 from azure.core.credentials import AzureKeyCredential
 from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import AzureDeveloperCliCredential, get_bearer_token_provider
-
 from prepdocslib.blobmanager import BlobManager
 from prepdocslib.embeddings import (
     AzureOpenAIEmbeddingService,
@@ -16,9 +15,7 @@ from prepdocslib.embeddings import (
 from prepdocslib.fileprocessor import FileProcessor
 from prepdocslib.filestrategy import FileStrategy
 from prepdocslib.htmlparser import LocalHTMLParser
-from prepdocslib.integratedvectorizerstrategy import (
-    IntegratedVectorizerStrategy,
-)
+from prepdocslib.integratedvectorizerstrategy import IntegratedVectorizerStrategy
 from prepdocslib.jsonparser import JsonParser
 from prepdocslib.listfilestrategy import (
     ADLSGen2ListFileStrategy,

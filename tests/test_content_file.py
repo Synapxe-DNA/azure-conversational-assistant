@@ -39,7 +39,6 @@ class MockAiohttpClientResponse(aiohttp.ClientResponse):
 
 @pytest.mark.asyncio
 async def test_content_file(monkeypatch, mock_env, mock_acs_search):
-
     class MockTransport(AsyncHttpTransport):
         async def send(self, request: HttpRequest, **kwargs) -> AioHttpTransportResponse:
             if request.url.endswith("notfound.pdf") or request.url.endswith("userdoc.pdf"):
@@ -99,7 +98,6 @@ async def test_content_file(monkeypatch, mock_env, mock_acs_search):
 
 @pytest.mark.asyncio
 async def test_content_file_useruploaded_found(monkeypatch, auth_client, mock_blob_container_client):
-
     class MockBlobClient:
         async def download_blob(self):
             raise ResourceNotFoundError(MockAiohttpClientResponse404("userdoc.pdf", b""))
@@ -123,7 +121,6 @@ async def test_content_file_useruploaded_found(monkeypatch, auth_client, mock_bl
 
 @pytest.mark.asyncio
 async def test_content_file_useruploaded_notfound(monkeypatch, auth_client, mock_blob_container_client):
-
     class MockBlobClient:
         async def download_blob(self):
             raise ResourceNotFoundError(MockAiohttpClientResponse404("userdoc.pdf", b""))

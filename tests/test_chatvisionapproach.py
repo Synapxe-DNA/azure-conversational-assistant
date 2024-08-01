@@ -1,14 +1,11 @@
 import json
 
 import pytest
-from azure.search.documents.indexes.models import SearchField, SearchIndex
-from azure.search.documents.models import (
-    VectorizedQuery,
-)
-from openai.types.chat import ChatCompletion
-
 from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
+from azure.search.documents.indexes.models import SearchField, SearchIndex
+from azure.search.documents.models import VectorizedQuery
 from core.authentication import AuthenticationHelper
+from openai.types.chat import ChatCompletion
 
 from .mocks import MOCK_EMBEDDING_DIMENSIONS, MOCK_EMBEDDING_MODEL_NAME
 

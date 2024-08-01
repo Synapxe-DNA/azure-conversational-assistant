@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 import tiktoken
-
 from prepdocslib.listfilestrategy import LocalListFileStrategy
 from prepdocslib.page import Page
 from prepdocslib.pdfparser import LocalPdfParser

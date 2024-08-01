@@ -1,14 +1,13 @@
 import asyncio
 import os
 
+from auth_common import get_application, test_authentication_enabled
 from azure.identity.aio import AzureDeveloperCliCredential
 from msgraph import GraphServiceClient
 from msgraph.generated.models.application import Application
 from msgraph.generated.models.public_client_application import PublicClientApplication
 from msgraph.generated.models.spa_application import SpaApplication
 from msgraph.generated.models.web_application import WebApplication
-
-from auth_common import get_application, test_authentication_enabled
 
 
 async def main():

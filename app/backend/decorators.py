@@ -2,11 +2,10 @@ import logging
 from functools import wraps
 from typing import Any, Callable, Dict
 
-from quart import abort, current_app, request
-
 from config import CONFIG_AUTH_CLIENT, CONFIG_SEARCH_CLIENT
 from core.authentication import AuthError
 from error import error_response
+from quart import abort, current_app, request
 
 
 def authenticated_path(route_fn: Callable[[str, Dict[str, Any]], Any]):

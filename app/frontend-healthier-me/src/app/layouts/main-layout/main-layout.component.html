@@ -1,0 +1,11 @@
+<div
+  class="tw-flex tw-flex-row tw-justify-center tw-items-stretch tw-h-screen tw-w-screen tw-max-h-[100dvh] tw-max-w-[100dvw]"
+>
+  <div class="tw-h-full tw-flex tw-flex-col tw-justify-start tw-items-stretch">
+    <app-navbar />
+  </div>
+  <!-- Ensure router-outlet or its immediate parent takes full width -->
+  <div class="tw-flex-1">
+    <router-outlet class="tw-w-full"></router-outlet>
+  </div>
+</div>

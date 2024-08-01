@@ -2,13 +2,10 @@ import os
 
 import pytest
 from azure.search.documents.aio import SearchClient
-
 from prepdocslib.blobmanager import BlobManager
 from prepdocslib.fileprocessor import FileProcessor
 from prepdocslib.filestrategy import FileStrategy
-from prepdocslib.listfilestrategy import (
-    ADLSGen2ListFileStrategy,
-)
+from prepdocslib.listfilestrategy import ADLSGen2ListFileStrategy
 from prepdocslib.strategy import SearchInfo
 from prepdocslib.textparser import TextParser
 from prepdocslib.textsplitter import SimpleTextSplitter

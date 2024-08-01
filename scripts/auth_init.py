@@ -5,6 +5,7 @@ import random
 import subprocess
 from typing import Tuple
 
+from auth_common import get_application, test_authentication_enabled
 from azure.identity.aio import AzureDeveloperCliCredential
 from msgraph import GraphServiceClient
 from msgraph.generated.applications.item.add_password.add_password_post_request_body import (
@@ -20,8 +21,6 @@ from msgraph.generated.models.resource_access import ResourceAccess
 from msgraph.generated.models.service_principal import ServicePrincipal
 from msgraph.generated.models.spa_application import SpaApplication
 from msgraph.generated.models.web_application import WebApplication
-
-from auth_common import get_application, test_authentication_enabled
 
 
 async def create_application(graph_client: GraphServiceClient, request_app: Application) -> Tuple[str, str]:
