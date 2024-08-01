@@ -21,4 +21,59 @@ describe("ChatMessageService", () => {
   it("should be created", () => {
     expect(service).toBeTruthy();
   });
+
+  it("should update on insert", async () => {
+    const randomProfileId = createId();
+    const message: Message = {
+      id: createId(),
+      profile_id: randomProfileId,
+      message: "Test message",
+      timestamp: 1,
+      role: MessageRole.User,
+    };
+
+    const initVal = (await service.load(randomProfileId)).value;
+    expect(initVal).toEqual([]);
+
+    await service.insert(message);
+
+    const newVal = (await service.load(randomProfileId)).value;
+
+    expect(newVal).toEqual([message]);
+  });
+
+  it("should update on upsert", async () => {
+    const randomMessageId = createId();
+    const randomProfileId = createId();
+    const message: Message = {
+      id: randomMessageId,
+      profile_id: randomProfileId,
+      message: "Test message",
+      timestamp: 1,
+      role: MessageRole.User,
+    };
+
+    const initVal = (await service.load(randomProfileId)).value;
+    expect(initVal).toEqual([]);
+
+    await service.insert(message);
+
+    const newVal = (await service.load(randomProfileId)).value;
+
+    expect(newVal).toEqual([message]);
+
+    const newestMessage = {
+      id: randomMessageId,
+      profile_id: randomProfileId,
+      message: "Test message that is longer",
+      timestamp: 2,
+      role: MessageRole.User,
+    };
+
+    await service.upsert(newestMessage);
+
+    const newestVal = (await service.load(randomProfileId)).value;
+
+    expect(newestVal).toEqual([newestMessage]);
+  });
 });
