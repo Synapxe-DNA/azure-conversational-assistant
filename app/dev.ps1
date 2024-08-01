@@ -48,9 +48,9 @@ function func_frontend {
         exit $LastExitCode
     }
 
-    Write-Host "`nBuilding frontend`n"
+    Write-Host "`nStarting frontend`n"
 
-    npm run build
+    npm run start
     if ($LastExitCode -ne 0) {
         Write-Host "Failed to build frontend"
         exit $LastExitCode
@@ -58,5 +58,28 @@ function func_frontend {
     Pop-Location
 }
 
-func_frontend
-func_backend
+function func_frontend_build {
+    Write-Host "`nRestoring frontend npm packages`n"
+
+    Push-Location ./frontend-healthier-me
+    npm install
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to restore frontend npm packages"
+        exit $LastExitCode
+    }
+
+    Write-Host "`nStarting frontend`n"
+
+    npm run build:live
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to build frontend"
+        exit $LastExitCode
+    }
+    Pop-Location
+}
+
+Register-ObjectEvent ([System.Diagnostics.Process]::GetCurrentProcess()) -EventName Exited -Action { kill 0 }
+Start-Job -ScriptBlock ${function:func_backend}
+Start-Job -ScriptBlock ${function:func_frontend}
+
+Wait-Job -Any

@@ -7,7 +7,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --poll 500",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "build:live": "ng build --watch --configuration production",
     "watch": "ng build --watch --configuration development",
     "lint": "prettier --check \"**/*.{css,json,yaml,yml,md,ts,html,ts}\"",
