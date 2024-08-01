@@ -1,0 +1,44 @@
+.chat-container {
+    @apply tw-flex tw-flex-col tw-h-full tw-max-w-4xl tw-mx-auto tw-rounded-lg tw-overflow-hidden;
+  }
+  
+  .chat-window {
+    @apply tw-flex-1 tw-px-6 tw-py-4 tw-overflow-y-auto tw-bg-white;
+  }
+  
+  .chat-message {
+    @apply tw-mb-4 tw-p-3 tw-rounded-lg tw-max-w-3xl tw-break-words;
+  }
+  
+  .user-message {
+    @apply tw-bg-stone-200 tw-text-black tw-self-end tw-rounded-br-none;
+  }
+  
+  .bot-message {
+    @apply tw-bg-white tw-text-gray-800 tw-self-start tw-rounded-bl-none;
+  }
+  
+  .input-area {
+    @apply tw-flex tw-items-center tw-p-4 tw-border-t tw-border-gray-300 tw-bg-white;
+  }
+  
+  input {
+    @apply tw-flex-1 tw-p-3 tw-border tw-border-gray-300 tw-rounded-lg tw-outline-none tw-mr-2;
+  }
+  
+  button {
+    @apply tw-p-3 tw-rounded-lg tw-text-white tw-flex tw-items-center tw-justify-center tw-shadow-md tw-outline-none tw-bg-black;
+  }
+  
+  button:hover {
+    @apply tw-bg-gray-800;
+  }
+  
+  button:active {
+    @apply tw-bg-slate-950;
+  }
+  
+  lucide-icon {
+    @apply tw-w-5 tw-h-5;
+  }
+  

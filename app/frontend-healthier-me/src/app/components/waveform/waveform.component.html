@@ -1,0 +1,11 @@
+<div
+  #container
+  class="tw-w-full tw-h-32 tw-flex tw-flex-row tw-justify-between tw-items-center tw-gap-4"
+>
+  @for (n of Array.from(Array(bars).keys()); track n) {
+    <div
+      #bar
+      class="tw-transition tw-bg-white tw-w-4 tw-rounded-full tw-min-h-6"
+    ></div>
+  }
+</div>
