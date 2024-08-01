@@ -20,7 +20,7 @@
     "module": "ES2022",
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
-    "types": ["dom-speech-recognition"]
+    "types": ["jasmine", "dom-speech-recognition"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
