@@ -25,7 +25,7 @@ jobs:
         uses: tj-actions/changed-files@v41
         with:
           files: |
-            !tests/**
+            !tests/**/*.json
 
       - name: Set Up Python
         uses: actions/setup-python@v4
