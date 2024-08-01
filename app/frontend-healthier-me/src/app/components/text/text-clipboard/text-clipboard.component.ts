@@ -10,12 +10,13 @@ import { Button } from 'primeng/button';
   styleUrl: './text-clipboard.component.css'
 })
 export class TextClipboardComponent {
-  @Input() message?: Message;
+  @Input() message?: string;
 
   constructor(private clipboard: Clipboard) {}
 
   copyToClipboard() {
     if (this.message) {
-      this.clipboard.copy(this.message.message);
+      this.clipboard.copy(this.message);
     }
+  }
 }
