@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core"
+import { Injectable } from "@angular/core";
 
 @Injectable({
   providedIn: "root",
@@ -7,7 +7,7 @@ export class AudioService {
   constructor() {}
 
   async getMicInput(): Promise<MediaStream> {
-    return navigator.mediaDevices.getUserMedia({ audio: true })
+    return navigator.mediaDevices.getUserMedia({ audio: true });
   }
 
   /**
@@ -16,13 +16,13 @@ export class AudioService {
    * @return {Promise<MediaStream>}
    */
   async mergeAudioStreams(...streams: MediaStream[]): Promise<MediaStream> {
-    const audioContext = new AudioContext()
-    const audioDestination = audioContext.createMediaStreamDestination()
+    const audioContext = new AudioContext();
+    const audioDestination = audioContext.createMediaStreamDestination();
 
     streams.forEach((s) => {
-      audioDestination.connect(audioContext.createMediaStreamSource(s))
-    })
+      audioDestination.connect(audioContext.createMediaStreamSource(s));
+    });
 
-    return audioDestination.stream
+    return audioDestination.stream;
   }
 }

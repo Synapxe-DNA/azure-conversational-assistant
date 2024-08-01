@@ -1,4 +1,4 @@
-import { VersionedSchema } from "../../types/configs/ngx.type"
+import { VersionedSchema } from "../../types/configs/ngx.type";
 
 export const NgxIndexedDbSchema: VersionedSchema = {
   version_1: [
@@ -7,7 +7,11 @@ export const NgxIndexedDbSchema: VersionedSchema = {
       storeConfig: { keyPath: "id", autoIncrement: false },
       storeSchema: [
         { name: "name", keypath: "name", options: { unique: false } },
-        { name: "profile_type", keypath: "profile_type", options: {unique: false} },
+        {
+          name: "profile_type",
+          keypath: "profile_type",
+          options: { unique: false },
+        },
         { name: "age", keypath: "age", options: { unique: false } },
         { name: "gender", keypath: "gender", options: { unique: false } },
         {
@@ -33,4 +37,4 @@ export const NgxIndexedDbSchema: VersionedSchema = {
       ],
     },
   ],
-}
+};

@@ -1,5 +1,5 @@
-import { Component } from "@angular/core"
-import { LucideAngularModule } from "lucide-angular"
+import { Component } from "@angular/core";
+import { LucideAngularModule } from "lucide-angular";
 
 @Component({
   selector: "app-navbar-profile-create",

@@ -1,22 +1,22 @@
 export enum ProfileType {
   Myself = "MYSELF",
   Others = "OTHERS",
-  Undefined = ""
+  Undefined = "",
 }
 
 export enum ProfileGender {
-  Male  = "MALE",
+  Male = "MALE",
   Female = "FEMALE",
   Undefined = "",
 }
 
 export interface Profile {
-  id: string
-  name: string
-  profile_type: ProfileType
-  gender: ProfileGender
-  age: number
-  existing_conditions: string
+  id: string;
+  name: string;
+  profile_type: ProfileType;
+  gender: ProfileGender;
+  age: number;
+  existing_conditions: string;
 }
 
 export const GeneralProfile: Profile = {
@@ -26,4 +26,4 @@ export const GeneralProfile: Profile = {
   gender: ProfileGender.Undefined,
   age: NaN,
   existing_conditions: "",
-}
+};

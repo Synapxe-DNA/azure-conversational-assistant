@@ -1,69 +1,68 @@
-import {first, Subject, take} from "rxjs";
+import { first, Subject, take } from "rxjs";
 
 /**
  * Class to handle audio recordings and processing
  */
 export class AudioRecorder {
+  private readonly stream: MediaStream;
+  private readonly slice: number;
 
-  private readonly stream: MediaStream
-  private readonly slice: number
+  private readonly mimeType: string = "";
+  private readonly fileExtension: string = "";
 
-  private readonly mimeType: string = ""
-  private readonly fileExtension: string = ""
+  private recorder: MediaRecorder | undefined;
 
-  private recorder: MediaRecorder | undefined
+  private chunks: BlobPart[] = [];
+  private trailingChunk: BlobPart | undefined;
 
-  private chunks: BlobPart[] = []
-  private trailingChunk: BlobPart | undefined
-
-
-  private flagStartRecording: boolean = false
-  private flagChunkRecorded: Subject<void> = new Subject<void>()
+  private flagStartRecording: boolean = false;
+  private flagChunkRecorded: Subject<void> = new Subject<void>();
 
   /**
    * @constructor
    * @param stream {MediaStream} containing the target audio
    * @param slice {number} Time of each audio slice (in ms)
    */
-  constructor(
-    stream: MediaStream,
-    slice: number = 5000
-  ) {
-    this.stream = stream
-    this.slice = slice
+  constructor(stream: MediaStream, slice: number = 5000) {
+    this.stream = stream;
+    this.slice = slice;
 
     // Determine the supported MIME type and set it
-    const options: { mimeType: string, extension: string }[] = [
-      { mimeType: 'audio/webm', extension: 'webm' },
-      { mimeType: 'audio/mp4', extension: 'm4a' }  // typically used by Safari
-    ]
+    const options: { mimeType: string; extension: string }[] = [
+      { mimeType: "audio/webm", extension: "webm" },
+      { mimeType: "audio/mp4", extension: "m4a" }, // typically used by Safari
+    ];
 
     // Iterate over all available options until a suitable option is found
     for (const option of options) {
       if (MediaRecorder.isTypeSupported(option.mimeType)) {
-        this.mimeType = option.mimeType
-        this.fileExtension = option.extension
-        break
+        this.mimeType = option.mimeType;
+        this.fileExtension = option.extension;
+        break;
       }
     }
 
     if (!this.mimeType || !this.fileExtension) {
-      throw new Error("Unable to set recording option. MimeType not supported!")
+      throw new Error(
+        "Unable to set recording option. MimeType not supported!",
+      );
     }
 
-    this.initializeRecorder()
+    this.initializeRecorder();
   }
 
   /**
    * Method to initialize the MediaRecorder
    */
   initializeRecorder() {
-    this.chunks = []
-    this.trailingChunk = undefined
-    this.flagStartRecording = false
-    this.recorder = new MediaRecorder(this.stream, { mimeType: this.mimeType })
-    this.recorder.ondataavailable = (e) => { this.handleChunk(e) }
-    this.recorder.onerror = console.error
+    this.chunks = [];
+    this.trailingChunk = undefined;
+    this.flagStartRecording = false;
+    this.recorder = new MediaRecorder(this.stream, { mimeType: this.mimeType });
+    this.recorder.ondataavailable = (e) => {
+      this.handleChunk(e);
+    };
+    this.recorder.onerror = console.error;
 
     /**
      * The recorder is paused instead of starting in the start() method as the original intention was to record the
@@ -76,8 +75,8 @@ export class AudioRecorder {
      * real time TTS (so we can move away from the browser based VAD), then we can possibly stream the chunks to the
      * backend.
      */
-    this.recorder.start(this.slice)
-    this.recorder.pause()
+    this.recorder.start(this.slice);
+    this.recorder.pause();
   }
 
   /**
@@ -86,8 +85,8 @@ export class AudioRecorder {
    * @private
    */
   private handleChunk(e: BlobEvent) {
-    this.chunks.push(e.data)
-    this.flagChunkRecorded.next()
+    this.chunks.push(e.data);
+    this.flagChunkRecorded.next();
   }
 
   /**
@@ -95,43 +94,40 @@ export class AudioRecorder {
    */
   start(): void {
     if (!this.recorder) {
-      throw new Error('MediaRecorder is not initialized')
+      throw new Error("MediaRecorder is not initialized");
     }
 
-    this.recorder.resume()
+    this.recorder.resume();
 
     // Resets local states
-    this.flagStartRecording = true
-
+    this.flagStartRecording = true;
   }
 
   /**
    * Method to stop recording, and get the resulting file
    * @return {Promise<{data: Blob, extension: string}>}
    */
-  stop(): Promise<{ data: Blob, extension: string }> {
-
-    console.log("Stopping!")
+  stop(): Promise<{ data: Blob; extension: string }> {
+    console.log("Stopping!");
 
     if (!this.recorder) {
-      throw new Error("MediaRecorder was not initialised!")
+      throw new Error("MediaRecorder was not initialised!");
     }
 
     // Reset the recorder to prepare for the next recording session
 
-    this.recorder!.requestData()
-    return new Promise<{ data: Blob, extension: string }>((resolve) => {
+    this.recorder!.requestData();
+    return new Promise<{ data: Blob; extension: string }>((resolve) => {
       // Handle stop event triggered by AudioRecorder.handleChunk
       this.flagChunkRecorded.pipe(first()).subscribe(() => {
-        const finalBlob = new Blob(this.chunks, { type: this.mimeType })
+        const finalBlob = new Blob(this.chunks, { type: this.mimeType });
         resolve({
           data: finalBlob,
-          extension: this.fileExtension
-        })
-        this.initializeRecorder()
-      })
-      this.recorder!.stop()
-    })
-
+          extension: this.fileExtension,
+        });
+        this.initializeRecorder();
+      });
+      this.recorder!.stop();
+    });
   }
 }
