@@ -6,9 +6,7 @@ from typing import Optional
 import openai.types
 from azure.cognitiveservices.speech import ResultReason
 from azure.core.credentials_async import AsyncTokenCredential
-from azure.search.documents.models import (
-    VectorQuery,
-)
+from azure.search.documents.models import VectorQuery
 from azure.storage.blob import BlobProperties
 
 MOCK_EMBEDDING_DIMENSIONS = 1536
@@ -18,13 +16,11 @@ MockToken = namedtuple("MockToken", ["token", "expires_on", "value"])
 
 
 class MockAzureCredential(AsyncTokenCredential):
-
     async def get_token(self, uri):
         return MockToken("", 9999999999, "")
 
 
 class MockAzureCredentialExpired(AsyncTokenCredential):
-
     def __init__(self):
         self.access_number = 0
 

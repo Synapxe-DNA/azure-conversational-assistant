@@ -1,7 +1,10 @@
 from typing import Any, Coroutine, List, Literal, Optional, Union, overload
 
+from approaches.approach import ThoughtStep
+from approaches.chatapproach import ChatApproach
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
+from core.authentication import AuthenticationHelper
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat import (
     ChatCompletion,
@@ -10,10 +13,6 @@ from openai.types.chat import (
     ChatCompletionToolParam,
 )
 from openai_messages_token_helper import build_messages, get_token_limit
-
-from approaches.approach import ThoughtStep
-from approaches.chatapproach import ChatApproach
-from core.authentication import AuthenticationHelper
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):

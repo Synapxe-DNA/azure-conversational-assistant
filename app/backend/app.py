@@ -8,6 +8,11 @@ import time
 from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
+from approaches.approach import Approach
+from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
+from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
+from approaches.retrievethenread import RetrieveThenReadApproach
+from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from azure.cognitiveservices.speech import (
     ResultReason,
     SpeechConfig,
@@ -24,31 +29,6 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
-from openai import AsyncAzureOpenAI, AsyncOpenAI
-from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
-from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
-from opentelemetry.instrumentation.httpx import (
-    HTTPXClientInstrumentor,
-)
-from opentelemetry.instrumentation.openai import OpenAIInstrumentor
-from quart import (
-    Blueprint,
-    Quart,
-    abort,
-    current_app,
-    jsonify,
-    make_response,
-    request,
-    send_file,
-    send_from_directory,
-)
-from quart_cors import cors
-
-from approaches.approach import Approach
-from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
-from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
-from approaches.retrievethenread import RetrieveThenReadApproach
-from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
@@ -76,6 +56,11 @@ from config import (
 from core.authentication import AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
+from openai import AsyncAzureOpenAI, AsyncOpenAI
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 from prepdocs import (
     clean_key_if_exists,
     setup_embeddings_service,
@@ -84,6 +69,18 @@ from prepdocs import (
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
+from quart import (
+    Blueprint,
+    Quart,
+    abort,
+    current_app,
+    jsonify,
+    make_response,
+    request,
+    send_file,
+    send_from_directory,
+)
+from quart_cors import cors
 
 bp = Blueprint("routes", __name__, static_folder="static")
 # Fix Windows registry issue with mimetypes

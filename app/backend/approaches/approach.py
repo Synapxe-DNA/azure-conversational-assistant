@@ -21,10 +21,9 @@ from azure.search.documents.models import (
     VectorizedQuery,
     VectorQuery,
 )
+from core.authentication import AuthenticationHelper
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
-
-from core.authentication import AuthenticationHelper
 from text import nonewlines
 
 

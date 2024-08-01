@@ -9,9 +9,7 @@ from glob import glob
 from typing import IO, AsyncGenerator, Dict, List, Optional, Union
 
 from azure.core.credentials_async import AsyncTokenCredential
-from azure.storage.filedatalake.aio import (
-    DataLakeServiceClient,
-)
+from azure.storage.filedatalake.aio import DataLakeServiceClient
 
 logger = logging.getLogger("ingester")
 

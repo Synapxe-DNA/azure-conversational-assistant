@@ -1,7 +1,10 @@
 from typing import Any, Awaitable, Callable, Optional
 
+from approaches.approach import Approach, ThoughtStep
 from azure.search.documents.aio import SearchClient
 from azure.storage.blob.aio import ContainerClient
+from core.authentication import AuthenticationHelper
+from core.imageshelper import fetch_image
 from openai import AsyncOpenAI
 from openai.types.chat import (
     ChatCompletionContentPartImageParam,
@@ -9,10 +12,6 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
 )
 from openai_messages_token_helper import build_messages, get_token_limit
-
-from approaches.approach import Approach, ThoughtStep
-from core.authentication import AuthenticationHelper
-from core.imageshelper import fetch_image
 
 
 class RetrieveThenReadVisionApproach(Approach):
