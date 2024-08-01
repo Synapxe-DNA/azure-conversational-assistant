@@ -1,76 +1,109 @@
-import {Injectable, OnInit} from "@angular/core"
-import { BehaviorSubject } from "rxjs"
-import { ChatMode } from "../../types/chat-mode.type"
-import {PreferenceKey} from "../../types/configs/preference-keys.type";
+import { Injectable, OnInit } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { ChatMode } from "../../types/chat-mode.type";
+import { PreferenceKey } from "../../types/configs/preference-keys.type";
 
 @Injectable({
   providedIn: "root",
 })
-export class PreferenceService{
+export class PreferenceService {
   /**
    * This service is used to set the user preference across the webapp.
    */
 
   // BehaviorSubject to manage chat mode state
-  $chatMode = new BehaviorSubject<ChatMode>(this.loadFromLocalStorage<ChatMode>(PreferenceKey.ChatMode, ChatMode.Voice))
+  $chatMode = new BehaviorSubject<ChatMode>(
+    this.loadFromLocalStorage<ChatMode>(PreferenceKey.ChatMode, ChatMode.Voice),
+  );
 
   // BehaviorSubjects to manage voice detection states
-  $voiceDetectInterrupt = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, false))
-  $voiceDetectStart = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, false))
-  $voiceDetectEnd = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, false))
+  $voiceDetectInterrupt = new BehaviorSubject<boolean>(
+    this.loadFromLocalStorage<boolean>(
+      PreferenceKey.VoiceDetectInterrupt,
+      false,
+    ),
+  );
+  $voiceDetectStart = new BehaviorSubject<boolean>(
+    this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, false),
+  );
+  $voiceDetectEnd = new BehaviorSubject<boolean>(
+    this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, false),
+  );
 
   constructor() {
-    this.initialisePreferences()
-    this.listenToLocalStorageEvents()
+    this.initialisePreferences();
+    this.listenToLocalStorageEvents();
   }
 
   /**
    * Initialize preferences by subscribing to BehaviorSubjects and updating local storage accordingly
    * @private
    */
-  private initialisePreferences(){
-    this.$chatMode.subscribe(v => {this.setToLocalStorage<ChatMode>(PreferenceKey.ChatMode, v)})
-    this.$voiceDetectInterrupt.subscribe(v => {this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, v)})
-    this.$voiceDetectStart.subscribe(v => {this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, v)})
-    this.$voiceDetectEnd.subscribe(v => {this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, v)})
+  private initialisePreferences() {
+    this.$chatMode.subscribe((v) => {
+      this.setToLocalStorage<ChatMode>(PreferenceKey.ChatMode, v);
+    });
+    this.$voiceDetectInterrupt.subscribe((v) => {
+      this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, v);
+    });
+    this.$voiceDetectStart.subscribe((v) => {
+      this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, v);
+    });
+    this.$voiceDetectEnd.subscribe((v) => {
+      this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, v);
+    });
   }
 
   /**
    * Listen to local storage events and update BehaviorSubjects if relevant keys are modified
    * @private
    */
-  private listenToLocalStorageEvents(){
-    const updateStates = (e:StorageEvent) => {
-
-      if(!e.key || !Object.values(PreferenceKey).includes(e.key as PreferenceKey)){
+  private listenToLocalStorageEvents() {
+    const updateStates = (e: StorageEvent) => {
+      if (
+        !e.key ||
+        !Object.values(PreferenceKey).includes(e.key as PreferenceKey)
+      ) {
         // DON'T DO ANYTHING IF:
         // - Local storage has been cleared
         // - Affected storage key is not our preference key
-        return
+        return;
       }
 
-      switch (e.key){
+      switch (e.key) {
         case PreferenceKey.ChatMode: {
-          this.$chatMode.next(this.loadFromLocalStorage(PreferenceKey.ChatMode, ChatMode.Voice))
-          break
+          this.$chatMode.next(
+            this.loadFromLocalStorage(PreferenceKey.ChatMode, ChatMode.Voice),
+          );
+          break;
         }
         case PreferenceKey.VoiceDetectInterrupt: {
-          this.$voiceDetectInterrupt.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectInterrupt, false))
-          break
+          this.$voiceDetectInterrupt.next(
+            this.loadFromLocalStorage(
+              PreferenceKey.VoiceDetectInterrupt,
+              false,
+            ),
+          );
+          break;
         }
         case PreferenceKey.VoiceDetectStart: {
-          this.$voiceDetectStart.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectStart, false))
-          break
+          this.$voiceDetectStart.next(
+            this.loadFromLocalStorage(PreferenceKey.VoiceDetectStart, false),
+          );
+          break;
         }
         case PreferenceKey.VoiceDetectEnd: {
-          this.$voiceDetectEnd.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectEnd, false))
-          break
+          this.$voiceDetectEnd.next(
+            this.loadFromLocalStorage(PreferenceKey.VoiceDetectEnd, false),
+          );
+          break;
         }
-
       }
-    }
+    };
 
-    window.addEventListener("storage", (e:StorageEvent)=>{updateStates(e)})
+    window.addEventListener("storage", (e: StorageEvent) => {
+      updateStates(e);
+    });
   }
 
   /**
@@ -80,14 +113,14 @@ export class PreferenceService{
    * @param defaultValue {T} value to be used if local storage value is not set, or if jey does not exist
    * @private
    */
-  private loadFromLocalStorage<T>(key:PreferenceKey, defaultValue:T):T{
-    const storedValue = localStorage.getItem(key)
-    if(storedValue){
-      return JSON.parse(storedValue) as T
+  private loadFromLocalStorage<T>(key: PreferenceKey, defaultValue: T): T {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue) {
+      return JSON.parse(storedValue) as T;
     }
 
-    this.setToLocalStorage(key, defaultValue)
-    return defaultValue
+    this.setToLocalStorage(key, defaultValue);
+    return defaultValue;
   }
 
   /**
@@ -97,7 +130,7 @@ export class PreferenceService{
    * @param {T} value - The value to store.
    */
   private setToLocalStorage<T>(key: string, value: T): void {
-    localStorage.setItem(key, JSON.stringify(value))
+    localStorage.setItem(key, JSON.stringify(value));
   }
 
   /**
@@ -105,7 +138,7 @@ export class PreferenceService{
    * @param {ChatMode} mode - The chat mode to set.
    */
   setChatMode(mode: ChatMode): void {
-    this.$chatMode.next(mode)
+    this.$chatMode.next(mode);
   }
 
   /**
@@ -113,7 +146,7 @@ export class PreferenceService{
    * @param {boolean} value - True if voice detection should interrupt, false otherwise.
    */
   setVoiceDetectInterrupt(value: boolean): void {
-    this.$voiceDetectInterrupt.next(value)
+    this.$voiceDetectInterrupt.next(value);
   }
 
   /**
@@ -121,7 +154,7 @@ export class PreferenceService{
    * @param {boolean} value - True if voice detection should start, false otherwise.
    */
   setVoiceDetectStart(value: boolean): void {
-    this.$voiceDetectStart.next(value)
+    this.$voiceDetectStart.next(value);
   }
 
   /**
@@ -129,8 +162,6 @@ export class PreferenceService{
    * @param {boolean} value - True if voice detection should end, false otherwise.
    */
   setVoiceDetectEnd(value: boolean): void {
-    this.$voiceDetectEnd.next(value)
+    this.$voiceDetectEnd.next(value);
   }
-
-
 }

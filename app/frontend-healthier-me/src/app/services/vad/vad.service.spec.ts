@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import { VadService } from './vad.service';
+import { VadService } from "./vad.service";
 
 /**
  * THIS TEST CASE IS IGNORED
@@ -9,7 +9,7 @@ import { VadService } from './vad.service';
  * Unable to send voice or access mic to test this in CI/CD yet, so there should not be any test cases here.
  * Tests here will cause the GH Action to time out and throw a "Browser Disconnection Error."
  */
-describe('VadService', () => {
+describe("VadService", () => {
   // let service: VadService;
   //
   // beforeEach(() => {
@@ -21,7 +21,7 @@ describe('VadService', () => {
   //   expect(service).toBeTruthy();
   // });
 
-  it("should not have any test cases", ()=>{
-    expect(1).toBe(1)
-  })
+  it("should not have any test cases", () => {
+    expect(1).toBe(1);
+  });
 });

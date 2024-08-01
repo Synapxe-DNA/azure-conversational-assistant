@@ -118,5 +118,6 @@ Once in the web app:
 2. Run `make run-local'
 3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
 
- [!NOTE]
- > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
+> [!NOTE]
+>
+> To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.

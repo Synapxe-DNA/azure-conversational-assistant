@@ -1,5 +1,3 @@
-
-
 export enum PreferenceKey {
   ChatMode = "chatMode",
   VoiceDetectInterrupt = "voiceDetectInterrupt",

@@ -1,15 +1,15 @@
 -r app/backend/requirements.txt
-ruff
 black
+coverage
+locust
+mypy
+pip-tools
+playwright
+pre-commit
 pytest
 pytest-asyncio
-pytest-snapshot
-coverage
-playwright
 pytest-cov
 pytest-playwright
 pytest-snapshot
-pre-commit
-locust
-pip-tools
-mypy
+pytest-snapshot
+ruff

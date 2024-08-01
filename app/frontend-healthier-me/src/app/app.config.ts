@@ -33,13 +33,14 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       LucideAngularModule.pick({
         UserRoundPlus,
-        Mic, MicOff,
+        Mic,
+        MicOff,
         MessageSquare,
         User,
         Settings,
         Send,
         StopCircle,
-      })
+      }),
     ),
     importProvidersFrom(ToastModule),
   ],
