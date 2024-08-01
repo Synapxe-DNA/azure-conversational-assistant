@@ -16,5 +16,7 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+trap "kill 0" EXIT
 ./dev-backend.sh&
 ./dev-frontend-healthier-me.sh&
+wait
