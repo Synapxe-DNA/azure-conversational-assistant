@@ -8,6 +8,7 @@
     "ng": "ng",
     "start": "ng serve --poll 500",
     "build": "ng build",
+    "build:live": "ng build --watch --configuration production",
     "watch": "ng build --watch --configuration development",
     "lint": "prettier --check \"**/*.{css,json,yaml,yml,md,ts,html,ts}\"",
     "lint:fix": "prettier --check \"**/*.{css,json,yaml,yml,md,ts,html,ts}\" -w --no-semi",
