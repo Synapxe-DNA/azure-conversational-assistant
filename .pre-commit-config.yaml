@@ -67,6 +67,6 @@ repos:
     hooks:
       - id: prettier
         args: [--write]
-        types_or: [css, javascript, ts, tsx, html]
+        types_or: [css, json, javascript, ts, tsx, html]
         additional_dependencies:
           - prettier@3.2.5
