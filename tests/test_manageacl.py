@@ -9,8 +9,9 @@ from azure.search.documents.indexes.models import (
     SimpleField,
 )
 
-from .mocks import MockAzureCredential
 from scripts.manageacl import ManageAcl
+
+from .mocks import MockAzureCredential
 
 
 class AsyncSearchResultsIterator:

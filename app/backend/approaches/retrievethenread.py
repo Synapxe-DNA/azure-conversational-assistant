@@ -1,13 +1,12 @@
 from typing import Any, Optional
 
+from approaches.approach import Approach, ThoughtStep
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
+from core.authentication import AuthenticationHelper
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from openai_messages_token_helper import build_messages, get_token_limit
-
-from approaches.approach import Approach, ThoughtStep
-from core.authentication import AuthenticationHelper
 
 
 class RetrieveThenReadApproach(Approach):

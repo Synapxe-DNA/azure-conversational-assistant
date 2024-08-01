@@ -4,7 +4,6 @@ import os
 import tempfile
 
 import pytest
-
 from prepdocslib.listfilestrategy import (
     ADLSGen2ListFileStrategy,
     File,

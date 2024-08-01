@@ -3,9 +3,8 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, AsyncGenerator, Optional
 
-from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
-
 from approaches.approach import Approach
+from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 
 class ChatApproach(Approach, ABC):

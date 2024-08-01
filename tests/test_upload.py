@@ -11,9 +11,8 @@ from openai.types.create_embedding_response import (
     Embedding,
     Usage,
 )
-from quart.datastructures import FileStorage
-
 from prepdocslib.embeddings import AzureOpenAIEmbeddingService
+from quart.datastructures import FileStorage
 
 from .mocks import MockClient, MockEmbeddingsClient
 
@@ -22,7 +21,6 @@ from .mocks import MockClient, MockEmbeddingsClient
 @pytest.mark.asyncio
 @pytest.mark.parametrize("directory_exists", [True, False])
 async def test_upload_file(auth_client, monkeypatch, mock_data_lake_service_client, directory_exists):
-
     async def mock_get_directory_properties(self, *args, **kwargs):
         if directory_exists:
             return None
@@ -142,7 +140,6 @@ async def test_list_uploaded_nopaths(auth_client, monkeypatch, mock_data_lake_se
 
 @pytest.mark.asyncio
 async def test_delete_uploaded(auth_client, monkeypatch, mock_data_lake_service_client):
-
     async def mock_delete_file(self):
         return None
 

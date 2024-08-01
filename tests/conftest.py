@@ -7,6 +7,7 @@ import aiohttp
 import azure.cognitiveservices.speech
 import azure.storage.filedatalake
 import azure.storage.filedatalake.aio
+import core
 import msal
 import pytest
 import pytest_asyncio
@@ -14,17 +15,13 @@ from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import SearchField, SearchIndex
 from azure.storage.blob.aio import ContainerClient
+from core.authentication import AuthenticationHelper
 from openai.types import CreateEmbeddingResponse, Embedding
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from openai.types.chat.chat_completion import (
-    ChatCompletionMessage,
-    Choice,
-)
+from openai.types.chat.chat_completion import ChatCompletionMessage, Choice
 from openai.types.create_embedding_response import Usage
 
 import app
-import core
-from core.authentication import AuthenticationHelper
 
 from .mocks import (
     MockAsyncPageIterator,
