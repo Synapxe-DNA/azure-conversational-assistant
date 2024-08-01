@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { Clipboard } from "@angular/cdk/clipboard";
 import { Button } from 'primeng/button';
 
 @Component({
@@ -9,7 +10,12 @@ import { Button } from 'primeng/button';
   styleUrl: './text-clipboard.component.css'
 })
 export class TextClipboardComponent {
-  @Input() message?: string;
+  @Input() message?: Message;
 
+  constructor(private clipboard: Clipboard) {}
 
+  copyToClipboard() {
+    if (this.message) {
+      this.clipboard.copy(this.message.message);
+    }
 }

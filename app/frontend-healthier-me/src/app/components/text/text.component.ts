@@ -11,6 +11,8 @@ import { BehaviorSubject, filter, take } from "rxjs";
 import { Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
+import { createId } from "@paralleldrive/cuid2";
+import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
 
 
 @Component({
@@ -23,6 +25,7 @@ import { ActivatedRoute } from "@angular/router";
     TextInputComponent,
     TextSystemComponent,
     TextUserComponent,
+    TextClipboardComponent,
   ],
   templateUrl: "./text.component.html",
   styleUrls: ["./text.component.css"],
@@ -48,8 +51,32 @@ export class TextComponent implements OnInit {
 
     this.profile.subscribe((p) => {
       this.chatMessageService.load(p?.id || "general").then((m) => {
-        m.subscribe((messages) => (this.messages = messages));
+        m.subscribe((messages) => {
+          this.messages = messages;
+          this.checkAndAddSystemResponse();
+        });
       });
     });
+  }
+
+  checkAndAddSystemResponse() {
+    const lastMessage = this.messages[this.messages.length - 1];
+    if (lastMessage && lastMessage.role === MessageRole.User) {
+      this.addSystemResponse(lastMessage);
+    }
+  }
+
+  addSystemResponse(userMessage: Message) {
+    const systemMessage: Message = {
+      id: createId(),
+      profile_id: userMessage.profile_id,
+      role: MessageRole.System,
+      message: "This is a system response.",
+      timestamp: new Date().getTime(),
+    };
+
+    setTimeout(() => {
+      this.chatMessageService.insert(systemMessage).catch(console.error);
+    }, 1000);
   }
 }

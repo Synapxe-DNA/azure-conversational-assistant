@@ -18,5 +18,4 @@ export class TextTtsComponent {
     console.log("Speech to Text");
   }
 
-
 }

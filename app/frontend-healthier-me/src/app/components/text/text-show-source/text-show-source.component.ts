@@ -1,3 +1,4 @@
+
 import { Component, EventEmitter, Output } from '@angular/core';
 import { Button } from 'primeng/button';
 
@@ -8,6 +9,7 @@ import { Button } from 'primeng/button';
   templateUrl: './text-show-source.component.html',
   styleUrl: './text-show-source.component.css'
 })
+
 export class TextShowSourceComponent {
   @Output() display = new EventEmitter<boolean>();
   hidden: boolean = false;
