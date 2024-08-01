@@ -12,6 +12,7 @@ import { Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
 import { createId } from "@paralleldrive/cuid2";
+import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
 
 const sources: MessageSource[] = [
   {
@@ -41,6 +42,7 @@ const sources: MessageSource[] = [
     TextInputComponent,
     TextSystemComponent,
     TextUserComponent,
+    TextClipboardComponent,
   ],
   templateUrl: "./text.component.html",
   styleUrls: ["./text.component.css"],
