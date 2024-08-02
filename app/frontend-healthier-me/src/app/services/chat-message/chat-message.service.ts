@@ -40,6 +40,16 @@ export class ChatMessageService {
     return this.$messages;
   }
 
+  async staticLoad(profileId: string): Promise<Message[]> {
+    return await firstValueFrom<Message[]>(
+      this.indexedStore.getAllByIndex(
+        "messages",
+        "profile_id",
+        IDBKeyRange.only(profileId),
+      ),
+    );
+  }
+
   /**
    * Method to insert message into indexed store, and update local behavior subject
    * @param message
