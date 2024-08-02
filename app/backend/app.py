@@ -50,7 +50,6 @@ from config import (
     CONFIG_VECTOR_SEARCH_ENABLED,
 )
 from core.authentication import AuthenticationHelper
-from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
 from models.source import Source
 from models.voice import VoiceResponse
