@@ -5,7 +5,7 @@ import json
 import logging
 import mimetypes
 import os
-import time
+from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
@@ -13,13 +13,6 @@ from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
-from azure.cognitiveservices.speech import (
-    ResultReason,
-    SpeechConfig,
-    SpeechSynthesisOutputFormat,
-    SpeechSynthesisResult,
-    SpeechSynthesizer,
-)
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.monitor.opentelemetry import configure_azure_monitor
@@ -50,6 +43,9 @@ from config import (
     CONFIG_SPEECH_SERVICE_LOCATION,
     CONFIG_SPEECH_SERVICE_TOKEN,
     CONFIG_SPEECH_SERVICE_VOICE,
+    CONFIG_TRANSLATOR_SERVICE_API_KEY,
+    CONFIG_TRANSLATOR_SERVICE_ENDPOINT,
+    CONFIG_TRANSLATOR_SERVICE_LOCATION,
     CONFIG_USER_BLOB_CONTAINER_CLIENT,
     CONFIG_USER_UPLOAD_ENABLED,
     CONFIG_VECTOR_SEARCH_ENABLED,
@@ -87,6 +83,7 @@ from quart import (
     stream_with_context,
 )
 from quart_cors import cors
+from speech.text_to_speech import TextToSpeech
 
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
@@ -266,42 +263,12 @@ def config():
 async def speech():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
-
-    speech_token = current_app.config.get(CONFIG_SPEECH_SERVICE_TOKEN)
-    if speech_token is None or speech_token.expires_on < time.time() + 60:
-        speech_token = await current_app.config[CONFIG_CREDENTIAL].get_token(
-            "https://cognitiveservices.azure.com/.default"
-        )
-        current_app.config[CONFIG_SPEECH_SERVICE_TOKEN] = speech_token
-
     request_json = await request.get_json()
     text = request_json["text"]
     try:
-        # Construct a token as described in documentation:
-        # https://learn.microsoft.com/azure/ai-services/speech-service/how-to-configure-azure-ad-auth?pivots=programming-language-python
-        auth_token = (
-            "aad#"
-            + current_app.config[CONFIG_SPEECH_SERVICE_ID]
-            + "#"
-            + current_app.config[CONFIG_SPEECH_SERVICE_TOKEN].token
-        )
-
-        speech_config = SpeechConfig(auth_token=auth_token, region=current_app.config[CONFIG_SPEECH_SERVICE_LOCATION])
-        speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
-        speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
-        synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=None)
-        result: SpeechSynthesisResult = synthesizer.speak_text_async(text).get()
-        if result.reason == ResultReason.SynthesizingAudioCompleted:
-            return result.audio_data, 200, {"Content-Type": "audio/mp3"}
-        elif result.reason == ResultReason.Canceled:
-            cancellation_details = result.cancellation_details
-            current_app.logger.error(
-                "Speech synthesis canceled: %s %s", cancellation_details.reason, cancellation_details.error_details
-            )
-            raise Exception("Speech synthesis canceled. Check logs for details.")
-        else:
-            current_app.logger.error("Unexpected result reason: %s", result.reason)
-            raise Exception("Speech synthesis failed. Check logs for details.")
+        tts = await TextToSpeech.create()
+        audio_data = tts.readText(text)
+        return audio_data, 200, {"Content-Type": "audio/mp3"}
     except Exception as e:
         logging.exception("Exception in /speech")
         return jsonify({"error": str(e)}), 500
@@ -474,6 +441,10 @@ async def setup_clients():
     AZURE_SPEECH_SERVICE_LOCATION = os.getenv("AZURE_SPEECH_SERVICE_LOCATION")
     AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-AndrewMultilingualNeural")
 
+    AZURE_TRANSLATOR_SERVICE_API_KEY = os.getenv("AZURE_TRANSLATOR_SERVICE_API_KEY")
+    AZURE_TRANSLATOR_SERVICE_ENDPOINT = os.getenv("AZURE_TRANSLATOR_SERVICE_ENDPOINT")
+    AZURE_TRANSLATOR_SERVICE_LOCATION = os.getenv("AZURE_TRANSLATOR_SERVICE_LOCATION")
+
     USE_GPT4V = os.getenv("USE_GPT4V", "").lower() == "true"
     USE_USER_UPLOAD = os.getenv("USE_USER_UPLOAD", "").lower() == "true"
     USE_SPEECH_INPUT_BROWSER = os.getenv("USE_SPEECH_INPUT_BROWSER", "").lower() == "true"
@@ -573,6 +544,10 @@ async def setup_clients():
         # Wait until token is needed to fetch for the first time
         current_app.config[CONFIG_SPEECH_SERVICE_TOKEN] = None
         current_app.config[CONFIG_CREDENTIAL] = azure_credential
+        # Translator will only be used when speech is used
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_API_KEY] = AZURE_TRANSLATOR_SERVICE_API_KEY
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_ENDPOINT] = AZURE_TRANSLATOR_SERVICE_ENDPOINT
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_LOCATION] = AZURE_TRANSLATOR_SERVICE_LOCATION
 
     if OPENAI_HOST.startswith("azure"):
         api_version = os.getenv("AZURE_OPENAI_API_VERSION") or "2024-03-01-preview"
