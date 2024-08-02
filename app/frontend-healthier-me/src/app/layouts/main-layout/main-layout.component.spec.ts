@@ -7,12 +7,17 @@ import { ProfileService } from "../../services/profile/profile.service";
 import { MessageService } from "primeng/api";
 import { ToastModule } from "primeng/toast";
 import { icons, LucideAngularModule } from "lucide-angular";
+import { ActivatedRoute } from "@angular/router";
 
 describe("MainLayoutComponent", () => {
   let component: MainLayoutComponent;
   let fixture: ComponentFixture<MainLayoutComponent>;
 
   beforeEach(async () => {
+    const activatedRouteMock = {
+      snapshot: { paramMap: { get: () => "1234" } },
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         MainLayoutComponent,
@@ -20,7 +25,12 @@ describe("MainLayoutComponent", () => {
         ToastModule,
         LucideAngularModule.pick(icons),
       ],
-      providers: [ProfileService, NgxIndexedDBService, MessageService],
+      providers: [
+        ProfileService,
+        NgxIndexedDBService,
+        MessageService,
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MainLayoutComponent);
