@@ -4,7 +4,7 @@
     <div class="tw-mt-1 tw-mb-1 tw-flex">
       <app-text-tts [message]="message.message"></app-text-tts>
       <app-text-clipboard [message]="message.message"></app-text-clipboard>
-      <app-text-show-source (display)="toggleDisplay($event)"></app-text-show-source>
+      <app-text-show-source [sources]="message.sources" (display)="toggleDisplay($event)"></app-text-show-source>
     </div>
     <app-text-source [display]="display" [sources]="message.sources"></app-text-source>
   </div>

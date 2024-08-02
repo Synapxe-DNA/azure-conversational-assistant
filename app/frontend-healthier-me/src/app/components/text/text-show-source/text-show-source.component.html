@@ -1,7 +1,8 @@
-<p-button 
-(onClick)="toggleDisplay()"
-label="Show Sources" 
-[text]="true" 
-severity="secondary" 
-icon="pi pi-angle-down" 
-iconPos="right"/>
+@if (sources) {<p-button
+    (onClick)="toggleDisplay()"
+    label="Show Sources" 
+    [text]="true" 
+    severity="secondary" 
+    icon="pi pi-angle-down" 
+    iconPos="right"/>}
+
