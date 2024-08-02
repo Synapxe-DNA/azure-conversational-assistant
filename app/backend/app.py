@@ -5,7 +5,6 @@ import json
 import logging
 import mimetypes
 import os
-from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
