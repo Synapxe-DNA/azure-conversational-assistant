@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { MessageRole } from "../../../types/message.type";
+import { MessageRole, MessageSource } from "../../../types/message.type";
 import { LucideAngularModule } from "lucide-angular";
 import {
   FormControl,
@@ -46,12 +46,12 @@ export class TextInputComponent implements OnInit {
     private chatMessageService: ChatMessageService,
     private preferences: PreferenceService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string,
+      this.route.snapshot.paramMap.get("profileId") as string
     );
   }
 
@@ -76,4 +76,5 @@ export class TextInputComponent implements OnInit {
       })
       .catch(console.error);
   }
+
 }
