@@ -1,13 +1,15 @@
-from pydantic import BaseModel
+from typing import List, Optional
+
 from models.chat_history import ChatHistory
 from models.profile import Profile
 from models.source import Source
-from typing import List, Optional
+from pydantic import BaseModel
 
 
 class VoiceRequest(BaseModel):
     chat_history: Optional[List[ChatHistory]]
-    profile: Profile
+    profile: Optional[Profile]
+    query: bytes
 
 
 class VoiceResponse(BaseModel):

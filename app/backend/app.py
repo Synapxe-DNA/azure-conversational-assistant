@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import io
 import json
@@ -28,32 +29,6 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
-from openai import AsyncAzureOpenAI, AsyncOpenAI
-from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
-from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
-from opentelemetry.instrumentation.httpx import (
-    HTTPXClientInstrumentor,
-)
-from opentelemetry.instrumentation.openai import OpenAIInstrumentor
-from quart import (
-    Blueprint,
-    Quart,
-    abort,
-    current_app,
-    jsonify,
-    make_response,
-    request,
-    send_file,
-    send_from_directory,
-    websocket
-)
-from quart_cors import cors
-
-from approaches.approach import Approach
-from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
-from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
-from approaches.retrievethenread import RetrieveThenReadApproach
-from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
@@ -82,6 +57,10 @@ from config import (
 from core.authentication import AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
+from models.chat_history import ChatHistory
+from models.profile import Profile
+from models.source import Source
+from models.voice import VoiceRequest, VoiceResponse
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -95,12 +74,6 @@ from prepdocs import (
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
-from models.voice import VoiceResponse, VoiceRequest
-from models.chat_history import ChatHistory
-from models.profile import Profile
-from models.source import Source
-import asyncio
-import dataclasses
 from quart import (
     Blueprint,
     Quart,
@@ -111,6 +84,7 @@ from quart import (
     redirect,
     request,
     send_file,
+    stream_with_context,
 )
 from quart_cors import cors
 
@@ -332,24 +306,25 @@ async def speech():
         logging.exception("Exception in /speech")
         return jsonify({"error": str(e)}), 500
 
-@bp.websocket("/voice")
+
+@bp.route("/voice", methods=["POST"])
 async def voice():
 
     # Receive data from the client
-    message = await websocket.receive()    
-    audio = await websocket.receive()
+    data = await request.form
+    audio = await request.files
 
     # Extract data from the JSON message
-    data_json = json.loads(message)
-    data = VoiceRequest(
-        chat_history= [ChatHistory(role=ch['role'], message=ch['message']) for ch in data_json['chat_history']], 
-        profile=Profile(
-            profile_type=data_json['profile']['profile_type'],
-            user_age=data_json['profile']['user_age'],
-            user_gender=data_json['profile']['user_gender'],
-            user_condition=data_json['profile']['user_condition']
-        )
+    profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history"))
+    audio = audio.get("voice").read()
+
+    # Create a VoiceRequest object to send to the LLM
+    voiceRequest = VoiceRequest(
+        chat_history=[ChatHistory(**ch) for ch in chat_history], profile=Profile(**profile), query=audio
     )
+
+    voiceRequest = voiceRequest
 
     # Send audio to stt
     # TODO
@@ -358,29 +333,37 @@ async def voice():
     # TODO
 
     # Send text response from LLM to tts
+    # TODO
 
+    # Send dummy text and audio to client
+    @stream_with_context
+    async def async_generator():
 
-    # Sample audio to send to frontend
-    with open('backend/test/testaudio.wav', 'rb') as wav_file:
-        await websocket.send(wav_file.read())
+        # Sample audio to send to frontend
+        with open("backend/test/testaudio.wav", "rb") as wav_file:
+            yield wav_file.read()
 
-    # Sample text to send to frontend
-    for i in range(10):
-        data = VoiceResponse(
-            response_message=f"Hello from the server {i}",
-            query_message="Query from the client",
-            sources= [Source(
-                title="Source title",
-                url="https://www.example.com",
-                meta_description="Source description",
-                image_url="https://www.example.com/image"
-            )],
-            additional_question_1="Follow up question 1",
-            additional_question_2="Follow up question 2",
-        )
-        await websocket.send(data.model_dump_json())
-        await asyncio.sleep(0.2)
-    await websocket.close(code=1000)
+        # Sample text to send to frontend
+        for i in range(10):
+            data = VoiceResponse(
+                response_message=f"Hello from the server {i}",
+                query_message="Query from the client",
+                sources=[
+                    Source(
+                        title="Source title",
+                        url="https://www.example.com",
+                        meta_description="Source description",
+                        image_url="https://www.example.com/image",
+                    )
+                ],
+                additional_question_1="Follow up question 1",
+                additional_question_2="Follow up question 2",
+            )
+            yield data.model_dump_json()
+            await asyncio.sleep(0.2)
+
+    return async_generator(), 200
+
 
 @bp.post("/upload")
 @authenticated
@@ -709,7 +692,6 @@ async def setup_clients():
             query_language=AZURE_SEARCH_QUERY_LANGUAGE,
             query_speller=AZURE_SEARCH_QUERY_SPELLER,
         )
-
 
 
 @bp.after_app_serving
