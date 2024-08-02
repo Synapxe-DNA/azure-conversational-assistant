@@ -3,11 +3,10 @@ import logging
 import os
 from typing import Optional
 
+from approaches.approach import Document
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob.aio import ContainerClient
 from typing_extensions import Literal, Required, TypedDict
-
-from approaches.approach import Document
 
 
 class ImageURL(TypedDict, total=False):

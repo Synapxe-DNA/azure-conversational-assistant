@@ -4,7 +4,6 @@ import pytest
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.models import SearchField, SearchIndex
-
 from core.authentication import AuthenticationHelper, AuthError
 
 from .mocks import MockAsyncPageIterator

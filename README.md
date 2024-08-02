@@ -82,7 +82,7 @@ either you or they can follow these steps:
 
 1. Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
-2. Run `azd init -t azure-search-openai-demo` or clone this repository.
+2. Clone this repository.
 
 3. Run `azd env refresh -e {environment name}`
    They will need the azd environment name, subscription ID, and location to run this command. You can find those values in your `.azure/{env name}/.env` file. This will populate their azd environment's `.env` file with all the settings needed to run the app locally.
@@ -111,3 +111,13 @@ Once in the web app:
 - Try different topics in chat or Q&A context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
+
+## Running backend locally
+
+1. Navigate to the `app` folder
+2. Run `make run-local'
+3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
+
+> [!NOTE]
+>
+> To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.

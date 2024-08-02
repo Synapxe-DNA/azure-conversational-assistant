@@ -95,7 +95,7 @@ param computerVisionSkuName string // Set in main.parameters.json
 
 param chatGptModelName string = ''
 param chatGptDeploymentName string = ''
-param chatGptDeploymentVersion string = ''
+param chatGptDeploymentVersion string = '' // Set in main.parameters.json
 param chatGptDeploymentCapacity int = 0
 var chatGpt = {
   modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-35-turbo' : 'gpt-3.5-turbo'

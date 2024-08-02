@@ -2,6 +2,7 @@ import os
 
 import aiohttp
 import pytest
+from approaches.approach import Document
 from azure.core.exceptions import ResourceNotFoundError
 from azure.core.pipeline.transport import (
     AioHttpTransportResponse,
@@ -9,8 +10,6 @@ from azure.core.pipeline.transport import (
     HttpRequest,
 )
 from azure.storage.blob.aio import BlobServiceClient
-
-from approaches.approach import Document
 from core.imageshelper import fetch_image
 
 from .mocks import MockAzureCredential
