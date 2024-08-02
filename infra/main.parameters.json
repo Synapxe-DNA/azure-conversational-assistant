@@ -96,7 +96,7 @@
       "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT}"
     },
     "chatGptDeploymentVersion": {
-      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_VERSION}"
+      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_VERSION=2024-07-18}"
     },
     "chatGptDeploymentCapacity": {
       "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_CAPACITY}"

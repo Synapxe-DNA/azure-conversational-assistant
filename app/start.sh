@@ -34,7 +34,7 @@ echo ""
 echo "Restoring frontend npm packages"
 echo ""
 
-cd app/frontend
+cd app/frontend-healthier-me
 npm install
 if [ $? -ne 0 ]; then
     echo "Failed to restore frontend npm packages"

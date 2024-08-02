@@ -1,6 +1,7 @@
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Button } from 'primeng/button';
+import { MessageSource } from '../../../types/message.type';
 
 @Component({
   selector: 'app-text-show-source',
@@ -11,6 +12,7 @@ import { Button } from 'primeng/button';
 })
 
 export class TextShowSourceComponent {
+  @Input() sources?: MessageSource[]
   @Output() display = new EventEmitter<boolean>();
   hidden: boolean = false;
 

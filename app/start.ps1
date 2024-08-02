@@ -16,60 +16,70 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 
-Write-Host 'Creating python virtual environment ".venv"'
-$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-if (-not $pythonCmd) {
-  # fallback to python3 if python not found
-  $pythonCmd = Get-Command python3 -ErrorAction SilentlyContinue
-}
-Start-Process -FilePath ($pythonCmd).Source -ArgumentList "-m venv .venv" -Wait -NoNewWindow
+function func_backend {
+    Push-Location ..
+    Write-Host 'Creating python virtual environment ".venv"'
+    python3 -m venv .venv
 
-Write-Host ""
-Write-Host "Restoring backend python packages"
-Write-Host ""
+    Write-Host "`nRestoring backend python packages`n"
 
-$directory = Get-Location
-$venvPythonPath = "$directory/.venv/scripts/python.exe"
-if (Test-Path -Path "/usr") {
-  # fallback to Linux venv path
-  $venvPythonPath = "$directory/.venv/bin/python"
-}
+    Push-Location ./app/backend
 
-Start-Process -FilePath $venvPythonPath -ArgumentList "-m pip install -r backend/requirements.txt" -Wait -NoNewWindow
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to restore backend python packages"
-    exit $LASTEXITCODE
+    Write-Host "`nStarting backend`n"
+
+    $port = 50505
+    $host = "localhost"
+    & ../../.venv/bin/python -m quart --app main:app run --port $port --host $host --reload
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to start backend"
+        exit $LastExitCode
+    }
+    Pop-Location
+    Pop-Location
 }
 
-Write-Host ""
-Write-Host "Restoring frontend npm packages"
-Write-Host ""
-Set-Location ./frontend
-npm install
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to restore frontend npm packages"
-    exit $LASTEXITCODE
+function func_frontend {
+    Write-Host "`nRestoring frontend npm packages`n"
+
+    Push-Location ./frontend-healthier-me
+    npm install
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to restore frontend npm packages"
+        exit $LastExitCode
+    }
+
+    Write-Host "`nStarting frontend`n"
+
+    npm run start
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to build frontend"
+        exit $LastExitCode
+    }
+    Pop-Location
 }
 
-Write-Host ""
-Write-Host "Building frontend"
-Write-Host ""
-npm run build
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to build frontend"
-    exit $LASTEXITCODE
+function func_frontend_build {
+    Write-Host "`nRestoring frontend npm packages`n"
+
+    Push-Location ./frontend-healthier-me
+    npm install
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to restore frontend npm packages"
+        exit $LastExitCode
+    }
+
+    Write-Host "`nStarting frontend`n"
+
+    npm run build:live
+    if ($LastExitCode -ne 0) {
+        Write-Host "Failed to build frontend"
+        exit $LastExitCode
+    }
+    Pop-Location
 }
 
-Write-Host ""
-Write-Host "Starting backend"
-Write-Host ""
-Set-Location ../backend
+Register-ObjectEvent ([System.Diagnostics.Process]::GetCurrentProcess()) -EventName Exited -Action { kill 0 }
+Start-Job -ScriptBlock ${function:func_backend}
+Start-Job -ScriptBlock ${function:func_frontend}
 
-$port = 50505
-$hostname = "localhost"
-Start-Process -FilePath $venvPythonPath -ArgumentList "-m quart --app main:app run --port $port --host $hostname --reload" -Wait -NoNewWindow
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to start backend"
-    exit $LASTEXITCODE
-}
+Wait-Job -Any
