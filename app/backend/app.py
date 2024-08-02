@@ -53,10 +53,8 @@ from config import (
 from core.authentication import AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
-from models.chat_history import ChatHistory
-from models.profile import Profile
 from models.source import Source
-from models.voice import VoiceRequest, VoiceResponse
+from models.voice import VoiceResponse
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -275,32 +273,22 @@ async def speech():
 
 
 @bp.route("/voice", methods=["POST"])
-async def voice():
+async def voice(auth_claims: Dict[str, Any] = None):
 
     # Receive data from the client
+
     data = await request.form
     audio = await request.files
 
+    context = data.get("context", {})
     # Extract data from the JSON message
     profile = json.loads(data.get("profile"))
     chat_history = json.loads(data.get("chat_history"))
     audio = audio.get("voice").read()
+    context["auth_claims"] = auth_claims
 
-    # Create a VoiceRequest object to send to the LLM
-    voiceRequest = VoiceRequest(
-        chat_history=[ChatHistory(**ch) for ch in chat_history], profile=Profile(**profile), query=audio
-    )
-
-    voiceRequest = voiceRequest
-
-    # Send audio to stt
-    # TODO
-
-    # Send text from stt to LLM
-    # TODO
-
-    # Send text response from LLM to tts
-    # TODO
+    print(profile)
+    print(chat_history)
 
     # Send dummy text and audio to client
     @stream_with_context
