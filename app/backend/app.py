@@ -28,7 +28,7 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
-from blueprints.frontend_blueprint import frontend
+from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
