@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import io
 import json
@@ -28,7 +29,7 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
-from blueprints.frontend_blueprint import frontend
+from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
@@ -56,6 +57,10 @@ from config import (
 from core.authentication import AuthenticationHelper
 from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
+from models.chat_history import ChatHistory
+from models.profile import Profile
+from models.source import Source
+from models.voice import VoiceRequest, VoiceResponse
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -79,6 +84,7 @@ from quart import (
     redirect,
     request,
     send_file,
+    stream_with_context,
 )
 from quart_cors import cors
 
@@ -279,6 +285,7 @@ async def speech():
             + "#"
             + current_app.config[CONFIG_SPEECH_SERVICE_TOKEN].token
         )
+
         speech_config = SpeechConfig(auth_token=auth_token, region=current_app.config[CONFIG_SPEECH_SERVICE_LOCATION])
         speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
         speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
@@ -301,8 +308,61 @@ async def speech():
 
 
 @bp.route("/voice", methods=["POST"])
-async def voiceChat():
-    return jsonify({"message": "You have post to voice endpoint successfully"}), 200
+async def voice():
+
+    # Receive data from the client
+    data = await request.form
+    audio = await request.files
+
+    # Extract data from the JSON message
+    profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history"))
+    audio = audio.get("voice").read()
+
+    # Create a VoiceRequest object to send to the LLM
+    voiceRequest = VoiceRequest(
+        chat_history=[ChatHistory(**ch) for ch in chat_history], profile=Profile(**profile), query=audio
+    )
+
+    voiceRequest = voiceRequest
+
+    # Send audio to stt
+    # TODO
+
+    # Send text from stt to LLM
+    # TODO
+
+    # Send text response from LLM to tts
+    # TODO
+
+    # Send dummy text and audio to client
+    @stream_with_context
+    async def async_generator():
+
+        # Sample audio to send to frontend
+        with open("backend/test/testaudio.wav", "rb") as wav_file:
+            yield wav_file.read()
+
+        # Sample text to send to frontend
+        for i in range(10):
+            data = VoiceResponse(
+                response_message=f"Hello from the server {i}",
+                query_message="Query from the client",
+                sources=[
+                    Source(
+                        title="Source title",
+                        url="https://www.example.com",
+                        meta_description="Source description",
+                        image_url="https://www.example.com/image",
+                    )
+                ],
+                additional_question_1="Follow up question 1",
+                additional_question_2="Follow up question 2",
+            )
+            yield data.model_dump_json()
+            await asyncio.sleep(0.2)
+
+    return async_generator(), 200
 
 
 @bp.post("/upload")
@@ -646,6 +706,7 @@ def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
     app.register_blueprint(frontend)
+    app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()
@@ -663,7 +724,6 @@ def create_app():
     if os.getenv("WEBSITE_HOSTNAME"):  # In production, don't log as heavily
         default_level = "WARNING"
     logging.basicConfig(level=os.getenv("APP_LOG_LEVEL", default_level))
-
     if allowed_origin := os.getenv("ALLOWED_ORIGIN"):
         app.logger.info("CORS enabled for %s", allowed_origin)
         cors(app, allow_origin=allowed_origin, allow_methods=["GET", "POST"])
