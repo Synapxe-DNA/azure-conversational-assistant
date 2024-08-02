@@ -170,7 +170,7 @@
             ws.onmessage = (event) => {
                 if(typeof event.data === "string") {
                     data = JSON.parse(event.data)
-                    console.log(data)
+                    document.getElementById("result").innerHTML += data.response_message
                 } else {
                     console.log(event.data)
                     const audioBlob = new Blob([event.data], { type: 'audio/wav' })

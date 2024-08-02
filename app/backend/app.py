@@ -334,9 +334,12 @@ async def speech():
 
 @bp.websocket("/voice")
 async def voice():
+
+    # Receive data from the client
     message = await websocket.receive()    
     audio = await websocket.receive()
 
+    # Extract data from the JSON message
     data_json = json.loads(message)
     data = VoiceRequest(
         chat_history= [ChatHistory(role=ch['role'], message=ch['message']) for ch in data_json['chat_history']], 
@@ -348,13 +351,24 @@ async def voice():
         )
     )
 
+    # Send audio to stt
+    # TODO
 
+    # Send text from stt to LLM
+    # TODO
+
+    # Send text response from LLM to tts
+
+
+    # Sample audio to send to frontend
     with open('backend/test/testaudio.wav', 'rb') as wav_file:
         await websocket.send(wav_file.read())
 
+    # Sample text to send to frontend
     for i in range(10):
         data = VoiceResponse(
-            message=f"Hello from the server {i}",
+            response_message=f"Hello from the server {i}",
+            query_message="Query from the client",
             sources= [Source(
                 title="Source title",
                 url="https://www.example.com",
@@ -366,6 +380,7 @@ async def voice():
         )
         await websocket.send(data.model_dump_json())
         await asyncio.sleep(0.2)
+    await websocket.close(code=1000)
 
 @bp.post("/upload")
 @authenticated
@@ -709,7 +724,7 @@ def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
     app = cors(app, allow_origin="*")  # For local testing
-    app.register_blueprint(frontend)
+    # app.register_blueprint(frontend)
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()
