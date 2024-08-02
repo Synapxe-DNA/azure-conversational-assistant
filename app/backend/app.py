@@ -94,7 +94,6 @@ async def serve_app():
 
 
 @bp.route("/content/<path>")
-@authenticated_path
 async def content_file(path: str, auth_claims: Dict[str, Any]):
     """
     Serve content files from blob storage from within the app to keep the example self-contained.
@@ -139,7 +138,6 @@ async def content_file(path: str, auth_claims: Dict[str, Any]):
 
 
 @bp.route("/ask", methods=["POST"])
-@authenticated
 async def ask(auth_claims: Dict[str, Any]):
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
@@ -178,7 +176,6 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
 
 
 @bp.route("/chat", methods=["POST"])
-@authenticated
 async def chat(auth_claims: Dict[str, Any]):
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
@@ -204,7 +201,6 @@ async def chat(auth_claims: Dict[str, Any]):
 
 
 @bp.route("/chat/stream", methods=["POST"])
-@authenticated
 async def chat_stream(auth_claims: Dict[str, Any]):
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
@@ -320,7 +316,6 @@ async def voice(auth_claims: Dict[str, Any] = None):
 
 
 @bp.post("/upload")
-@authenticated
 async def upload(auth_claims: dict[str, Any]):
     request_files = await request.files
     if "file" not in request_files:
@@ -349,7 +344,6 @@ async def upload(auth_claims: dict[str, Any]):
 
 
 @bp.post("/delete_uploaded")
-@authenticated
 async def delete_uploaded(auth_claims: dict[str, Any]):
     request_json = await request.get_json()
     filename = request_json.get("filename")
@@ -364,7 +358,6 @@ async def delete_uploaded(auth_claims: dict[str, Any]):
 
 
 @bp.get("/list_uploaded")
-@authenticated
 async def list_uploaded(auth_claims: dict[str, Any]):
     user_oid = auth_claims["oid"]
     user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
