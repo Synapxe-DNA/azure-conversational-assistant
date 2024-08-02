@@ -284,6 +284,21 @@ async def voice(auth_claims: Dict[str, Any] = None):
     print(profile)
     print(chat_history)
 
+    # Convert audio to text
+    # stt = await SpeechToText.create()
+    # text = stt.transcribe(audio)
+
+    # Send transcribed text and data to LLM
+    # TODO
+
+    # Conver response to audio
+    # sample_text = "Hello from the server"
+    # tts = await TextToSpeech.create()
+    # audio_data = tts.readText(sample_text)
+
+    # Send audio and data back to client
+    # TODO
+
     # Send dummy text and audio to client
     @stream_with_context
     async def async_generator():

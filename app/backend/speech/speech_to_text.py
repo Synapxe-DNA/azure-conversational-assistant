@@ -12,7 +12,7 @@ from config import (
 from quart import current_app
 
 
-class SpeechRecognition:
+class SpeechToText:
     def __init__(self, speech_token):
 
         self.resource_id = current_app.config.get(CONFIG_SPEECH_SERVICE_ID)
