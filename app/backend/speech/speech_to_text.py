@@ -3,13 +3,11 @@ import threading
 import time
 
 import azure.cognitiveservices.speech as speechsdk
-from dotenv import load_dotenv
-
 from config import (
     CONFIG_CREDENTIAL,
     CONFIG_SPEECH_SERVICE_ID,
     CONFIG_SPEECH_SERVICE_LOCATION,
-    CONFIG_SPEECH_SERVICE_TOKEN
+    CONFIG_SPEECH_SERVICE_TOKEN,
 )
 from quart import current_app
 
@@ -22,12 +20,10 @@ class SpeechRecognition:
         self.speech_token = speech_token
         self.auth_token = self.getAuthToken()
 
-        self.speech_config = speechsdk.SpeechConfig(
-            auth_token=self.auth_token, region=self.region
-        )
+        self.speech_config = speechsdk.SpeechConfig(auth_token=self.auth_token, region=self.region)
         self.audio_blob = None
         self.recognition_done = threading.Event()
-    
+
     @classmethod
     async def create(cls):
         speech_token = await cls.getCredential()
@@ -57,10 +53,8 @@ class SpeechRecognition:
         # audio_format = speechsdk.audio.AudioStreamFormat(samples_per_second=16000, bits_per_sample=16, channels=1)
         audio_config = speechsdk.audio.AudioConfig(stream=audio_stream)
 
-        auto_detect_source_language_config = (
-            speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
-                languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
-            )
+        auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
+            languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
         )
         speech_recognizer = speechsdk.SpeechRecognizer(
             speech_config=speech_config,
@@ -71,12 +65,8 @@ class SpeechRecognition:
         all_results = {"text": [], "language": []}
 
         speech_recognizer.recognized.connect(self.handle_final_result(all_results))
-        speech_recognizer.session_started.connect(
-            lambda evt: print("SESSION STARTED: {}".format(evt))
-        )
-        speech_recognizer.session_stopped.connect(
-            lambda evt: self.recognition_done.set()
-        )
+        speech_recognizer.session_started.connect(lambda evt: print(f"SESSION STARTED: {evt}"))
+        speech_recognizer.session_stopped.connect(lambda evt: self.recognition_done.set())
         speech_recognizer.canceled.connect(lambda evt: self.recognition_done.set())
 
         self.push_audio(audio_stream)
@@ -103,11 +93,7 @@ class SpeechRecognition:
                 all_results["text"].append(evt.result.text)
                 all_results["language"].append(detected_language)
             elif evt.result.reason == speechsdk.ResultReason.NoMatch:
-                print(
-                    "No speech could be recognized: {}".format(
-                        evt.result.no_match_details
-                    )
-                )
+                print(f"No speech could be recognized: {evt.result.no_match_details}")
 
         return inner
 
