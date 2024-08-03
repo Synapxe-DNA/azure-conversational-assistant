@@ -21,7 +21,7 @@ export interface Profile {
 }
 
 export const GeneralProfile: Profile = {
-  id: "",
+  id: "general",
   name: "General",
   profile_type: ProfileType.General,
   gender: ProfileGender.Undefined,
