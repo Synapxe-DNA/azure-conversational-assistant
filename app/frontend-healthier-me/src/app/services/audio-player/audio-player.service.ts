@@ -1,6 +1,10 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 
+interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
+  captureStream(): MediaStream;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -12,14 +16,21 @@ export class AudioPlayerService {
    * - Only one audio can be played at one time.
    */
 
-  private audioElement: HTMLAudioElement = new Audio();
+  private audioElement: HTMLMediaElementWithCaptureStream =
+    new Audio() as HTMLMediaElementWithCaptureStream;
 
+  $stream: BehaviorSubject<MediaStream | null> =
+    new BehaviorSubject<MediaStream | null>(null);
   $playing: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor() {
     this.audioElement.addEventListener("ended", () => {
       this.$playing.next(false);
     });
+  }
+
+  getAudioStream(): BehaviorSubject<MediaStream | null> {
+    return this.$stream;
   }
 
   /**
@@ -29,7 +40,17 @@ export class AudioPlayerService {
   play(blob: Blob): void {
     this.audioElement.pause();
     this.audioElement.src = URL.createObjectURL(blob);
-    this.$playing.next(true);
-    this.audioElement.play().catch(console.error);
+    this.audioElement
+      .play()
+      .then(() => {
+        this.$playing.next(true);
+        this.$stream.next(this.audioElement.captureStream());
+      })
+      .catch(console.error);
+  }
+
+  stop(): void {
+    this.audioElement.pause();
+    this.$playing.next(false);
   }
 }
