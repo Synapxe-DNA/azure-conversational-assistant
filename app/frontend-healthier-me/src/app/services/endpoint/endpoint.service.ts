@@ -29,6 +29,12 @@ import { ApiChatResponse } from "../../types/api/response/api-chat-response.type
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
 
+  /**
+   * Method to convert messages (frontend format) to format suitable for backend consumption
+   * @param messages {Message[]}
+   * @return {ApiChatHistory[]}
+   * @private
+   */
   private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
     return messages.map((m) => {
       const role = () => {
@@ -47,6 +53,12 @@ export class EndpointService {
     });
   }
 
+  /**
+   * Method to convert profile (frontend format) to format suitable for backend consumption
+   * @param profile {Profile}
+   * @return {ApiProfile}
+   * @private
+   */
   private profileToApiProfile(profile: Profile): ApiProfile {
     const profileType = () => {
       switch (profile.profile_type) {
@@ -78,6 +90,12 @@ export class EndpointService {
     };
   }
 
+  /**
+   * Method to send voice blob to the endpoint for LLM generation
+   * @param recording {Blob} Audio file with user recording
+   * @param profile {Profile}
+   * @param history {Message[]} history of chat to be used for LLM context
+   */
   async sendVoice(
     recording: Blob,
     profile: Profile,
@@ -140,6 +158,12 @@ export class EndpointService {
     return responseBS;
   }
 
+  /**
+   * Method to send chat message to LLM for generation
+   * @param message {Message} user message
+   * @param profile {Profile}
+   * @param history {Message[]} history of conversation for LLM context
+   */
   async sendChat(
     message: Message,
     profile: Profile,
@@ -159,8 +183,6 @@ export class EndpointService {
         message: message.message,
       },
     };
-
-    console.log(new TypedFormData<ApiChatRequest>(data));
 
     this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
@@ -204,6 +226,7 @@ export class EndpointService {
             }
           }
         },
+        error: console.error,
       });
 
     return responseBS;
