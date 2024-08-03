@@ -3,6 +3,6 @@ import { Message } from "../message.type";
 
 export interface ChatResponse {
   status: ResponseStatus;
-  response: Message;
+  response: string;
   additional_questions: string[];
 }

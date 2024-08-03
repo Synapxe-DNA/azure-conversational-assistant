@@ -174,12 +174,33 @@ export class ConvoBrokerService {
       role: MessageRole.User,
       timestamp: new Date().getTime(),
     };
+    const responseMessageId = createId();
 
-    const history: Message[] = await this.chatMessageService.staticLoad(
-      profile.id,
+    const history: Message[] = (
+      await this.chatMessageService.staticLoad(profile.id)
+    ).slice(-8);
+
+    await this.chatMessageService.insert(newMessage);
+
+    const res = await this.endpointService.sendChat(
+      newMessage,
+      profile,
+      history,
     );
-    (
-      await this.endpointService.sendChat(newMessage, profile, history)
-    ).subscribe(console.log);
+    res.subscribe({
+      next: async (d) => {
+        if (!d || !d.response) {
+          return;
+        }
+        await this.chatMessageService.upsert({
+          id: responseMessageId,
+          profile_id: profile.id,
+          message: d.response,
+          timestamp: new Date().getTime(),
+          role: MessageRole.Assistant,
+        });
+      },
+      error: console.error,
+    });
   }
 }
