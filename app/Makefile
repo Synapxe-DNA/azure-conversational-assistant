@@ -9,3 +9,6 @@ run-local-backend:
 run-local-frontend:
 	cd frontend && npm run build
 	cd ..
+
+lint:
+	pre-commit run --all-files
