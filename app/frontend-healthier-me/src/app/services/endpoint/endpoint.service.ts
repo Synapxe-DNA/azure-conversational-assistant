@@ -19,6 +19,9 @@ import {
 } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ResponseStatus } from "../../types/responses/response-status.type";
+import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
+import { createId } from "@paralleldrive/cuid2";
+import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 
 @Injectable({
   providedIn: "root",
@@ -69,7 +72,7 @@ export class EndpointService {
 
     return {
       profile_type: profileType(),
-      user_age: profile.age,
+      user_age: profile.age || -1,
       user_condition: profile.existing_conditions,
       user_gender: profileGender(),
     };
@@ -141,7 +144,68 @@ export class EndpointService {
     message: Message,
     profile: Profile,
     history: Message[],
-  ): Promise<BehaviorSubject<ChatResponse>> {
-    return undefined as unknown as BehaviorSubject<ChatResponse>;
+  ): Promise<BehaviorSubject<ChatResponse | null>> {
+    const responseBS: BehaviorSubject<ChatResponse | null> =
+      new BehaviorSubject<ChatResponse | null>(null);
+    const responseId = createId();
+
+    let lastResponseLength: number = 0;
+
+    const data: ApiChatRequest = {
+      chat_history: this.messageToApiChatHistory(history),
+      profile: this.profileToApiProfile(profile),
+      query: {
+        role: "user",
+        message: message.message,
+      },
+    };
+
+    console.log(new TypedFormData<ApiChatRequest>(data));
+
+    this.httpClient
+      .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
+        responseType: "text",
+        reportProgress: true,
+        observe: "events",
+      })
+      .subscribe({
+        next: (e) => {
+          switch (e.type) {
+            case HttpEventType.DownloadProgress: {
+              if (!(e as HttpDownloadProgressEvent).partialText) {
+                return;
+              }
+
+              const responseData = JSON.parse(
+                (e as HttpDownloadProgressEvent).partialText!.slice(
+                  lastResponseLength,
+                ),
+              ) as ApiChatResponse;
+
+              responseBS.next({
+                status: ResponseStatus.Pending,
+                response: responseData.message,
+                additional_questions: [
+                  responseData.additional_question_1,
+                  responseData.additional_question_2,
+                ],
+              });
+
+              lastResponseLength =
+                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              break;
+            }
+
+            case HttpEventType.Response: {
+              let latestData = responseBS.value;
+              latestData!.status = ResponseStatus.Done;
+              responseBS.next(latestData);
+              break;
+            }
+          }
+        },
+      });
+
+    return responseBS;
   }
 }
