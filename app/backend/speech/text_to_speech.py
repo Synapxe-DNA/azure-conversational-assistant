@@ -26,7 +26,7 @@ class TextToSpeech:
         self.auth_token = self.getAuthToken()
         speech_config = SpeechConfig(auth_token=self.auth_token, region=self.region)
         speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
-        speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
+        speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Webm16Khz16BitMonoOpus
         self.speech_synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=None)
 
     @classmethod

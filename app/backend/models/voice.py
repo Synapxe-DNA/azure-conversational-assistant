@@ -15,6 +15,7 @@ class VoiceRequest(BaseModel):
 class VoiceResponse(BaseModel):
     response_message: str
     query_message: str
-    sources: List[Source]
+    sources: Optional[List[Source]]
     additional_question_1: Optional[str]
     additional_question_2: Optional[str]
+    audio_base64: str
