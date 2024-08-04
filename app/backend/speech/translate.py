@@ -24,8 +24,16 @@ class Translator:
             "X-ClientTraceId": str(uuid.uuid4()),
         }
 
-    def translate(self, text, lang):
+    def translateToLang(self, text, lang):
         params = {"api-version": "3.0", "from": "en", "to": lang}
+        body = [{"text": text}]
+        request = requests.post(self.url, params=params, headers=self.headers, json=body)
+        response = request.json()
+        print(response)
+        return response[0]["translations"][0]["text"]
+
+    def translateToEng(self, text, lang):
+        params = {"api-version": "3.0", "from": lang, "to": "en"}
         body = [{"text": text}]
         request = requests.post(self.url, params=params, headers=self.headers, json=body)
         response = request.json()

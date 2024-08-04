@@ -59,7 +59,7 @@
       <div id="result"></div>
       <div>
         <input type="text" id="message" placeholder="Type your message here" />
-        <input type="file" id="fileInput" accept=".wav" required />
+        <input type="file" id="fileInput" accept=".wav, .mp3" required />
       </div>
       <button onclick="sendText()" id="sendButton">Send Message</button>
       <button onclick="sendVoice()">Send audio</button>
@@ -138,8 +138,8 @@
 
         // Append the file to the FormData object
         chat_history = [
-          { role: "user", message: "User chat history" },
-          { role: "assistant", message: "System chat history" },
+          { content: "User chat history", role: "user" },
+          { content: "System chat history", role: "assistant" },
         ];
         profile = JSON.stringify({
           profile_type: "Myself",
@@ -147,7 +147,7 @@
           user_gender: "Female",
           user_condition: "Diabetes and hypertension",
         });
-        formData.append("voice", file);
+        formData.append("query", file);
         formData.append("chat_history", JSON.stringify(chat_history));
         formData.append("profile", profile);
 
@@ -165,13 +165,10 @@
             return;
           }
           let token = decoder.decode(result.value);
-          console.log(token);
-          // data = JSON.parse(token)
-          // if (data.status == "pending") {
-          //     document.getElementById("result").innerHTML += data.message;
-          // } else {
-          //     document.getElementById("result").innerHTML += '<br><br>'
-          // }
+          data = JSON.parse(token);
+          console.log(data);
+          document.getElementById("result").innerHTML +=
+            data.response_message + "<br>";
 
           return reader.read().then(processResult);
         });

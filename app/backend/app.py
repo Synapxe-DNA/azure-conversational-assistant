@@ -1,4 +1,3 @@
-import asyncio
 import dataclasses
 import io
 import json
@@ -51,8 +50,6 @@ from config import (
 )
 from core.authentication import AuthenticationHelper
 from error import error_dict, error_response
-from models.source import Source
-from models.voice import VoiceResponse
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -76,10 +73,11 @@ from quart import (
     redirect,
     request,
     send_file,
-    stream_with_context,
 )
 from quart_cors import cors
+from speech.speech_to_text import SpeechToText
 from speech.text_to_speech import TextToSpeech
+from utils.utils import Utils
 
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
@@ -275,58 +273,36 @@ async def voice(auth_claims: Dict[str, Any] = None):
     audio = await request.files
 
     context = data.get("context", {})
+
     # Extract data from the JSON message
-    profile = json.loads(data.get("profile"))
-    chat_history = json.loads(data.get("chat_history"))
-    audio = audio.get("voice").read()
+    # profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history", "[]"))
+    audio_blob = audio["query"].read()
     context["auth_claims"] = auth_claims
 
-    print(profile)
-    print(chat_history)
-
     # Convert audio to text
-    # stt = await SpeechToText.create()
-    # text = stt.transcribe(audio)
+    stt = await SpeechToText.create()
+    transcription = stt.transcribe(audio_blob)
+
+    # language = Utils.get_mode_language(transcription['language'])
+    query_text = " ".join(transcription["text"])
+
+    # Form message
+    messages = chat_history + [{"content": query_text, "role": "user"}]
 
     # Send transcribed text and data to LLM
-    # TODO
+    try:
+        approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
+        result = await approach.run_stream(
+            messages=messages,
+            context=context,
+        )
+    except Exception as error:
+        return error_response(error, "/voice")
 
-    # Conver response to audio
-    # sample_text = "Hello from the server"
-    # tts = await TextToSpeech.create()
-    # audio_data = tts.readText(sample_text)
+    response = await Utils.construct_streaming_voice_response(result, query_text)
 
-    # Send audio and data back to client
-    # TODO
-
-    # Send dummy text and audio to client
-    @stream_with_context
-    async def async_generator():
-
-        # Sample audio to send to frontend
-        with open("backend/test/testaudio.wav", "rb") as wav_file:
-            yield wav_file.read()
-
-        # Sample text to send to frontend
-        for i in range(10):
-            data = VoiceResponse(
-                response_message=f"Hello from the server {i}",
-                query_message="Query from the client",
-                sources=[
-                    Source(
-                        title="Source title",
-                        url="https://www.example.com",
-                        meta_description="Source description",
-                        image_url="https://www.example.com/image",
-                    )
-                ],
-                additional_question_1="Follow up question 1",
-                additional_question_2="Follow up question 2",
-            )
-            yield data.model_dump_json()
-            await asyncio.sleep(0.2)
-
-    return async_generator(), 200
+    return response, 200
 
 
 @bp.post("/upload")
