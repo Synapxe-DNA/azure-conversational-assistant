@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { MessageRole } from "../../../types/message.type";
+import { MessageRole, MessageSource } from "../../../types/message.type";
 import { LucideAngularModule } from "lucide-angular";
 import {
   FormControl,
@@ -13,11 +13,12 @@ import { ChatMessageService } from "../../../services/chat-message/chat-message.
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../../../services/profile/profile.service";
 import { BehaviorSubject } from "rxjs";
-import { Profile } from "../../../types/profile.type";
+import { GeneralProfile, Profile } from "../../../types/profile.type";
 import { ActivatedRoute } from "@angular/router";
 import { Button } from "primeng/button";
 import { PreferenceService } from "../../../services/preference/preference.service";
 import { ChatMode } from "../../../types/chat-mode.type";
+import { ConvoBrokerService } from "../../../services/convo-broker/convo-broker.service";
 
 @Component({
   selector: "app-text-input",
@@ -43,7 +44,7 @@ export class TextInputComponent implements OnInit {
   });
 
   constructor(
-    private chatMessageService: ChatMessageService,
+    private convoBroker: ConvoBrokerService,
     private preferences: PreferenceService,
     private profileService: ProfileService,
     private route: ActivatedRoute,
@@ -63,14 +64,12 @@ export class TextInputComponent implements OnInit {
     if (!this.questionForm.value.question) {
       return;
     }
-    this.chatMessageService
-      .insert({
-        id: createId(),
-        profile_id: this.profile?.value?.id || "general",
-        role: MessageRole.User,
-        timestamp: new Date().getTime(),
-        message: this.questionForm.value.question || "",
-      })
+
+    this.convoBroker
+      .sendChat(
+        this.questionForm.value.question,
+        this.profile.value || GeneralProfile,
+      )
       .then(() => {
         this.questionForm.reset();
       })

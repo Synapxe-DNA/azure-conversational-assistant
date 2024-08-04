@@ -1,5 +1,9 @@
 import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
-import { Profile, ProfileGender } from "../../../types/profile.type";
+import {
+  GeneralProfile,
+  Profile,
+  ProfileGender,
+} from "../../../types/profile.type";
 import { ActivatedRoute, Router } from "@angular/router";
 import { NgIf, NgOptimizedImage } from "@angular/common";
 import { ContextMenuModule } from "primeng/contextmenu";
@@ -54,7 +58,7 @@ export class NavbarProfileLinkComponent implements OnInit {
   }
 
   getProfileDescription(): string {
-    if (this.profile.id === "") {
+    if (this.profile.id === GeneralProfile.id) {
       return "No profile set";
     }
 

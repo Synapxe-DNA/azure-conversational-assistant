@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import dataclasses
 import io
 import json
@@ -278,7 +279,7 @@ async def voice(auth_claims: Dict[str, Any] = None):
     # Extract data from the JSON message
     profile = json.loads(data.get("profile"))
     chat_history = json.loads(data.get("chat_history"))
-    audio = audio.get("voice").read()
+    audio = audio.get("query").read()
     context["auth_claims"] = auth_claims
 
     print(profile)
@@ -288,15 +289,12 @@ async def voice(auth_claims: Dict[str, Any] = None):
     @stream_with_context
     async def async_generator():
 
-        # Sample audio to send to frontend
-        with open("backend/test/testaudio.wav", "rb") as wav_file:
-            yield wav_file.read()
-
         # Sample text to send to frontend
         for i in range(10):
             data = VoiceResponse(
-                response_message=f"Hello from the server {i}",
+                response_message=f"Hello from the server {i}" * (i + 1),
                 query_message="Query from the client",
+                audio_base64=base64.b64encode(audio).decode("utf-8"),
                 sources=[
                     Source(
                         title="Source title",
