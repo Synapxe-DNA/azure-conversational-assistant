@@ -15,6 +15,7 @@ import { MicState } from "../../types/mic-state.type";
 import { AudioRecorder } from "../../utils/audio-recorder";
 import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
+import { ChatMode } from "../../types/chat-mode.type";
 
 @Injectable({
   providedIn: "root",
@@ -45,21 +46,28 @@ export class ConvoBrokerService {
       .subscribe((d) => (this.activeProfile = d || GeneralProfile));
   }
 
-  private async playAudioBase64(val: string): Promise<void> {
-    const audioBlob = convertBase64ToBlob(val, "audio/*");
-    this.audioPlayer.play(audioBlob);
-  }
-
+  /**
+   * Method to initialise voice monitoring for voice activity detection
+   * @private
+   */
   private async initVoiceChat() {
     this.recorder = new AudioRecorder(await this.audioService.getMicInput());
+
+    // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe((v) => {
       if (!v) {
         this.$micState.next(MicState.PENDING);
       }
     });
 
+    // Monitor VAD activity
     this.vadService.start().subscribe({
       next: (s) => {
+        // DO NOT DO ANYTHING if chat mode is not voice
+        if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
+          return;
+        }
+
         switch (s) {
           case VoiceActivity.Start: {
             if (
@@ -89,12 +97,20 @@ export class ConvoBrokerService {
     });
   }
 
+  /**
+   * Method to trigger the start of audio recording
+   * @private
+   */
   private handleStartRecording() {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stop();
     this.recorder.start();
   }
 
+  /**
+   * Method to stop the recording, and handle post-processing of recorded audio
+   * @private
+   */
   private handleStopRecording() {
     this.$micState.next(MicState.DISABLED);
     this.recorder.stop().then((r) => {
@@ -104,7 +120,24 @@ export class ConvoBrokerService {
     });
   }
 
-  async sendVoice(audio: Blob, profile: Profile) {
+  /**
+   * Method to convert string to blob and play the blob.
+   * @param val {string} Base 64 encoding of an audio blob
+   * @private
+   */
+  private async playAudioBase64(val: string): Promise<void> {
+    const audioBlob = convertBase64ToBlob(val, "audio/*");
+    this.audioPlayer.play(audioBlob);
+  }
+
+  /**
+   * Method to send the voice blob as a request to the backend.
+   * Handled by `EndpointService`
+   * @param audio {Blob}
+   * @param profile {Profile}
+   * @private
+   */
+  private async sendVoice(audio: Blob, profile: Profile) {
     this.$isWaitingForVoiceApi.next(true);
 
     const requestTime: number = new Date().getTime();
@@ -155,6 +188,9 @@ export class ConvoBrokerService {
     });
   }
 
+  /**
+   * Callback method to be called from anywhere to directly interact with audio recording/voice interaction.
+   */
   handleMicButtonClick() {
     switch (this.$micState.value) {
       case MicState.ACTIVE:
@@ -166,6 +202,11 @@ export class ConvoBrokerService {
     }
   }
 
+  /**
+   * Method to persist chat message, and send the chat message to the backend for LLM generation.
+   * @param message {string}
+   * @param profile {Profile}
+   */
   async sendChat(message: string, profile: Profile) {
     const newMessage: Message = {
       id: createId(),
@@ -187,7 +228,7 @@ export class ConvoBrokerService {
       profile,
       history,
     );
-    res.subscribe({
+    res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
         if (!d || !d.response) {
           return;

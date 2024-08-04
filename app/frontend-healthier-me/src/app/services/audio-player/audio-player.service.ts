@@ -29,6 +29,9 @@ export class AudioPlayerService {
     });
   }
 
+  /**
+   * Method to get the BehaviorSubject tracking the latest audio stream
+   */
   getAudioStream(): BehaviorSubject<MediaStream | null> {
     return this.$stream;
   }
@@ -49,6 +52,9 @@ export class AudioPlayerService {
       .catch(console.error);
   }
 
+  /**
+   * Method to stop current audio from playing
+   */
   stop(): void {
     this.audioElement.pause();
     this.$playing.next(false);
