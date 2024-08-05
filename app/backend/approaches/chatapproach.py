@@ -10,31 +10,31 @@ from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 class ChatApproach(Approach, ABC):
     query_prompt_few_shots: list[ChatCompletionMessageParam] = [
-        {"role": "user", "content": "How did crypto do last year?"},
-        {"role": "assistant", "content": "Summarize Cryptocurrency Market Dynamics from last year"},
-        {"role": "user", "content": "What are my health plans?"},
-        {"role": "assistant", "content": "Show available health plans"},
+        {"role": "user", "content": "What are the common symptoms of flu?"},
+        {"role": "assistant", "content": "Provide a list of common flu symptoms"},
+        {"role": "user", "content": "How can I manage high blood pressure?"},
+        {"role": "assistant", "content": "Suggest ways to manage high blood pressure"},
     ]
     NO_RESPONSE = "0"
 
-    follow_up_questions_prompt_content = """Generate 3 very brief follow-up questions that the user would likely ask next.
-    Enclose the follow-up questions in double angle brackets. Example:
-    <<Are there exclusions for prescriptions?>>
-    <<Which pharmacies can be ordered from?>>
-    <<What is the limit for over-the-counter medication?>>
-    Do no repeat questions that have already been asked.
-    Make sure the last question ends with ">>".
-    """
+    # follow_up_questions_prompt_content = """Generate 3 very brief follow-up questions that the user would likely ask next.
+    # Enclose the follow-up questions in double angle brackets. Example:
+    # <<Are there exclusions for prescriptions?>>
+    # <<Which pharmacies can be ordered from?>>
+    # <<What is the limit for over-the-counter medication?>>
+    # Do no repeat questions that have already been asked.
+    # Make sure the last question ends with ">>".
+    # """
 
-    query_prompt_template = """Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base.
-    You have access to Azure AI Search index with 100's of documents.
-    Generate a search query based on the conversation and the new question.
-    Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
-    Do not include any text inside [] or <<>> in the search query terms.
-    Do not include any special characters like '+'.
-    If the question is not in English, translate the question to English before generating the search query.
-    If you cannot generate a search query, return just the number 0.
-    """
+    # query_prompt_template = """Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base.
+    # You have access to Azure AI Search index with 100's of documents.
+    # Generate a search query based on the conversation and the new question.
+    # Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
+    # Do not include any text inside [] or <<>> in the search query terms.
+    # Do not include any special characters like '+'.
+    # If the question is not in English, translate the question to English before generating the search query.
+    # If you cannot generate a search query, return just the number 0.
+    # """
 
     @property
     @abstractmethod
@@ -82,21 +82,20 @@ class ChatApproach(Approach, ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
-        overrides: dict[str, Any],
+        # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> dict[str, Any]:
-        extra_info, chat_coroutine = await self.run_until_final_call(
-            messages, profile, overrides, auth_claims, should_stream=False
+        extra_info, chat_coroutine, citation_info = await self.run_until_final_call(
+            messages, profile, auth_claims, should_stream=False
         )
         chat_completion_response: ChatCompletion = await chat_coroutine
         chat_resp = chat_completion_response.model_dump()  # Convert to dict to make it JSON serializable
         chat_resp = chat_resp["choices"][0]
         chat_resp["context"] = extra_info
-        if overrides.get("suggest_followup_questions"):
-            content, followup_questions = self.extract_followup_questions(chat_resp["message"]["content"])
-            chat_resp["message"]["content"] = content
-            chat_resp["context"]["followup_questions"] = followup_questions
+        content, followup_questions = self.extract_followup_questions(chat_resp["message"]["content"])
+        chat_resp["message"]["content"] = content
+        chat_resp["context"]["followup_questions"] = followup_questions
         chat_resp["session_state"] = session_state
         return chat_resp
 
@@ -104,12 +103,12 @@ class ChatApproach(Approach, ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
-        overrides: dict[str, Any],
+        # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> AsyncGenerator[dict, None]:
         extra_info, chat_coroutine = await self.run_until_final_call(
-            messages, profile, overrides, auth_claims, should_stream=True
+            messages, profile, auth_claims, should_stream=True
         )
         yield {"delta": {"role": "assistant"}, "context": extra_info, "session_state": session_state}
 
@@ -123,7 +122,7 @@ class ChatApproach(Approach, ABC):
                 # if event contains << and not >>, it is start of follow-up question, truncate
                 content = completion["delta"].get("content")
                 content = content or ""  # content may either not exist in delta, or explicitly be None
-                if overrides.get("suggest_followup_questions") and "<<" in content:
+                if "<<" in content:
                     followup_questions_started = True
                     earlier_content = content[: content.index("<<")]
                     if earlier_content:
@@ -145,9 +144,9 @@ class ChatApproach(Approach, ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
-        overrides = context.get("overrides", {})
+        # overrides = context.get("overrides", {})
         auth_claims = context.get("auth_claims", {})
-        return await self.run_without_streaming(messages, profile, overrides, auth_claims, session_state)
+        return await self.run_without_streaming(messages, profile, auth_claims, session_state)
 
     async def run_stream(
         self,
@@ -156,6 +155,6 @@ class ChatApproach(Approach, ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:
-        overrides = context.get("overrides", {})
+        # overrides = context.get("overrides", {})
         auth_claims = context.get("auth_claims", {})
-        return self.run_with_streaming(messages, profile, overrides, auth_claims, session_state)
+        return self.run_with_streaming(messages, profile, auth_claims, session_state)

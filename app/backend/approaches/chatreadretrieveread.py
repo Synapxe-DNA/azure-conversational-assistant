@@ -15,6 +15,9 @@ from openai.types.chat import (
 )
 from openai_messages_token_helper import build_messages, get_token_limit
 
+import time
+from approaches.prompts import general_prompt, profile_prompt, follow_up_questions_prompt, general_query_prompt, profile_query_prompt
+import approaches.config
 
 class ChatReadRetrieveReadApproach(ChatApproach):
     """
@@ -54,52 +57,65 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.chatgpt_token_limit = get_token_limit(chatgpt_model)
 
     @property
-    def system_message_chat_conversation(self):
-        return """Assistant helps the company employees with their healthcare plan questions, and questions about the employee handbook. Be brief in your answers.
-        Answer ONLY with the facts listed in the list of sources below. If there isn't enough information below, say you don't know. Do not generate answers that don't use the sources below. If asking a clarifying question to the user would help, ask the question.
-        For tabular information return it as an html table. Do not return markdown format. If the question is not in English, answer in the language used in the question.
-        Each source has a name followed by colon and the actual information, always include the source name for each fact you use in the response. Use square brackets to reference the source, for example [info1.txt]. Don't combine sources, list each source separately, for example [info1.txt][info2.pdf].
-        {follow_up_questions_prompt}
-        {injected_prompt}
-        """
+    # def system_message_chat_conversation(self):
+    #     return """Assistant helps the company employees with their healthcare plan questions, and questions about the employee handbook. Be brief in your answers.
+    #     Answer ONLY with the facts listed in the list of sources below. If there isn't enough information below, say you don't know. Do not generate answers that don't use the sources below. If asking a clarifying question to the user would help, ask the question.
+    #     For tabular information return it as an html table. Do not return markdown format. If the question is not in English, answer in the language used in the question.
+    #     Each source has a name followed by colon and the actual information, always include the source name for each fact you use in the response. Use square brackets to reference the source, for example [info1.txt]. Don't combine sources, list each source separately, for example [info1.txt][info2.pdf].
+    #     {follow_up_questions_prompt}
+    #     {injected_prompt}
+    #     """
 
     @overload
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
-        overrides: dict[str, Any],
+        # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, ChatCompletion]]: ...
+    ) -> tuple[dict[str, Any], Coroutine[Any, Any, ChatCompletion],List[Dict[str, Any]]]: ...
 
     @overload
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
-        overrides: dict[str, Any],
+        # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, AsyncStream[ChatCompletionChunk]]]: ...
+    ) -> tuple[dict[str, Any], Coroutine[Any, Any, AsyncStream[ChatCompletionChunk]],List[Dict[str, Any]]]: ...
 
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
-        overrides: dict[str, Any],
+        # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]]]:
-        seed = overrides.get("seed", None)
-        use_text_search = overrides.get("retrieval_mode") in ["text", "hybrid", None]
-        use_vector_search = overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
-        use_semantic_ranker = True if overrides.get("semantic_ranker") else False
-        use_semantic_captions = True if overrides.get("semantic_captions") else False
-        top = overrides.get("top", 3)
-        minimum_search_score = overrides.get("minimum_search_score", 0.0)
-        minimum_reranker_score = overrides.get("minimum_reranker_score", 0.0)
-        filter = self.build_filter(overrides, auth_claims)
+    ) -> tuple[dict[str, Any], Coroutine[Any, Any, Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]],List[Dict[str, Any]]]:        
+        start_time = time.time()
+
+        # seed = overrides.get("seed", None)
+        # use_text_search = overrides.get("retrieval_mode") in ["text", "hybrid", None]
+        # use_vector_search = overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
+        # use_semantic_ranker = True if overrides.get("semantic_ranker") else False
+        # use_semantic_captions = True if overrides.get("semantic_captions") else False
+        # top = overrides.get("top", 3)
+        # minimum_search_score = overrides.get("minimum_search_score", 0.0)
+        # minimum_reranker_score = overrides.get("minimum_reranker_score", 0.0)
+        # filter = self.build_filter(overrides, auth_claims)
+
+        seed = config.SEED
+        temperature = config.TEMPERATURE
+        use_text_search = config.USE_TEXT_SEARCH
+        use_vector_search = config.USE_VECTOR_SEARCH
+        use_semantic_ranker = config.USE_SEMANTIC_RANKER
+        use_semantic_captions = config.USE_SEMENTIC_CAPTIONS
+        top = config.SEARCH_MAX_RESULTS
+        minimum_search_score = config.MINIMUM_SEARCH_SCORE
+        minimum_reranker_score = config. MINIMUM_RERANKER_SCORE
+        response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
         original_user_query = messages[-1]["content"]
         if not isinstance(original_user_query, str):
@@ -126,11 +142,44 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             }
         ]
 
+        if profile.profile_type == "general":
+            query_prompt = general_query_prompt
+            answer_generation_prompt = general_prompt.format(
+                follow_up_questions_prompt=follow_up_questions_prompt
+            )
+        else:
+            if profile.user_age <= 3:
+                age_group = "Infant"
+            elif profile.user_age <= 6:
+                age_group = "Preschool"
+            elif profile.user_age <= 12:
+                age_group = "Child"
+            elif profile.user_age <= 17:
+                age_group = "Teen"
+            elif profile.user_age <= 64:
+                age_group = "Adult"
+            else:
+                age_group = "Senior"
+            
+            query_prompt = profile_query_prompt.format(
+                gender = profile.user_gender,
+                age_group = age_group,
+                age = profile.user_age,
+                pre_conditions = profile.user_condition
+            )
+            answer_generation_prompt = profile_prompt.format(
+                follow_up_questions_prompt=follow_up_questions_prompt,
+                gender = profile.user_gender,
+                age_group = age_group,
+                age = profile.user_age,
+                pre_conditions = profile.user_condition
+            )
+
         # STEP 1: Generate an optimized keyword search query based on the chat history and the last question
         query_response_token_limit = 100
         query_messages = build_messages(
             model=self.chatgpt_model,
-            system_prompt=self.query_prompt_template,
+            system_prompt=self.query_prompt,
             tools=tools,
             few_shots=self.query_prompt_few_shots,
             past_messages=messages[:-1],
@@ -176,16 +225,16 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        # Allow client to replace the entire prompt, or to inject into the exiting prompt using >>>
-        system_message = self.get_system_prompt(
-            overrides.get("prompt_template"),
-            self.follow_up_questions_prompt_content if overrides.get("suggest_followup_questions") else "",
-        )
+        # # Allow client to replace the entire prompt, or to inject into the exiting prompt using >>>
+        # system_message = self.get_system_prompt(
+        #     overrides.get("prompt_template"),
+        #     self.follow_up_questions_prompt_content if overrides.get("suggest_followup_questions") else "",
+        # )
 
-        response_token_limit = 1024
+        # response_token_limit = 1024
         messages = build_messages(
             model=self.chatgpt_model,
-            system_prompt=system_message,
+            system_prompt=answer_generation_prompt,
             past_messages=messages[:-1],
             # Model does not handle lengthy system messages well. Moving sources to latest user conversation to solve follow up questions prompt.
             new_user_content=original_user_query + "\n\nSources:\n" + content,
@@ -193,6 +242,19 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         data_points = {"text": sources_content}
+
+        chat_coroutine = self.openai_client.chat.completions.create(
+            # Azure OpenAI takes the deployment name as the model name
+            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=response_token_limit,
+            n=1,
+            stream=should_stream,
+            seed=seed,
+        )
+
+        end_time = time.time()
 
         extra_info = {
             "data_points": data_points,
@@ -230,18 +292,22 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                         if self.chatgpt_deployment
                         else {"model": self.chatgpt_model}
                     ),
+                ThoughtStep(
+                    "Time taken",
+                    end_time-start_time,
+                ),
                 ),
             ],
         }
 
-        chat_coroutine = self.openai_client.chat.completions.create(
-            # Azure OpenAI takes the deployment name as the model name
-            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
-            messages=messages,
-            temperature=overrides.get("temperature", 0.3),
-            max_tokens=response_token_limit,
-            n=1,
-            stream=should_stream,
-            seed=seed,
-        )
-        return (extra_info, chat_coroutine)
+        citation_info = []
+        sources_info = extra_info["thoughts"][2].description
+        for source in sources_info:
+            filtered_results = {
+                    # "id": source["id"],
+                    "sourcepage": source["sourcepage"], #to be updated to required metadata
+                    "reranker_score": source["reranker_score"] #to be updated to required metadata
+            }
+            citation_info.append(filtered_results)
+
+        return (extra_info, chat_coroutine, citation_info)

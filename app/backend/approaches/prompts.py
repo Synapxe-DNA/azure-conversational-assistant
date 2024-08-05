@@ -51,7 +51,7 @@ However, if you use your own knowledge, add one of the following caveats to your
 (a) If only some of the answer is based on your own knowledge, add the following caveat: "Disclaimer: Some parts of this response are generated using the LLM's internal knowledge."\
 (b) If the entire answer is based on your own knowledge, add the following caveat: "Disclaimer: This response is generated using the LLM's internal knowledge without specific references to sources."\
 
-3. Tailor your responses to align with the user's profile, taking into account user's gender being {gender}, age {age}, with pre-existing medical condition of {pre_conditions}.
+3. Tailor your responses to align with the user's profile, taking into account user's profile being {gender} {age_group}, age {age}, with pre-existing medical condition of {pre_conditions}.
 
 4. You must generate the response in less than 100 words.
 
@@ -77,4 +77,25 @@ Enclose the follow-up questions in double angle brackets. Example:
 
 Do no repeat questions that have already been asked.
 Make sure the last question ends with ">>".
+"""
+
+general_query_prompt = """Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base.
+You have access to Azure AI Search index with 100's of documents.
+Generate a search query based on the conversation and the new question.
+Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
+Do not include any text inside [] or <<>> in the search query terms.
+Do not include any special characters like '+'.
+If the question is not in English, translate the question to English before generating the search query.
+If you cannot generate a search query, return just the number 0.
+"""
+
+profile_query_prompt = """Below is a history of the conversation so far, user profile and a new question asked by the user that needs to be answered by searching in a knowledge base.
+You have access to Azure AI Search index with 100's of documents.
+Generate a search query based on the conversation and the new question.
+Take into account the user's profile as a {gender} {age_group}, age {age}, with pre-existing medical condition of {pre_conditions}.
+Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
+Do not include any text inside [] or <<>> in the search query terms.
+Do not include any special characters like '+'.
+If the question is not in English, translate the question to English before generating the search query.
+If you cannot generate a search query, return just the number 0.
 """
