@@ -134,8 +134,11 @@
           let token = decoder.decode(result.value);
           console.log(token);
           data = JSON.parse(token);
-          document.getElementById("result").innerHTML +=
-            data.response_message + "<br>";
+          if (data.status == "pending") {
+            document.getElementById("result").innerHTML += data.message;
+          } else {
+            document.getElementById("result").innerHTML += "<br><br>";
+          }
 
           return reader.read().then(processResult);
         });

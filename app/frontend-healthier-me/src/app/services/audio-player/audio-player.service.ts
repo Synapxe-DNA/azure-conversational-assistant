@@ -19,13 +19,29 @@ export class AudioPlayerService {
   private audioElement: HTMLMediaElementWithCaptureStream =
     new Audio() as HTMLMediaElementWithCaptureStream;
 
+  private queue: Blob[] = [];
+
   $stream: BehaviorSubject<MediaStream | null> =
     new BehaviorSubject<MediaStream | null>(null);
   $playing: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor() {
     this.audioElement.addEventListener("ended", () => {
-      this.$playing.next(false);
+      if (this.queue.length) {
+        this.playNextInQueue();
+      } else {
+        // No more audio left
+        this.$playing.next(false);
+      }
+    });
+  }
+
+  private playNextInQueue() {
+    this.$playing.next(true);
+    const blob = this.queue.shift()!;
+    this.audioElement.src = URL.createObjectURL(blob);
+    this.audioElement.play().then(() => {
+      this.$stream.next(this.audioElement.captureStream());
     });
   }
 
@@ -40,22 +56,24 @@ export class AudioPlayerService {
    * Method to play an audio from a blob
    * @param blob {Blob}
    */
-  play(blob: Blob): void {
-    this.audioElement.pause();
-    this.audioElement.src = URL.createObjectURL(blob);
-    this.audioElement
-      .play()
-      .then(() => {
-        this.$playing.next(true);
-        this.$stream.next(this.audioElement.captureStream());
-      })
-      .catch(console.error);
+  play(...blob: Blob[]): void {
+    blob.forEach((b) => this.queue.push(b));
+    if (!this.$playing.value) {
+      this.playNextInQueue();
+    }
+  }
+
+  forcePlayAndReplace(blob: Blob): void {
+    this.stopAndClear();
+    this.queue = [];
+    this.play(blob);
   }
 
   /**
-   * Method to stop current audio from playing
+   * Method to stop current audio from playing and empties queue
    */
-  stop(): void {
+  stopAndClear(): void {
+    this.queue = [];
     this.audioElement.pause();
     this.$playing.next(false);
   }

@@ -103,7 +103,7 @@ export class ConvoBrokerService {
    */
   private handleStartRecording() {
     this.$micState.next(MicState.ACTIVE);
-    this.audioPlayer.stop();
+    this.audioPlayer.stopAndClear();
     this.recorder.start();
   }
 
@@ -148,7 +148,7 @@ export class ConvoBrokerService {
       profile.id,
     );
 
-    let audio_base64: string = "";
+    let audio_base64: string[] = [];
 
     const res = await this.endpointService.sendVoice(
       audio,
@@ -179,11 +179,19 @@ export class ConvoBrokerService {
           timestamp: new Date().getTime(),
         });
 
-        audio_base64 = d.assistant_response_audio;
+        const nonNullAudio = d.assistant_response_audio.map((v) => v);
+        if (nonNullAudio.length > audio_base64.length) {
+          const newAudioStr = nonNullAudio.filter(
+            (a) => !audio_base64.includes(a),
+          );
+          audio_base64 = nonNullAudio;
+          newAudioStr.forEach((a) => {
+            this.playAudioBase64(a);
+          });
+        }
       },
       complete: () => {
         this.$isWaitingForVoiceApi.next(false);
-        this.playAudioBase64(audio_base64);
       },
     });
   }

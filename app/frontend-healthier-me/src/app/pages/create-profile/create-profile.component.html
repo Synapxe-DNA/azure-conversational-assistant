@@ -45,19 +45,20 @@
         <label for="profile-preexist"
           >Do
           {{ profileForm.value?.profile_type !== "OTHERS" ? "you" : "they" }}
-          have any pre-existing conditions?</label
+          have any of these pre-existing conditions?</label
         >
-        <textarea
-          class="tw-resize-none"
-          pInputTextarea
+        <p-multiSelect
+          styleClass="tw-w-full"
+          display="chip"
           id="profile-preexist"
+          [options]="profileConditionOptions"
           formControlName="existing_condition"
-          [rows]="6"
-        ></textarea>
+          placeholder="Conditions"
+        />
       </div>
       <p-button
         (click)="createProfile()"
-        class="tw-w-full"
+        class="tw-w-full tw-mt-4"
         styleClass="tw-w-full"
         label="Create profile"
       />

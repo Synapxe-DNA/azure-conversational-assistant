@@ -1,6 +1,6 @@
 import { AfterViewInit, Injectable, OnInit } from "@angular/core";
 import { NgxIndexedDBService } from "ngx-indexed-db";
-import { Profile } from "../../types/profile.type";
+import { GeneralProfile, Profile } from "../../types/profile.type";
 import { BehaviorSubject } from "rxjs";
 import { MessageService } from "primeng/api";
 import { ActivatedRoute } from "@angular/router";
@@ -49,6 +49,10 @@ export class ProfileService {
 
       if (filtered.length) {
         returnProfile.next(filtered[0]);
+      }
+
+      if (profileId === GeneralProfile.id) {
+        returnProfile.next(GeneralProfile);
       }
     });
 
