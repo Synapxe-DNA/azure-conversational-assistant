@@ -19,3 +19,4 @@ class VoiceResponse(BaseModel):
     sources: List[Source]
     additional_question_1: Optional[str]
     additional_question_2: Optional[str]
+    audio_base64: str
