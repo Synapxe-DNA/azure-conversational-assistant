@@ -18,7 +18,7 @@ describe("TextSystemComponent", () => {
       id: "1234",
       profile_id: "1234profileId",
       timestamp: 1,
-      role: MessageRole.System,
+      role: MessageRole.Assistant,
       message: "test message",
       sources: [
         {

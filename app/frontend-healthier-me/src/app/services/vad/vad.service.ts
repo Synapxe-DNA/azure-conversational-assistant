@@ -23,6 +23,10 @@ export class VadService {
     this.configSpeechRecognition();
   }
 
+  /**
+   * Method to start speech recognition
+   * @private
+   */
   private configSpeechRecognition() {
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
@@ -32,6 +36,9 @@ export class VadService {
     this.recognition.start();
   }
 
+  /**
+   * Method to start VAD globally
+   */
   start(): Observable<VoiceActivity> {
     const vadState = new BehaviorSubject<VoiceActivity>(VoiceActivity.End);
 
