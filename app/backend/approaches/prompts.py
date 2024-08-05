@@ -20,11 +20,11 @@ However, if you use your own knowledge, add one of the following caveats to your
 
 3. You must generate the response in less than 100 words.
 
-4. Make sure your response is action-driven. Offer clear steps or actions the user can take based on the information provided. 
+4. Make sure your response is action-driven. Offer clear steps or actions the user can take based on the information provided.
 
 5. If the user's query is unclear or lacks specific details, ask clarifying questions to better understand their needs before providing a response.
 
-6. Re-read your response to ensure that you have adhered to the rules and instructions. 
+6. Re-read your response to ensure that you have adhered to the rules and instructions.
 </instructions>
 
 {follow_up_questions_prompt}
@@ -55,11 +55,11 @@ However, if you use your own knowledge, add one of the following caveats to your
 
 4. You must generate the response in less than 100 words.
 
-5. Make sure your response is action-driven. Offer clear steps or actions the user can take based on the information provided. 
+5. Make sure your response is action-driven. Offer clear steps or actions the user can take based on the information provided.
 
 6. If the user's query is unclear or lacks specific details, ask clarifying questions to better understand their needs before providing a response.
 
-7. Re-read your response to ensure that you have adhered to the rules and instructions. 
+7. Re-read your response to ensure that you have adhered to the rules and instructions.
 </instructions>
 
 {follow_up_questions_prompt}

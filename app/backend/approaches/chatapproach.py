@@ -107,9 +107,7 @@ class ChatApproach(Approach, ABC):
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> AsyncGenerator[dict, None]:
-        extra_info, chat_coroutine = await self.run_until_final_call(
-            messages, profile, auth_claims, should_stream=True
-        )
+        extra_info, chat_coroutine = await self.run_until_final_call(messages, profile, auth_claims, should_stream=True)
         yield {"delta": {"role": "assistant"}, "context": extra_info, "session_state": session_state}
 
         followup_questions_started = False

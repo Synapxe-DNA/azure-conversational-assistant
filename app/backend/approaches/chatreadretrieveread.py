@@ -1,7 +1,16 @@
+import time
 from typing import Any, Coroutine, List, Literal, Optional, Union, overload
 
+from approaches import config
 from approaches.approach import ThoughtStep
 from approaches.chatapproach import ChatApproach
+from approaches.prompts import (
+    follow_up_questions_prompt,
+    general_prompt,
+    general_query_prompt,
+    profile_prompt,
+    profile_query_prompt,
+)
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
 from core.authentication import AuthenticationHelper
@@ -15,9 +24,6 @@ from openai.types.chat import (
 )
 from openai_messages_token_helper import build_messages, get_token_limit
 
-import time
-from approaches.prompts import general_prompt, profile_prompt, follow_up_questions_prompt, general_query_prompt, profile_query_prompt
-import approaches.config
 
 class ChatReadRetrieveReadApproach(ChatApproach):
     """
@@ -74,7 +80,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, ChatCompletion],List[Dict[str, Any]]]: ...
+    ) -> tuple[dict[str, Any], Coroutine[Any, Any, ChatCompletion], List[dict[str, Any]]]: ...
 
     @overload
     async def run_until_final_call(
@@ -84,7 +90,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, AsyncStream[ChatCompletionChunk]],List[Dict[str, Any]]]: ...
+    ) -> tuple[dict[str, Any], Coroutine[Any, Any, AsyncStream[ChatCompletionChunk]], List[dict[str, Any]]]: ...
 
     async def run_until_final_call(
         self,
@@ -93,7 +99,11 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,
-    ) -> tuple[dict[str, Any], Coroutine[Any, Any, Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]],List[Dict[str, Any]]]:        
+    ) -> tuple[
+        dict[str, Any],
+        Coroutine[Any, Any, Union[ChatCompletion, AsyncStream[ChatCompletionChunk]]],
+        List[dict[str, Any]],
+    ]:
         start_time = time.time()
 
         # seed = overrides.get("seed", None)
@@ -114,7 +124,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         use_semantic_captions = config.USE_SEMENTIC_CAPTIONS
         top = config.SEARCH_MAX_RESULTS
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
-        minimum_reranker_score = config. MINIMUM_RERANKER_SCORE
+        minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
         original_user_query = messages[-1]["content"]
@@ -144,9 +154,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(
-                follow_up_questions_prompt=follow_up_questions_prompt
-            )
+            answer_generation_prompt = general_prompt.format(follow_up_questions_prompt=follow_up_questions_prompt)
         else:
             if profile.user_age <= 3:
                 age_group = "Infant"
@@ -160,26 +168,26 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 age_group = "Adult"
             else:
                 age_group = "Senior"
-            
+
             query_prompt = profile_query_prompt.format(
-                gender = profile.user_gender,
-                age_group = age_group,
-                age = profile.user_age,
-                pre_conditions = profile.user_condition
+                gender=profile.user_gender,
+                age_group=age_group,
+                age=profile.user_age,
+                pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
                 follow_up_questions_prompt=follow_up_questions_prompt,
-                gender = profile.user_gender,
-                age_group = age_group,
-                age = profile.user_age,
-                pre_conditions = profile.user_condition
+                gender=profile.user_gender,
+                age_group=age_group,
+                age=profile.user_age,
+                pre_conditions=profile.user_condition,
             )
 
         # STEP 1: Generate an optimized keyword search query based on the chat history and the last question
         query_response_token_limit = 100
         query_messages = build_messages(
             model=self.chatgpt_model,
-            system_prompt=self.query_prompt,
+            system_prompt=query_prompt,
             tools=tools,
             few_shots=self.query_prompt_few_shots,
             past_messages=messages[:-1],
@@ -292,10 +300,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                         if self.chatgpt_deployment
                         else {"model": self.chatgpt_model}
                     ),
-                ThoughtStep(
-                    "Time taken",
-                    end_time-start_time,
-                ),
+                    ThoughtStep(
+                        "Time taken",
+                        end_time - start_time,
+                    ),
                 ),
             ],
         }
@@ -304,9 +312,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         sources_info = extra_info["thoughts"][2].description
         for source in sources_info:
             filtered_results = {
-                    # "id": source["id"],
-                    "sourcepage": source["sourcepage"], #to be updated to required metadata
-                    "reranker_score": source["reranker_score"] #to be updated to required metadata
+                # "id": source["id"],
+                "sourcepage": source["sourcepage"],  # to be updated to required metadata
+                "reranker_score": source["reranker_score"],  # to be updated to required metadata
             }
             citation_info.append(filtered_results)
 
