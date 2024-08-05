@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { LucideAngularModule } from "lucide-angular";
@@ -57,6 +57,8 @@ const sources: MessageSource[] = [
   styleUrls: ["./text.component.css"],
 })
 export class TextComponent implements OnInit {
+  @Input() showTextInput?: boolean = true;
+
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
