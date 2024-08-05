@@ -61,6 +61,10 @@ export class VoiceComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
+    this.profileService.setProfileInUrl(
+      this.route.snapshot.paramMap.get("profileId")!,
+    );
+
     this.preference.$voiceDetectInterrupt.subscribe((v) => {
       this.voiceInterrupt = v;
     });
