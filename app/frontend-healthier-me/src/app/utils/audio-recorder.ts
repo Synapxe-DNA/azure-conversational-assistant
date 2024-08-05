@@ -120,6 +120,7 @@ export class AudioRecorder {
     return new Promise<{ data: Blob; extension: string }>((resolve) => {
       // Handle stop event triggered by AudioRecorder.handleChunk
       this.flagChunkRecorded.pipe(first()).subscribe(() => {
+        console.log(this.mimeType);
         const finalBlob = new Blob(this.chunks, { type: this.mimeType });
         resolve({
           data: finalBlob,

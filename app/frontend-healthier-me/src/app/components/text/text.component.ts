@@ -11,22 +11,33 @@ import { BehaviorSubject, filter, take } from "rxjs";
 import { Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
+import { createId } from "@paralleldrive/cuid2";
+import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
 
 const sources: MessageSource[] = [
   {
-    title: "When is Your Baby Due?",
-    description: "When is Your Baby Due?",
-    url: "https://www.healthhub.sg/live-healthy/when-is-your-baby-due",
+    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
+    title: "12 Essential Childhood Vaccinations in Singapore",
+    description:
+      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
     cover_image_url:
-      "https://ch-api.healthhub.sg/api/public/content/8692c864101e4603868fb170c00230fe?v=534ae16e&t=livehealthyheaderimage",
+      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
   },
   {
-    title: "Important Nutrients: What Should You Eat More Of?",
+    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
+    title: "12 Essential Childhood Vaccinations in Singapore",
     description:
-      "Important Nutrients: What Should You Eat More Of? Important Nutrients: What Should You Eat More Of? Important Nutrients: What Should You Eat More Of?",
-    url: "https://www.healthhub.sg/live-healthy/important-nutrients-what-should-you-eat-more-of",
+      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
     cover_image_url:
-      "https://ch-api.healthhub.sg/api/public/content/3885d0458c0a4521beb14ca352730423?v=646204cc&t=livehealthyheaderimage",
+      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
+  },
+  {
+    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
+    title: "12 Essential Childhood Vaccinations in Singapore",
+    description:
+      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
+    cover_image_url:
+      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
   },
 ];
 
@@ -40,13 +51,14 @@ const sources: MessageSource[] = [
     TextInputComponent,
     TextSystemComponent,
     TextUserComponent,
+    TextClipboardComponent,
   ],
   templateUrl: "./text.component.html",
   styleUrls: ["./text.component.css"],
 })
 export class TextComponent implements OnInit {
   user: string = MessageRole.User;
-  system: string = MessageRole.System;
+  system: string = MessageRole.Assistant;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
     Profile | undefined
   >(undefined);
@@ -65,7 +77,9 @@ export class TextComponent implements OnInit {
 
     this.profile.subscribe((p) => {
       this.chatMessageService.load(p?.id || "general").then((m) => {
-        m.subscribe((messages) => (this.messages = messages));
+        m.subscribe((messages) => {
+          this.messages = messages;
+        });
       });
     });
   }
