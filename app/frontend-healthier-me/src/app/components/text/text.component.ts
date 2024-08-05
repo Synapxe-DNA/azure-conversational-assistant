@@ -7,8 +7,8 @@ import { TextInputComponent } from "../text/text-input/text-input.component";
 import { TextSystemComponent } from "../text/text-system/text-system.component";
 import { TextUserComponent } from "./text-user/text-user.component";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
-import { BehaviorSubject, filter, take } from "rxjs";
-import { Profile } from "../../types/profile.type";
+import { BehaviorSubject, filter, take, takeWhile } from "rxjs";
+import { GeneralProfile, Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
 import { createId } from "@paralleldrive/cuid2";
@@ -71,12 +71,21 @@ export class TextComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string,
-    );
+    this.route.paramMap
+      .pipe(
+        takeWhile((p) => {
+          return p.get("profileId") !== undefined;
+        }, true),
+      )
+      .subscribe((p) => {
+        this.profile = this.profileService.getProfile(p.get("profileId")!);
+      });
 
     this.profile.subscribe((p) => {
-      this.chatMessageService.load(p?.id || "general").then((m) => {
+      if (!p) {
+        return;
+      }
+      this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
           this.messages = messages;
         });
