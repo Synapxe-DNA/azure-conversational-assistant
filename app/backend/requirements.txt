@@ -333,6 +333,7 @@ pycparser==2.22
 pydantic==2.8.2
     # via openai
 pydantic-core==2.20.1
+pydub==0.25.1
     # via pydantic
 pyjwt[crypto]==2.8.0
     # via
