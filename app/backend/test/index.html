@@ -97,12 +97,30 @@
         const msg = document.getElementById("message").value;
         const sendButton = document.getElementById("sendButton");
         sendButton.disabled = true; // Disable button to prevent multiple submissions
-        const response = await fetch("http://localhost:8000/textchat/message", {
+        const formData = new FormData();
+
+        // Append the file to the FormData object
+        // chat_history = [
+        //   { content: "User chat history", role: "user" },
+        //   { content: "System chat history", role: "assistant" },
+        // ];
+        chat_history = [];
+        profile = JSON.stringify({
+          profile_type: "Myself",
+          user_age: 30,
+          user_gender: "Female",
+          user_condition: "Diabetes and hypertension",
+        });
+
+        query = { content: msg, role: "user" };
+
+        formData.append("query", JSON.stringify(query));
+        formData.append("chat_history", JSON.stringify(chat_history));
+        formData.append("profile", profile);
+
+        const response = await fetch("http://0.0.0.0:8000/chat/stream", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ message: msg }),
+          body: formData,
         });
 
         const reader = response.body.getReader();
@@ -116,11 +134,8 @@
           let token = decoder.decode(result.value);
           console.log(token);
           data = JSON.parse(token);
-          if (data.status == "pending") {
-            document.getElementById("result").innerHTML += data.message;
-          } else {
-            document.getElementById("result").innerHTML += "<br><br>";
-          }
+          document.getElementById("result").innerHTML +=
+            data.response_message + "<br>";
 
           return reader.read().then(processResult);
         });
@@ -137,10 +152,11 @@
         const formData = new FormData();
 
         // Append the file to the FormData object
-        chat_history = [
-          { content: "User chat history", role: "user" },
-          { content: "System chat history", role: "assistant" },
-        ];
+        // chat_history = [
+        //   { content: "User chat history", role: "user" },
+        //   { content: "System chat history", role: "assistant" },
+        // ];
+        chat_history = [];
         profile = JSON.stringify({
           profile_type: "Myself",
           user_age: 30,

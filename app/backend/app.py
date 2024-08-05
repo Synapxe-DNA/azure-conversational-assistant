@@ -69,7 +69,6 @@ from quart import (
     abort,
     current_app,
     jsonify,
-    make_response,
     redirect,
     request,
     send_file,
@@ -198,14 +197,20 @@ async def chat(auth_claims: Dict[str, Any]):
 
 
 @bp.route("/chat/stream", methods=["POST"])
-async def chat_stream(auth_claims: Dict[str, Any]):
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    context = request_json.get(
-        "context", {}
-    )  # TODO: request_json must contain overrides with exclude_category key to filter for category
+async def chat_stream(auth_claims: Dict[str, Any] = None):
+
+    # Receive data from the client
+    data = await request.form
+
+    context = data.get("context", {})
+    # Extract data from the JSON message
+    # profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history", "[]"))
+    query_text = json.loads(data["query"])
     context["auth_claims"] = auth_claims
+
+    messages = chat_history + [query_text]
+
     try:
         use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
         approach: Approach
@@ -215,14 +220,12 @@ async def chat_stream(auth_claims: Dict[str, Any]):
             approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
 
         result = await approach.run_stream(
-            request_json["messages"],
+            messages=messages,
             context=context,
-            session_state=request_json.get("session_state"),
         )
-        response = await make_response(format_as_ndjson(result))
-        response.timeout = None  # type: ignore
-        response.mimetype = "application/json-lines"
-        return response
+
+        response = await Utils.construct_streaming_chat_response(result)
+        return response, 200
     except Exception as error:
         return error_response(error, "/chat")
 
@@ -297,12 +300,11 @@ async def voice(auth_claims: Dict[str, Any] = None):
             messages=messages,
             context=context,
         )
+
+        response = await Utils.construct_streaming_voice_response(result, query_text)
+        return response, 200
     except Exception as error:
         return error_response(error, "/voice")
-
-    response = await Utils.construct_streaming_voice_response(result, query_text)
-
-    return response, 200
 
 
 @bp.post("/upload")

@@ -6,16 +6,14 @@ from models.source import Source
 from pydantic import BaseModel
 
 
-class VoiceChatRequest(BaseModel):
+class TextChatRequest(BaseModel):
     chat_history: Optional[List[ChatHistory]]
     profile: Optional[Profile]
-    query: bytes
+    query: dict[str, str]
 
 
-class VoiceChatResponse(BaseModel):
+class TextChatResponse(BaseModel):
     response_message: str
-    query_message: str
     sources: List[Source]
     additional_question_1: Optional[str]
     additional_question_2: Optional[str]
-    audio_base64: str
