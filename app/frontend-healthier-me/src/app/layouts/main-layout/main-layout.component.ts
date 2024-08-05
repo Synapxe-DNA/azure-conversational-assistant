@@ -1,6 +1,7 @@
-import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute, RouterOutlet } from "@angular/router";
 import { NavbarComponent } from "../../components/navbar/navbar.component";
+import { ProfileService } from "../../services/profile/profile.service";
 
 @Component({
   selector: "app-main-layout",
