@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { TextClipboardComponent } from './text-clipboard.component';
+import { TextClipboardComponent } from "./text-clipboard.component";
 
-describe('TextClipboardComponent', () => {
+describe("TextClipboardComponent", () => {
   let component: TextClipboardComponent;
   let fixture: ComponentFixture<TextClipboardComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextClipboardComponent]
-    })
-    .compileComponents();
+      imports: [TextClipboardComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TextClipboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });
