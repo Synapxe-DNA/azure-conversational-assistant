@@ -210,6 +210,8 @@ async def chat_stream(auth_claims: Dict[str, Any] = None):
     # profile = json.loads(data.get("profile"))
     chat_history = json.loads(data.get("chat_history", "[]"))
     query_text = json.loads(data["query"])
+    profile = json.loads(data.get("profile", "{}"))
+    profile = Profile(**profile)
     context["auth_claims"] = auth_claims
 
     messages = chat_history + [query_text]
@@ -225,6 +227,7 @@ async def chat_stream(auth_claims: Dict[str, Any] = None):
         result = await approach.run_stream(
             messages=messages,
             context=context,
+            profile=profile,
         )
 
         response = await Utils.construct_streaming_chat_response(result)
