@@ -106,6 +106,7 @@ export class EndpointService {
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
+    let currentQueryMessage: string = "";
     let existingAudio: string[] = [];
 
     const data: ApiVoiceRequest = {
@@ -133,12 +134,6 @@ export class EndpointService {
                 ),
               ) as ApiVoiceResponse;
 
-              console.log(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              );
-
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
               }
@@ -148,9 +143,14 @@ export class EndpointService {
                   currentAssistantMessage + responseData.response_message;
               }
 
+              if (responseData.query_message) {
+                currentQueryMessage =
+                  currentQueryMessage + responseData.query_message;
+              }
+
               responseBS.next({
                 status: ResponseStatus.Pending,
-                user_transcript: responseData.query_message,
+                user_transcript: currentQueryMessage,
                 assistant_response: currentAssistantMessage,
                 assistant_response_audio: existingAudio,
                 additional_questions: [
