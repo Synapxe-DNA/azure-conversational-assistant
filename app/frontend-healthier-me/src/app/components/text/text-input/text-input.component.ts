@@ -12,7 +12,7 @@ import { InputTextModule } from "primeng/inputtext";
 import { ChatMessageService } from "../../../services/chat-message/chat-message.service";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../../../services/profile/profile.service";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, takeWhile } from "rxjs";
 import { GeneralProfile, Profile } from "../../../types/profile.type";
 import { ActivatedRoute } from "@angular/router";
 import { Button } from "primeng/button";
@@ -51,9 +51,15 @@ export class TextInputComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string,
-    );
+    this.route.paramMap
+      .pipe(
+        takeWhile((p) => {
+          return p.get("profileId") !== undefined;
+        }, true),
+      )
+      .subscribe((p) => {
+        this.profile = this.profileService.getProfile(p.get("profileId")!);
+      });
   }
 
   setVoiceMode() {
