@@ -13,6 +13,7 @@ import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
 import { createId } from "@paralleldrive/cuid2";
 import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
+import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bottom.directive";
 
 const sources: MessageSource[] = [
   {
@@ -52,6 +53,7 @@ const sources: MessageSource[] = [
     TextSystemComponent,
     TextUserComponent,
     TextClipboardComponent,
+    StickyBottomDirective,
   ],
   templateUrl: "./text.component.html",
   styleUrls: ["./text.component.css"],

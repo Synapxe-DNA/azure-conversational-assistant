@@ -13,12 +13,17 @@ tw-cursor-pointer
 "
 >
   <img
+    *ngIf="profile.id === 'general'"
     ngSrc="/app/profiles/general.svg"
     height="40"
     width="40"
-    class="tw-rounded-full"
+    class="tw-rounded-full tw-w-[40px] tw-h-[40px]"
     alt=""
   />
+  <div
+    *ngIf="profile.id !== 'general'"
+    class="tw-w-[40px] tw-h-[40px] tw-rounded-full tw-bg-gray-300"
+  ></div>
   <div class="tw-flex tw-flex-col tw-justify-start tw-items-stretch">
     <span class="tw-capitalize">{{ profile.name }}</span>
     <span
