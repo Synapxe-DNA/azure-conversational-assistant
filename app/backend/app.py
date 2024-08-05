@@ -50,6 +50,7 @@ from config import (
 )
 from core.authentication import AuthenticationHelper
 from error import error_dict, error_response
+from models.profile import Profile
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -275,7 +276,9 @@ async def voice(auth_claims: Dict[str, Any] = None):
     context = data.get("context", {})
 
     # Extract data from the JSON message
-    # profile = json.loads(data.get("profile"))
+    profile_json = json.loads(data.get("profile"))
+    profile = Profile(**profile_json)
+
     chat_history = json.loads(data.get("chat_history", "[]"))
     audio_blob = audio["query"].read()
     context["auth_claims"] = auth_claims
@@ -296,6 +299,7 @@ async def voice(auth_claims: Dict[str, Any] = None):
         result = await approach.run_stream(
             messages=messages,
             context=context,
+            profile=profile,
         )
     except Exception as error:
         return error_response(error, "/voice")
