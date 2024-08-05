@@ -4,6 +4,7 @@ import json
 import logging
 import mimetypes
 import os
+from io import BytesIO
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
@@ -63,6 +64,7 @@ from prepdocs import (
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
+from pydub import AudioSegment
 from quart import (
     Blueprint,
     Quart,
@@ -277,11 +279,26 @@ async def voice(auth_claims: Dict[str, Any] = None):
 
     context = data.get("context", {})
 
+    # Process audio
+    target_sample_rate = 16000  # 16 kHz
+    target_channels = 1  # Mono
+    target_bit_depth = 16  # 16-bit
+
+    # Resample audio
+    audio_seg = AudioSegment.from_file(audio["query"], format="webm")
+    audio_seg = audio_seg.set_frame_rate(target_sample_rate)
+    audio_seg = audio_seg.set_channels(target_channels)
+    audio_seg = audio_seg.set_sample_width(target_bit_depth // 8)
+    wav_io = BytesIO()
+    audio_seg.export(wav_io, format="wav")
+
     # Extract data from the JSON message
     # profile = json.loads(data.get("profile"))
     chat_history = json.loads(data.get("chat_history", "[]"))
-    audio_blob = audio["query"].read()
+    audio_blob = wav_io.getvalue()
     context["auth_claims"] = auth_claims
+
+    wav_io.close()
 
     # Convert audio to text
     stt = await SpeechToText.create()
