@@ -117,7 +117,7 @@
           console.log(token);
           data = JSON.parse(token);
           if (data.status == "pending") {
-            document.getElementById("result").innerHTML += data.message;
+            document.getElementById("result").innerHTML += data.content;
           } else {
             document.getElementById("result").innerHTML += "<br><br>";
           }
@@ -199,7 +199,7 @@
           console.log(token);
           data = JSON.parse(token);
 
-          document.getElementById("result").innerHTML += data.message;
+          document.getElementById("result").innerHTML += data.content;
 
           audio += data.audio;
 
