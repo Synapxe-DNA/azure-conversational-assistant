@@ -6,6 +6,10 @@ import { Injectable } from "@angular/core";
 export class AudioService {
   constructor() {}
 
+  /**
+   * Method to get the media stream of the default mic input
+   * @return {Promise<MediaStream>}
+   */
   async getMicInput(): Promise<MediaStream> {
     return navigator.mediaDevices.getUserMedia({ audio: true });
   }
