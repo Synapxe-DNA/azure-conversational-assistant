@@ -100,13 +100,13 @@ class SearchManager:
                 ),
                 SimpleField(name="category", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(
-                    name="sourcepage",
+                    name="sourcePage",
                     type="Edm.String",
                     filterable=True,
                     facetable=True,
                 ),
                 SimpleField(
-                    name="sourcefile",
+                    name="sourceFile",
                     type="Edm.String",
                     filterable=True,
                     facetable=True,
@@ -165,10 +165,7 @@ class SearchManager:
                 ),
                 vector_search=VectorSearch(
                     algorithms=[
-                        HnswAlgorithmConfiguration(
-                            name="hnsw_config",
-                            parameters=HnswParameters(metric="cosine"),
-                        )
+                        HnswAlgorithmConfiguration(name="hnsw_config", parameters=HnswParameters(metric="cosine"))
                     ],
                     profiles=[
                         VectorSearchProfile(
@@ -213,7 +210,7 @@ class SearchManager:
                         "id": f"{section.content.filename_to_id()}-page-{section_index + batch_index * MAX_BATCH_SIZE}",
                         "content": section.split_page.text,
                         "category": section.category,
-                        "sourcepage": (
+                        "sourcePage": (
                             BlobManager.blob_image_name_from_file_page(
                                 filename=section.content.filename(),
                                 page=section.split_page.page_num,
@@ -224,7 +221,7 @@ class SearchManager:
                                 page=section.split_page.page_num,
                             )
                         ),
-                        "sourcefile": section.content.filename(),
+                        "sourceFile": section.content.filename(),
                         **section.content.acls,
                     }
                     for section_index, section in enumerate(batch)
