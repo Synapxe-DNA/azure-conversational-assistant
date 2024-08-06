@@ -158,8 +158,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             query_prompt = general_query_prompt
             answer_generation_prompt = general_prompt.format(follow_up_questions_prompt=follow_up_questions_prompt)
         else:
-            if profile.user_age <= 3:
+            if profile.user_age < 1:
                 age_group = "Infant"
+            elif profile.user_age <= 2:
+                age_group = "Toddler"
             elif profile.user_age <= 6:
                 age_group = "Preschool"
             elif profile.user_age <= 12:
