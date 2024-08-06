@@ -1,6 +1,6 @@
 import { AfterViewInit, Injectable, OnInit } from "@angular/core";
 import { NgxIndexedDBService } from "ngx-indexed-db";
-import { Profile } from "../../types/profile.type";
+import { GeneralProfile, Profile } from "../../types/profile.type";
 import { BehaviorSubject } from "rxjs";
 import { MessageService } from "primeng/api";
 import { ActivatedRoute } from "@angular/router";
@@ -10,6 +10,9 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileService {
   $profiles: BehaviorSubject<Profile[]> = new BehaviorSubject<Profile[]>([]);
+  $currentProfileInUrl: BehaviorSubject<string> = new BehaviorSubject<string>(
+    "",
+  );
 
   constructor(
     private dbService: NgxIndexedDBService,
@@ -18,6 +21,10 @@ export class ProfileService {
     this.dbService.getAll<Profile>("profiles").subscribe((v) => {
       this.$profiles.next(v);
     });
+  }
+
+  setProfileInUrl(id: string) {
+    this.$currentProfileInUrl.next(id);
   }
 
   /**
@@ -49,6 +56,10 @@ export class ProfileService {
 
       if (filtered.length) {
         returnProfile.next(filtered[0]);
+      }
+
+      if (profileId === GeneralProfile.id) {
+        returnProfile.next(GeneralProfile);
       }
     });
 

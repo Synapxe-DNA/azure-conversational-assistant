@@ -4,6 +4,7 @@ import json
 import logging
 import mimetypes
 import os
+from io import BytesIO
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
@@ -64,13 +65,13 @@ from prepdocs import (
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
+from pydub import AudioSegment
 from quart import (
     Blueprint,
     Quart,
     abort,
     current_app,
     jsonify,
-    make_response,
     redirect,
     request,
     send_file,
@@ -199,14 +200,22 @@ async def chat(auth_claims: Dict[str, Any]):
 
 
 @bp.route("/chat/stream", methods=["POST"])
-async def chat_stream(auth_claims: Dict[str, Any]):
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    context = request_json.get(
-        "context", {}
-    )  # TODO: request_json must contain overrides with exclude_category key to filter for category
+async def chat_stream(auth_claims: Dict[str, Any] = None):
+
+    # Receive data from the client
+    data = await request.form
+
+    context = data.get("context", {})
+    # Extract data from the JSON message
+    # profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history", "[]"))
+    query_text = json.loads(data["query"])
+    profile = json.loads(data.get("profile", "{}"))
+    profile = Profile(**profile)
     context["auth_claims"] = auth_claims
+
+    messages = chat_history + [query_text]
+
     try:
         use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
         approach: Approach
@@ -216,14 +225,13 @@ async def chat_stream(auth_claims: Dict[str, Any]):
             approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
 
         result = await approach.run_stream(
-            request_json["messages"],
+            messages=messages,
             context=context,
-            session_state=request_json.get("session_state"),
+            profile=profile,
         )
-        response = await make_response(format_as_ndjson(result))
-        response.timeout = None  # type: ignore
-        response.mimetype = "application/json-lines"
-        return response
+
+        response = await Utils.construct_streaming_chat_response(result)
+        return response, 200
     except Exception as error:
         return error_response(error, "/chat")
 
@@ -275,13 +283,28 @@ async def voice(auth_claims: Dict[str, Any] = None):
 
     context = data.get("context", {})
 
+    # Process audio
+    target_sample_rate = 16000  # 16 kHz
+    target_channels = 1  # Mono
+    target_bit_depth = 16  # 16-bit
+
+    # Resample audio
+    audio_seg = AudioSegment.from_file(audio["query"], format="webm")
+    audio_seg = audio_seg.set_frame_rate(target_sample_rate)
+    audio_seg = audio_seg.set_channels(target_channels)
+    audio_seg = audio_seg.set_sample_width(target_bit_depth // 8)
+    wav_io = BytesIO()
+    audio_seg.export(wav_io, format="wav")
+
     # Extract data from the JSON message
     profile_json = json.loads(data.get("profile"))
     profile = Profile(**profile_json)
 
     chat_history = json.loads(data.get("chat_history", "[]"))
-    audio_blob = audio["query"].read()
+    audio_blob = wav_io.getvalue()
     context["auth_claims"] = auth_claims
+
+    wav_io.close()
 
     # Convert audio to text
     stt = await SpeechToText.create()
@@ -301,12 +324,11 @@ async def voice(auth_claims: Dict[str, Any] = None):
             context=context,
             profile=profile,
         )
+
+        response = await Utils.construct_streaming_voice_response(result, query_text)
+        return response, 200
     except Exception as error:
         return error_response(error, "/voice")
-
-    response = await Utils.construct_streaming_voice_response(result, query_text)
-
-    return response, 200
 
 
 @bp.post("/upload")

@@ -50,7 +50,7 @@ export class WaveformComponent implements AfterViewInit {
         this.audioAnalyser = new AudioAnalyser(
           v as MediaStream,
           this.bars + 1,
-          0.9,
+          0.3,
         );
       }
     });

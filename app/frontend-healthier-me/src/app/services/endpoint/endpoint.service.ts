@@ -48,7 +48,7 @@ export class EndpointService {
 
       return {
         role: role(),
-        message: m.message,
+        content: m.message,
       };
     });
   }
@@ -105,6 +105,9 @@ export class EndpointService {
       new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
+    let currentAssistantMessage: string = "";
+    let currentQueryMessage: string = "";
+    let existingAudio: string[] = [];
 
     const data: ApiVoiceRequest = {
       chat_history: this.messageToApiChatHistory(history),
@@ -130,11 +133,26 @@ export class EndpointService {
                   lastResponseLength,
                 ),
               ) as ApiVoiceResponse;
+
+              if (responseData.audio_base64) {
+                existingAudio.push(responseData.audio_base64);
+              }
+
+              if (responseData.response_message) {
+                currentAssistantMessage =
+                  currentAssistantMessage + responseData.response_message;
+              }
+
+              if (responseData.query_message) {
+                currentQueryMessage =
+                  currentQueryMessage + responseData.query_message;
+              }
+
               responseBS.next({
                 status: ResponseStatus.Pending,
-                user_transcript: responseData.query_message,
-                assistant_response: responseData.response_message,
-                assistant_response_audio: responseData.audio_base64,
+                user_transcript: currentQueryMessage,
+                assistant_response: currentAssistantMessage,
+                assistant_response_audio: existingAudio,
                 additional_questions: [
                   responseData.additional_question_1,
                   responseData.additional_question_2,

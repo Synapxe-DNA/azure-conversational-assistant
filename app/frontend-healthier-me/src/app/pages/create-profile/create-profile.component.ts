@@ -16,6 +16,7 @@ import { InputNumberModule } from "primeng/inputnumber";
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { Button } from "primeng/button";
 import { MessageService } from "primeng/api";
+import { MultiSelectModule } from "primeng/multiselect";
 
 @Component({
   selector: "app-create-profile",
@@ -29,6 +30,7 @@ import { MessageService } from "primeng/api";
     InputNumberModule,
     InputTextareaModule,
     Button,
+    MultiSelectModule,
   ],
   templateUrl: "./create-profile.component.html",
   styleUrl: "./create-profile.component.css",
@@ -39,7 +41,7 @@ export class CreateProfileComponent {
     profile_type: new FormControl<ProfileType>(ProfileType.Myself),
     age: new FormControl<number | null>(null),
     gender: new FormControl<ProfileGender>(ProfileGender.Undefined),
-    existing_condition: new FormControl<string>(""),
+    existing_condition: new FormControl<{ name: string; label: string }[]>([]),
   });
 
   profileTypeOptions: { label: string; value: ProfileType }[] = [
@@ -50,6 +52,12 @@ export class CreateProfileComponent {
   profileGenderOptions: ProfileGender[] = [
     ProfileGender.Male,
     ProfileGender.Female,
+  ];
+
+  profileConditionOptions: { name: string; label: string }[] = [
+    { name: "Diabetes", label: "Diabetes" },
+    { name: "Hypertension", label: "Hypertension" },
+    { name: "High Cholesterol", label: "High Cholesterol" },
   ];
 
   constructor(
@@ -70,7 +78,9 @@ export class CreateProfileComponent {
         profile_type: this.profileForm.value.profile_type,
         gender: this.profileForm.value.gender,
         age: this.profileForm.value.age as number,
-        existing_conditions: this.profileForm.value.existing_condition,
+        existing_conditions: this.profileForm.value.existing_condition
+          .map((v: Record<string, string>) => v["label"])
+          .join(", "),
       });
       this.toastService.add({
         severity: "success",
