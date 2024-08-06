@@ -6,7 +6,7 @@ from azure.search.documents.models import VectorQuery
 from core.authentication import AuthenticationHelper
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from openai_messages_token_helper import build_messages, get_token_limit
+from openai_messages_token_helper import build_messages
 
 
 class RetrieveThenReadApproach(Approach):
@@ -66,7 +66,7 @@ info4.pdf: In-network institutions include Overlake, Swedish and others in the r
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.chatgpt_token_limit = get_token_limit(chatgpt_model)
+        self.chatgpt_token_limit = 128000
 
     async def run(
         self,

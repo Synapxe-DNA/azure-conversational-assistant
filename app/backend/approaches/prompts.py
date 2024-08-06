@@ -25,6 +25,8 @@ However, if you use your own knowledge, add one of the following caveats to your
 5. If the user's query is unclear or lacks specific details, ask clarifying questions to better understand their needs before providing a response.
 
 6. Re-read your response to ensure that you have adhered to the rules and instructions.
+
+7. Please provide your response in plain text only. Do not use any formatting such as bold, italics, underline, or any other text styling.
 </instructions>
 
 {follow_up_questions_prompt}
@@ -60,6 +62,8 @@ However, if you use your own knowledge, add one of the following caveats to your
 6. If the user's query is unclear or lacks specific details, ask clarifying questions to better understand their needs before providing a response.
 
 7. Re-read your response to ensure that you have adhered to the rules and instructions.
+
+8. Please provide your response in plain text only. Do not use any formatting such as bold, italics, underline, or any other text styling.
 </instructions>
 
 {follow_up_questions_prompt}
