@@ -322,7 +322,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         sources_info = extra_info["thoughts"][2].description
         for source in sources_info:
             filtered_results = {
-                "title": source["sourcepage"],  # to be updated to required field
+                "title": source["sourcePage"],  # to be updated to required field
                 "url": "",  # to be updated to required field
                 "meta_desc": "",  # to be updated to required field
                 "image_url": "",  # to be updated to required field

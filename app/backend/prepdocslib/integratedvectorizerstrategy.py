@@ -99,7 +99,7 @@ class IntegratedVectorizerStrategy(Strategy):
                     mappings=[
                         InputFieldMappingEntry(name="content", source="/document/pages/*"),
                         InputFieldMappingEntry(name="embedding", source="/document/pages/*/vector"),
-                        InputFieldMappingEntry(name="sourcepage", source="/document/metadata_storage_name"),
+                        InputFieldMappingEntry(name="sourcePage", source="/document/metadata_storage_name"),
                     ],
                 ),
             ],

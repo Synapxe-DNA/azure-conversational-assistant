@@ -146,7 +146,7 @@ def extract_data_from_stream(thoughts: List[dict[str, Any]]):
     sources_desc = thoughts[2].get("description", [])
     sources = []
     for source in sources_desc:  # sources[2] is search results
-        src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
+        src = Source(title=source.get("sourcePage"), url="", meta_description="", image_url="")
         sources.append(src)
     return sources
 

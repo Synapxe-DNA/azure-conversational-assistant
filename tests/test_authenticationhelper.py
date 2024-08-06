@@ -264,7 +264,7 @@ async def test_check_path_auth_allowed_sourcepage(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcepage": "Benefit_Options-2.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourcePage": "Benefit_Options-2.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
@@ -292,7 +292,7 @@ async def test_check_path_auth_allowed_sourcefile(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcefile": "Benefit_Options.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourceFile": "Benefit_Options.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
@@ -322,7 +322,7 @@ async def test_check_path_auth_allowed_public_sourcefile(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcefile": "Benefit_Options.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourceFile": "Benefit_Options.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
@@ -350,7 +350,7 @@ async def test_check_path_auth_allowed_empty(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcefile": "Benefit_Options.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourceFile": "Benefit_Options.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
@@ -377,7 +377,7 @@ async def test_check_path_auth_allowed_public_empty(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcefile": "Benefit_Options.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourceFile": "Benefit_Options.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
@@ -402,7 +402,7 @@ async def test_check_path_auth_allowed_fragment(
     async def mock_search(self, *args, **kwargs):
         nonlocal filter
         filter = kwargs.get("filter")
-        return MockAsyncPageIterator(data=[{"sourcefile": "Benefit_Options.pdf"}])
+        return MockAsyncPageIterator(data=[{"sourceFile": "Benefit_Options.pdf"}])
 
     monkeypatch.setattr(SearchClient, "search", mock_search)
 
