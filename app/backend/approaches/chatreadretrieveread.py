@@ -22,7 +22,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
-from openai_messages_token_helper import build_messages, get_token_limit
+from openai_messages_token_helper import build_messages
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
@@ -131,9 +131,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         if not isinstance(original_user_query, str):
             raise ValueError("The most recent message content must be a string.")
         user_query_request = "Generate search query for: " + original_user_query
-        
+
         # print(f"user_query_request: {user_query_request}")
-        
+
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -235,9 +235,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-        
+
         # print(f"sources_content: {sources_content}")
-        
+
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
@@ -323,8 +323,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             filtered_results = {
                 "title": source["sourcepage"],  # to be updated to required field
                 "url": "",  # to be updated to required field
-                "meta_desc": "", # to be updated to required field
-                "image_url": "", # to be updated to required field
+                "meta_desc": "",  # to be updated to required field
+                "image_url": "",  # to be updated to required field
             }
             citation_info.append(filtered_results)
 
