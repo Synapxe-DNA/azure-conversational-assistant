@@ -26,7 +26,7 @@ However, if you use your own knowledge, add one of the following caveats to your
 
 6. Re-read your response to ensure that you have adhered to the rules and instructions.
 
-7. Please provide your response in plain text only. Do not use any formatting such as bold, italics, underline, or any other text styling.
+7. Please provide your response in plain text only. Do not use markdown syntax in the output. Do not use any formatting such as bold, italics, underline, or any other text styling.
 </instructions>
 
 {follow_up_questions_prompt}
@@ -63,7 +63,7 @@ However, if you use your own knowledge, add one of the following caveats to your
 
 7. Re-read your response to ensure that you have adhered to the rules and instructions.
 
-8. Please provide your response in plain text only. Do not use any formatting such as bold, italics, underline, or any other text styling.
+8. Please provide your response in plain text only. Do not use markdown syntax in the output. Do not use any formatting such as bold, italics, underline, or any other text styling.
 </instructions>
 
 {follow_up_questions_prompt}
