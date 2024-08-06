@@ -1,6 +1,6 @@
 export enum MessageRole {
   User = "USER",
-  System = "SYSTEM",
+  Assistant = "ASSISTANT",
 }
 
 export interface MessageSource {

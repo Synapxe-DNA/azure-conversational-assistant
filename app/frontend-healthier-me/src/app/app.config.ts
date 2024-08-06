@@ -20,8 +20,10 @@ import {
   UserRoundPlus,
   Send,
   StopCircle,
+  Copy,
 } from "lucide-angular";
 import { ToastModule } from "primeng/toast";
+import { provideHttpClient, withFetch } from "@angular/common/http";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     importProvidersFrom(BrowserModule),
     importProvidersFrom(BrowserAnimationsModule),
+    provideHttpClient(withFetch()),
     importProvidersFrom(NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)),
     importProvidersFrom(
       LucideAngularModule.pick({
@@ -40,6 +43,7 @@ export const appConfig: ApplicationConfig = {
         Settings,
         Send,
         StopCircle,
+        Copy,
       }),
     ),
     importProvidersFrom(ToastModule),

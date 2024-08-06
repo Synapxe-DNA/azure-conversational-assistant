@@ -1,0 +1,15 @@
+.copy-button {
+  @apply tw-flex tw-items-center tw-justify-center tw-rounded tw-p-2 tw-text-gray-500 tw-transition-colors tw-duration-300 tw-ease-in-out;
+}
+
+.copy-button:hover {
+  @apply tw-bg-gray-600 tw-text-gray-100 tw-rounded;
+}
+
+.copy-button:active {
+  @apply tw-bg-gray-500 tw-text-gray-100 tw-transform tw-scale-95;
+}
+
+.copy-icon {
+  @apply tw-w-6 tw-h-6;
+}

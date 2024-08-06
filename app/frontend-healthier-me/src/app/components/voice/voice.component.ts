@@ -14,7 +14,12 @@ import { AudioRecorder } from "../../utils/audio-recorder";
 import { VadService } from "../../services/vad/vad.service";
 import { AudioService } from "../../services/audio/audio.service";
 import { VoiceActivity } from "../../types/voice-activity.type";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, takeWhile } from "rxjs";
+import { ActivatedRoute } from "@angular/router";
+import { GeneralProfile, Profile } from "../../types/profile.type";
+import { ProfileService } from "../../services/profile/profile.service";
+import { ConvoBrokerService } from "../../services/convo-broker/convo-broker.service";
+import { TextComponent } from "../text/text.component";
 
 @Component({
   selector: "app-voice",
@@ -28,6 +33,7 @@ import { BehaviorSubject } from "rxjs";
     OverlayPanelModule,
     InputSwitchModule,
     FormsModule,
+    TextComponent,
   ],
   templateUrl: "./voice.component.html",
   styleUrl: "./voice.component.css",
@@ -37,20 +43,28 @@ export class VoiceComponent implements OnInit, AfterViewInit {
     true,
   );
   private recorder: AudioRecorder | undefined;
+  private profile: Profile | undefined;
 
   micState: MicState = MicState.PENDING;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
   voiceDetectEnd: boolean = false;
+  showLiveTranscription: boolean = false;
 
   constructor(
     private preference: PreferenceService,
-    private vad: VadService,
     private audio: AudioService,
+    private route: ActivatedRoute,
+    private profileService: ProfileService,
+    private convoBroker: ConvoBrokerService,
   ) {}
 
   ngOnInit() {
+    this.profileService.setProfileInUrl(
+      this.route.snapshot.paramMap.get("profileId")!,
+    );
+
     this.preference.$voiceDetectInterrupt.subscribe((v) => {
       this.voiceInterrupt = v;
     });
@@ -58,90 +72,33 @@ export class VoiceComponent implements OnInit, AfterViewInit {
       (v) => (this.voiceDetectStart = v),
     );
     this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
+    this.preference.$showLiveTranscription.subscribe(
+      (v) => (this.showLiveTranscription = v),
+    );
+    this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
   ngAfterViewInit() {
+    this.profileService
+      .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
+      .subscribe((d) => (this.profile = d || GeneralProfile));
     this.initVoiceChat().catch(console.error);
   }
 
   private async initVoiceChat() {
     this.recorder = new AudioRecorder(await this.audio.getMicInput());
-
-    this.vad.start().subscribe({
-      next: (s) => {
-        switch (s) {
-          case VoiceActivity.Start:
-            if (
-              this.isUserTurn.value &&
-              this.voiceDetectStart &&
-              this.micState === MicState.PENDING
-            ) {
-              this.handleStart();
-            }
-            break;
-          case VoiceActivity.End:
-            if (
-              this.isUserTurn.value &&
-              this.micState === MicState.ACTIVE &&
-              this.voiceDetectEnd
-            ) {
-              this.handleStop();
-            }
-        }
-      },
-    });
-  }
-
-  handleStart() {
-    this.micState = MicState.ACTIVE;
-    this.recorder!.start();
-    console.log("Starting");
-  }
-
-  handleStop() {
-    this.micState = MicState.DISABLED;
-    this.isUserTurn.next(false);
-    this.recorder!.stop()
-      .then((r) => {
-        console.log(r);
-        // TODO handle submission of voice recoding and handling of response here!
-
-        // Downloading to test
-        // Generate a URL for the Blob
-        const url = window.URL.createObjectURL(r.data);
-
-        // Create a download link
-        const downloadLink = document.createElement("a");
-        downloadLink.style.display = "none";
-        downloadLink.href = url;
-        downloadLink.download = "audio.webm";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-
-        // Automatically click the download link to trigger the download
-      })
-      .then(() => {
-        // Simulate time while processing response
-        setTimeout(() => {
-          this.micState = MicState.PENDING;
-          this.isUserTurn.next(true);
-        }, 500);
-      });
   }
 
   handleMicButtonClick() {
-    switch (this.micState) {
-      case MicState.ACTIVE:
-        this.handleStop();
-        break;
-      case MicState.PENDING:
-        this.handleStart();
-        break;
-    }
+    this.convoBroker.handleMicButtonClick();
   }
 
   prefChatModeToText(): void {
     this.preference.setChatMode(ChatMode.Text);
+  }
+
+  prefShowLiveTranscription(e: InputSwitchChangeEvent) {
+    this.preference.setShowLiveTranscription(e.checked);
   }
 
   prefVoiceInterrupt(e: InputSwitchChangeEvent) {

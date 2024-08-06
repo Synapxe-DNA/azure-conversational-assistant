@@ -22,6 +22,7 @@ from azure.search.documents.models import (
     VectorQuery,
 )
 from core.authentication import AuthenticationHelper
+from models.profile import Profile
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from text import nonewlines
@@ -172,7 +173,7 @@ class Approach(ABC):
                         embedding=document.get("embedding"),
                         image_embedding=document.get("imageEmbedding"),
                         category=document.get("category"),
-                        sourcepage=document.get("sourcepage"),
+                        sourcepage=document.get("sourcePage"),
                         sourcefile=document.get("sourcefile"),
                         oids=document.get("oids"),
                         groups=document.get("groups"),
@@ -262,6 +263,7 @@ class Approach(ABC):
     async def run(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
@@ -270,6 +272,7 @@ class Approach(ABC):
     async def run_stream(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:
