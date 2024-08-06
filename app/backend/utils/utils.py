@@ -7,7 +7,6 @@ from collections import Counter
 from typing import Any, AsyncGenerator, List
 
 from error import error_dict
-from models.chat import TextChatResponse
 from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import stream_with_context
@@ -105,34 +104,37 @@ class Utils:
                 thoughts = res.get("context", {}).get("thoughts", [])
                 followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
-                    sources = extract_data_from_stream(thoughts)
-                    response = TextChatResponse(
-                        response_message="",
-                        sources=sources,
-                        additional_question_1="",
-                        additional_question_2="",
-                    )
-                    yield response.model_dump_json()
+                    pass
+                    # sources = extract_data_from_stream(thoughts)
+                    # response = TextChatResponse(
+                    #     response_message="",
+                    #     sources=sources,
+                    #     additional_question_1="",
+                    #     additional_question_2="",
+                    # )
+                    # yield response.model_dump_json()
                 elif not followup_question == []:
-                    response = TextChatResponse(
-                        response_message="",
-                        sources=[],
-                        additional_question_1=followup_question[0],
-                        additional_question_2=followup_question[1],
-                    )
-                    yield response.model_dump_json()
+                    pass
+                    # response = TextChatResponse(
+                    #     response_message="",
+                    #     sources=[],
+                    #     additional_question_1=followup_question[0],
+                    #     additional_question_2=followup_question[1],
+                    # )
+                    # yield response.model_dump_json()
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
                     if text_response_chunk is None:
                         break
-                    response = TextChatResponse(
-                        response_message=text_response_chunk,
-                        sources=[],
-                        additional_question_1="",
-                        additional_question_2="",
-                    )
-                    yield response.model_dump_json()
+                    # response = TextChatResponse(
+                    #     response_message=text_response_chunk,
+                    #     sources=[],
+                    #     additional_question_1="",
+                    #     additional_question_2="",
+                    # )
+                    yield text_response_chunk
+                    # yield response.model_dump_json()
                     print("====================================")
                     print(text_response_chunk)
                     print("====================================")

@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, repeat, retry, Subject } from "rxjs";
 import { VoiceActivity } from "../../types/voice-activity.type";
+import { AudioService } from "../audio/audio.service";
 
 @Injectable({
   providedIn: "root",
@@ -10,7 +11,12 @@ export class VadService {
   private $speech: Subject<void> = new Subject<void>();
   private recognition!: SpeechRecognition;
 
-  constructor() {
+  // VAD is active during text mode; to prevent the constant blinking of the "mic" icon on mac devices,
+  // the user mic will continuously be referenced.
+  private __mic!: Promise<MediaStream>;
+
+  constructor(private audio: AudioService) {
+    this.__mic = this.audio.getMicInput();
     this.configSpeechRecognition();
   }
 
@@ -34,14 +40,14 @@ export class VadService {
       this.$speech.next();
     };
     this.recognition.onaudiostart = () => {
-      console.log("VAD Start!");
+      // console.log("VAD Start!");
     };
     this.recognition.onaudioend = () => {
-      console.warn("VAD Ended! Starting new VAD session");
+      // console.warn("VAD Ended! Starting new VAD session");
       this.configSpeechRecognition();
     };
     this.recognition.onerror = () => {
-      console.warn("VAD Error! Restarting VAD session");
+      // console.warn("VAD Error! Restarting VAD session");
       this.configSpeechRecognition();
     };
     this.recognition.start();
