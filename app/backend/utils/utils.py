@@ -7,7 +7,6 @@ from collections import Counter
 from typing import Any, AsyncGenerator, List
 
 from error import error_dict
-from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import stream_with_context
 from speech.text_to_speech import TextToSpeech
@@ -143,11 +142,11 @@ class Utils:
 
 
 def extract_data_from_stream(thoughts: List[dict[str, Any]]):
-    sources_desc = thoughts[2].get("description", [])
+    # sources_desc = thoughts[2].get("description", [])
     sources = []
-    for source in sources_desc:  # sources[2] is search results
-        src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
-        sources.append(src)
+    # for source in sources_desc:  # sources[2] is search results
+    #     src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
+    #     sources.append(src)
     return sources
 
 
