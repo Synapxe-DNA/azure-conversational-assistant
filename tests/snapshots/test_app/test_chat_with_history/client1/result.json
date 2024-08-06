@@ -52,8 +52,8 @@
             "oids": null,
             "reranker_score": 3.4577205181121826,
             "score": 0.03279569745063782,
-            "sourcefile": "Benefit_Options.pdf",
-            "sourcepage": "Benefit_Options-2.pdf"
+            "sourceFile": "Benefit_Options.pdf",
+            "sourcePage": "Benefit_Options-2.pdf"
           }
         ],
         "props": null,
