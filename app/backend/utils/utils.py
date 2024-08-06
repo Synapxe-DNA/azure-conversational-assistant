@@ -40,11 +40,15 @@ class Utils:
         async def generator() -> AsyncGenerator[str, None]:
             text_response = ""
             tts = await TextToSpeech.create()
-            async for res in Utils.format_as_ndjson(result):
 
+            async for res in Utils.format_as_ndjson(result):
+                print("====================================")
+                print(res)
+                print("====================================")
                 # Extract sources
                 res = json.loads(res)
                 thoughts = res.get("context", {}).get("thoughts", [])
+                followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
                     sources = extract_data_from_stream(thoughts)
                     response = VoiceChatResponse(
@@ -53,6 +57,16 @@ class Utils:
                         sources=sources,
                         additional_question_1="",
                         additional_question_2="",
+                        audio_base64="",
+                    )
+                    yield response.model_dump_json()
+                elif not followup_question == []:
+                    response = VoiceChatResponse(
+                        response_message="",
+                        query_message="",
+                        sources=[],
+                        additional_question_1=followup_question[0],
+                        additional_question_2=followup_question[1],
                         audio_base64="",
                     )
                     yield response.model_dump_json()
@@ -75,9 +89,6 @@ class Utils:
                             audio_base64=base64.b64encode(audio_data).decode("utf-8"),
                         )
                         yield response.model_dump_json()
-                        print("====================================")
-                        print(text_response)
-                        print("====================================")
                         text_response = ""
 
         return generator()
@@ -92,6 +103,7 @@ class Utils:
                 # Extract sources
                 res = json.loads(res)
                 thoughts = res.get("context", {}).get("thoughts", [])
+                followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
                     sources = extract_data_from_stream(thoughts)
                     response = TextChatResponse(
@@ -99,6 +111,14 @@ class Utils:
                         sources=sources,
                         additional_question_1="",
                         additional_question_2="",
+                    )
+                    yield response.model_dump_json()
+                elif not followup_question == []:
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=[],
+                        additional_question_1=followup_question[0],
+                        additional_question_2=followup_question[1],
                     )
                     yield response.model_dump_json()
                 else:
