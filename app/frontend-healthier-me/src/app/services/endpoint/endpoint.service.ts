@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
+import { map } from "rxjs";
 import { Profile, ProfileGender, ProfileType } from "../../types/profile.type";
 import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
@@ -30,13 +30,30 @@ import { ApiChatResponse } from "../../types/api/response/api-chat-response.type
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
 
-  textToSpeech(text: string): Observable<{ audio: string }> {
-    const audioBase64 =
-      "UklGRmACAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AgAEABAAZGF0YQAQAAAAAIAcAAACABwAAIAcA" +
-      "AICAAwBgAIAeAIAHgCAAHgIAABwDAACAAwAAIAcAAwAAAIAcAAcAAMAAAAgAwAAHAIAAB4AAIAcAA" +
-      "AACAAwAAHgAAIAcAA4AAAACABwAAIAAAwAgAAHgAAIAAAQAA";
-    console.log("EndpointService: textToSpeech()");
-    return of({ audio: audioBase64 });
+  async textToSpeech(
+    text: string
+  ): Promise<BehaviorSubject<{ audio: string } | null>> {
+    const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
+
+    this.httpClient
+      .post<{ audio: string }>("/tts", { text })
+      .pipe(
+        map((response) => {
+          return { audio: response.audio };
+        })
+      )
+      .subscribe({
+        next: (audioData) => {
+          responseBS.next(audioData);
+          responseBS.complete();
+        },
+        error: (error) => {
+          console.error(error);
+          responseBS.error(error);
+        },
+      });
+
+    return responseBS;
   }
 
   /**

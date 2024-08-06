@@ -18,16 +18,23 @@ export class TextTtsComponent {
     private audioPlayerService: AudioPlayerService
   ) {}
 
-  textToSpeech() {
-    this.endpointService.textToSpeech(this.message).subscribe({
-      next: (response) => {
-        console.log("text-tts.component: textToSpeech()");
-        const audioBlob = this.base64ToBlob(response.audio);
-        console.log("audioBlob:", audioBlob);
-        this.audioPlayerService.play(audioBlob);
-      },
-      error: (err) => console.error("TTS Error:", err),
-    });
+  async textToSpeech() {
+    try {
+      const responseBS = await this.endpointService.textToSpeech(this.message);
+      responseBS.subscribe({
+        next: (response) => {
+          if (response) {
+            console.log("text-tts.component: textToSpeech()");
+            const audioBlob = this.base64ToBlob(response.audio);
+            console.log("audioBlob:", audioBlob);
+            this.audioPlayerService.play(audioBlob);
+          }
+        },
+        error: (err) => console.error("TTS Error:", err),
+      });
+    } catch (err) {
+      console.error("TTS Error:", err);
+    }
   }
 
   private base64ToBlob(
