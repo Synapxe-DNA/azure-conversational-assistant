@@ -6,7 +6,7 @@ from azure.search.documents.models import VectorQuery
 from core.authentication import AuthenticationHelper
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
-from openai_messages_token_helper import build_messages
+from openai_messages_token_helper import build_messages, get_token_limit
 
 
 class RetrieveThenReadApproach(Approach):

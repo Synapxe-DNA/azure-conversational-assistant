@@ -22,7 +22,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
-from openai_messages_token_helper import build_messages
+from openai_messages_token_helper import build_messages, get_token_limit
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
