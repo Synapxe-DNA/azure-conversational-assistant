@@ -95,4 +95,5 @@ func_frontend_build() {
 trap "kill 0" EXIT
 func_backend&
 func_frontend&
+func_frontend_build&
 wait

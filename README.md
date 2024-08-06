@@ -121,3 +121,8 @@ Once in the web app:
 > [!NOTE]
 >
 > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
+
+## Using SPEECH services for backend
+
+1. Run `azd env set USE_SPEECH_OUTPUT_AZURE true"
+2. This will populate your `.env` file with the necessary setting to use the speech services.

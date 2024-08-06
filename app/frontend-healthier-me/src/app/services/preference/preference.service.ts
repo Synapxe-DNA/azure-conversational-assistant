@@ -30,6 +30,13 @@ export class PreferenceService {
     this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, false),
   );
 
+  $showLiveTranscription = new BehaviorSubject<boolean>(
+    this.loadFromLocalStorage<boolean>(
+      PreferenceKey.VoiceLiveTranscription,
+      false,
+    ),
+  );
+
   constructor() {
     this.initialisePreferences();
     this.listenToLocalStorageEvents();
@@ -51,6 +58,9 @@ export class PreferenceService {
     });
     this.$voiceDetectEnd.subscribe((v) => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, v);
+    });
+    this.$showLiveTranscription.subscribe((v) => {
+      this.setToLocalStorage<boolean>(PreferenceKey.VoiceLiveTranscription, v);
     });
   }
 
@@ -98,6 +108,15 @@ export class PreferenceService {
           );
           break;
         }
+        case PreferenceKey.VoiceLiveTranscription: {
+          this.$showLiveTranscription.next(
+            this.loadFromLocalStorage(
+              PreferenceKey.VoiceLiveTranscription,
+              false,
+            ),
+          );
+          break;
+        }
       }
     };
 
@@ -139,6 +158,10 @@ export class PreferenceService {
    */
   setChatMode(mode: ChatMode): void {
     this.$chatMode.next(mode);
+  }
+
+  setShowLiveTranscription(value: boolean): void {
+    this.$showLiveTranscription.next(value);
   }
 
   /**

@@ -2,7 +2,7 @@
   #profileLink
   href="/app/chat/{{ profile.id }}"
   class="
-tw-transition-all
+tw-transition-none
 tw-rounded-lg
 tw-flex tw-flex-row tw-justify-start tw-items-center
 tw-gap-3
@@ -13,12 +13,17 @@ tw-cursor-pointer
 "
 >
   <img
+    *ngIf="profile.id === 'general'"
     ngSrc="/app/profiles/general.svg"
     height="40"
     width="40"
-    class="tw-rounded-full"
+    class="tw-rounded-full tw-w-[40px] tw-h-[40px]"
     alt=""
   />
+  <div
+    *ngIf="profile.id !== 'general'"
+    class="tw-w-[40px] tw-h-[40px] tw-rounded-full tw-bg-gray-300"
+  ></div>
   <div class="tw-flex tw-flex-col tw-justify-start tw-items-stretch">
     <span class="tw-capitalize">{{ profile.name }}</span>
     <span

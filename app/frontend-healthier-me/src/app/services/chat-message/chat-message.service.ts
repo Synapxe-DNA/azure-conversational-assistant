@@ -40,6 +40,16 @@ export class ChatMessageService {
     return this.$messages;
   }
 
+  async staticLoad(profileId: string): Promise<Message[]> {
+    return await firstValueFrom<Message[]>(
+      this.indexedStore.getAllByIndex(
+        "messages",
+        "profile_id",
+        IDBKeyRange.only(profileId),
+      ),
+    );
+  }
+
   /**
    * Method to insert message into indexed store, and update local behavior subject
    * @param message
@@ -60,5 +70,30 @@ export class ChatMessageService {
         error: console.error,
       });
     });
+  }
+
+  /**
+   * Method to update a message in memory and in the store. This method will create a new message if it does not exist.
+   * @param message
+   */
+  upsert(message: Message): Promise<void> {
+    // Checks if message is in current memory
+    const index = this.$messages.value.findIndex((m) => m.id === message.id);
+
+    // If message exists
+    if (index >= 0) {
+      return new Promise((resolve) => {
+        this.indexedStore.update<Message>("messages", message).subscribe({
+          next: () => {
+            let arr = this.$messages.value;
+            arr[index] = message;
+            this.$messages.next(arr);
+            resolve();
+          },
+        });
+      });
+    }
+
+    return this.insert(message);
   }
 }
