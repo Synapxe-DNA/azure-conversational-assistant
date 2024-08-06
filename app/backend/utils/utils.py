@@ -7,8 +7,9 @@ from collections import Counter
 from typing import Any, AsyncGenerator, List
 
 from error import error_dict
+from models.chat import TextChatResponse
 from models.source import Source
-from models.voice import VoiceResponse
+from models.voice import VoiceChatResponse
 from quart import stream_with_context
 from speech.text_to_speech import TextToSpeech
 
@@ -45,12 +46,8 @@ class Utils:
                 res = json.loads(res)
                 thoughts = res.get("context", {}).get("thoughts", [])
                 if not thoughts == []:
-                    sources_desc = thoughts[2].get("description", [])
-                    sources = []
-                    for source in sources_desc:  # sources[2] is search results
-                        src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
-                        sources.append(src)
-                    response = VoiceResponse(
+                    sources = extract_data_from_stream(thoughts)
+                    response = VoiceChatResponse(
                         response_message="",
                         query_message=query_message,
                         sources=sources,
@@ -69,7 +66,7 @@ class Utils:
                     text_response += text_response_chunk
                     if bool(re.search(r"[.,!?。，！？]", text_response_chunk)):
                         audio_data = tts.readText(text_response)
-                        response = VoiceResponse(
+                        response = VoiceChatResponse(
                             response_message=text_response,
                             query_message="",
                             sources=[],
@@ -84,6 +81,52 @@ class Utils:
                         text_response = ""
 
         return generator()
+
+    @staticmethod
+    async def construct_streaming_chat_response(
+        result: AsyncGenerator[dict[str, Any], None]
+    ) -> AsyncGenerator[str, None]:
+        @stream_with_context
+        async def generator() -> AsyncGenerator[str, None]:
+            async for res in Utils.format_as_ndjson(result):
+                # Extract sources
+                res = json.loads(res)
+                thoughts = res.get("context", {}).get("thoughts", [])
+                if not thoughts == []:
+                    sources = extract_data_from_stream(thoughts)
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=sources,
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+                    yield response.model_dump_json()
+                else:
+                    # Extract text response
+                    text_response_chunk = res.get("delta", {}).get("content", "")
+                    if text_response_chunk is None:
+                        break
+                    response = TextChatResponse(
+                        response_message=text_response_chunk,
+                        sources=[],
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+                    yield response.model_dump_json()
+                    print("====================================")
+                    print(text_response_chunk)
+                    print("====================================")
+
+        return generator()
+
+
+def extract_data_from_stream(thoughts: List[dict[str, Any]]):
+    sources_desc = thoughts[2].get("description", [])
+    sources = []
+    for source in sources_desc:  # sources[2] is search results
+        src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
+        sources.append(src)
+    return sources
 
 
 class JSONEncoder(json.JSONEncoder):

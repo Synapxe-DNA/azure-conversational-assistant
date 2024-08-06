@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { LucideAngularModule } from "lucide-angular";
@@ -13,6 +13,7 @@ import { ProfileService } from "../../services/profile/profile.service";
 import { ActivatedRoute } from "@angular/router";
 import { createId } from "@paralleldrive/cuid2";
 import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
+import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bottom.directive";
 
 const sources: MessageSource[] = [
   {
@@ -52,11 +53,14 @@ const sources: MessageSource[] = [
     TextSystemComponent,
     TextUserComponent,
     TextClipboardComponent,
+    StickyBottomDirective,
   ],
   templateUrl: "./text.component.html",
   styleUrls: ["./text.component.css"],
 })
 export class TextComponent implements OnInit {
+  @Input() showTextInput?: boolean = true;
+
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
