@@ -60,7 +60,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.chatgpt_token_limit = get_token_limit(chatgpt_model)
+        self.chatgpt_token_limit = 128000
 
     @property
     def system_message_chat_conversation(self):
@@ -131,7 +131,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         if not isinstance(original_user_query, str):
             raise ValueError("The most recent message content must be a string.")
         user_query_request = "Generate search query for: " + original_user_query
-
+        
+        # print(f"user_query_request: {user_query_request}")
+        
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -208,6 +210,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
+        # print(f"query_text: {query_text}")
+
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
 
         # If retrieval mode includes vectors, compute an embedding for the query
@@ -229,6 +233,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
+        
+        # print(f"sources_content: {sources_content}")
+        
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
@@ -312,10 +319,15 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         sources_info = extra_info["thoughts"][2].description
         for source in sources_info:
             filtered_results = {
-                # "id": source["id"],
-                "sourcepage": source["sourcepage"],  # to be updated to required metadata
-                "reranker_score": source["reranker_score"],  # to be updated to required metadata
+                "title": source["sourcepage"],  # to be updated to required field
+                "url": "",  # to be updated to required field
+                "meta_desc": "", # to be updated to required field
+                "image_url": "", # to be updated to required field
             }
             citation_info.append(filtered_results)
+
+        # print(f"extra_info: {extra_info}")
+        # print(f"chat_coroutine: {chat_coroutine}")
+        # print(f"citation_info: {citation_info}")
 
         return (extra_info, chat_coroutine, citation_info)
