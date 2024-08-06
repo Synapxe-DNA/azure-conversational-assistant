@@ -86,9 +86,7 @@ class IntegratedVectorizerStrategy(Strategy):
             context="/document/pages/*",
             resource_uri=f"https://{self.embeddings.open_ai_service}.openai.azure.com",
             deployment_id=self.embeddings.open_ai_deployment,
-            inputs=[
-                InputFieldMappingEntry(name="text", source="/document/pages/*"),
-            ],
+            inputs=[InputFieldMappingEntry(name="text", source="/document/pages/*")],
             outputs=[OutputFieldMappingEntry(name="embedding", target_name="vector")],
         )
 

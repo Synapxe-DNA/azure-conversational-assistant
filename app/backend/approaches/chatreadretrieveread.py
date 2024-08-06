@@ -50,7 +50,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.chatgpt_token_limit = get_token_limit(chatgpt_model)
+        # See: https://github.com/pamelafox/openai-messages-token-helper/issues/16
+        self.chatgpt_token_limit = get_token_limit(chatgpt_model)  # gpt-4o-mini not yet supported
 
     @property
     def system_message_chat_conversation(self):
