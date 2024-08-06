@@ -173,7 +173,7 @@ class Approach(ABC):
                         embedding=document.get("embedding"),
                         image_embedding=document.get("imageEmbedding"),
                         category=document.get("category"),
-                        sourcepage=document.get("sourcepage"),
+                        sourcepage=document.get("sourcePage"),
                         sourcefile=document.get("sourcefile"),
                         oids=document.get("oids"),
                         groups=document.get("groups"),
