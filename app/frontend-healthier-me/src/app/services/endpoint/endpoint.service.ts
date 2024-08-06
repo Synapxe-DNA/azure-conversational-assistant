@@ -192,13 +192,14 @@ export class EndpointService {
     const responseId = createId();
 
     let lastResponseLength: number = 0;
+    let currentResponseMessage: string = "";
 
     const data: ApiChatRequest = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        message: message.message,
+        content: message.message,
       },
     };
 
@@ -216,18 +217,28 @@ export class EndpointService {
                 return;
               }
 
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiChatResponse;
+              const currentResponseData = (
+                e as HttpDownloadProgressEvent
+              ).partialText!.slice(lastResponseLength);
+              // console.log(currentResponseData)
+              currentResponseMessage += currentResponseData;
+              // const responseData = JSON.parse(currentResponseData) as ApiChatResponse
+              // console.log(responseData)
 
+              // const responseData = JSON.parse(
+              //   (e as HttpDownloadProgressEvent).partialText!.slice(
+              //     lastResponseLength,
+              //   ),
+              // ) as ApiChatResponse;
+
+              // currentResponseMessage = currentResponseMessage + responseData.response_message
+              //
               responseBS.next({
                 status: ResponseStatus.Pending,
-                response: responseData.message,
+                response: currentResponseMessage,
                 additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
+                  // responseData.additional_question_1,
+                  // responseData.additional_question_2,
                 ],
               });
 

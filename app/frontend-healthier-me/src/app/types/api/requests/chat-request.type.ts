@@ -6,6 +6,6 @@ export interface ApiChatRequest {
   profile: ApiProfile;
   query: {
     role: "user";
-    message: string;
+    content: string;
   };
 }
