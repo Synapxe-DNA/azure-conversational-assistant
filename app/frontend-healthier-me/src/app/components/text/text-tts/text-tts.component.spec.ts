@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { TextTtsComponent } from './text-tts.component';
+import { TextTtsComponent } from "./text-tts.component";
 
-describe('TextTtsComponent', () => {
+describe("TextTtsComponent", () => {
   let component: TextTtsComponent;
   let fixture: ComponentFixture<TextTtsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextTtsComponent]
-    })
-    .compileComponents();
+      imports: [TextTtsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TextTtsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

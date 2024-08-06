@@ -5,6 +5,7 @@ from approaches.chatapproach import ChatApproach
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
 from core.authentication import AuthenticationHelper
+from models.profile import Profile
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat import (
     ChatCompletion,
@@ -66,6 +67,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
@@ -75,6 +77,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
@@ -83,6 +86,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
     async def run_until_final_call(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,

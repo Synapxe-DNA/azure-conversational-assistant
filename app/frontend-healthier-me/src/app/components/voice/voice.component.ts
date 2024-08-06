@@ -19,6 +19,7 @@ import { ActivatedRoute } from "@angular/router";
 import { GeneralProfile, Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ConvoBrokerService } from "../../services/convo-broker/convo-broker.service";
+import { TextComponent } from "../text/text.component";
 
 @Component({
   selector: "app-voice",
@@ -32,6 +33,7 @@ import { ConvoBrokerService } from "../../services/convo-broker/convo-broker.ser
     OverlayPanelModule,
     InputSwitchModule,
     FormsModule,
+    TextComponent,
   ],
   templateUrl: "./voice.component.html",
   styleUrl: "./voice.component.css",
@@ -48,10 +50,10 @@ export class VoiceComponent implements OnInit, AfterViewInit {
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
   voiceDetectEnd: boolean = false;
+  showLiveTranscription: boolean = false;
 
   constructor(
     private preference: PreferenceService,
-    private vad: VadService,
     private audio: AudioService,
     private route: ActivatedRoute,
     private profileService: ProfileService,
@@ -66,6 +68,9 @@ export class VoiceComponent implements OnInit, AfterViewInit {
       (v) => (this.voiceDetectStart = v),
     );
     this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
+    this.preference.$showLiveTranscription.subscribe(
+      (v) => (this.showLiveTranscription = v),
+    );
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
@@ -86,6 +91,10 @@ export class VoiceComponent implements OnInit, AfterViewInit {
 
   prefChatModeToText(): void {
     this.preference.setChatMode(ChatMode.Text);
+  }
+
+  prefShowLiveTranscription(e: InputSwitchChangeEvent) {
+    this.preference.setShowLiveTranscription(e.checked);
   }
 
   prefVoiceInterrupt(e: InputSwitchChangeEvent) {
