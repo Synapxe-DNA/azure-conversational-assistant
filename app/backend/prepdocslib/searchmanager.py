@@ -165,10 +165,7 @@ class SearchManager:
                 ),
                 vector_search=VectorSearch(
                     algorithms=[
-                        HnswAlgorithmConfiguration(
-                            name="hnsw_config",
-                            parameters=HnswParameters(metric="cosine"),
-                        )
+                        HnswAlgorithmConfiguration(name="hnsw_config", parameters=HnswParameters(metric="cosine"))
                     ],
                     profiles=[
                         VectorSearchProfile(
