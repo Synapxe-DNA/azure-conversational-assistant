@@ -10,6 +10,9 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ProfileService {
   $profiles: BehaviorSubject<Profile[]> = new BehaviorSubject<Profile[]>([]);
+  $currentProfileInUrl: BehaviorSubject<string> = new BehaviorSubject<string>(
+    "",
+  );
 
   constructor(
     private dbService: NgxIndexedDBService,
@@ -18,6 +21,10 @@ export class ProfileService {
     this.dbService.getAll<Profile>("profiles").subscribe((v) => {
       this.$profiles.next(v);
     });
+  }
+
+  setProfileInUrl(id: string) {
+    this.$currentProfileInUrl.next(id);
   }
 
   /**

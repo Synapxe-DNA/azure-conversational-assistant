@@ -133,12 +133,8 @@
           }
           let token = decoder.decode(result.value);
           console.log(token);
-          data = JSON.parse(token);
-          if (data.status == "pending") {
-            document.getElementById("result").innerHTML += data.message;
-          } else {
-            document.getElementById("result").innerHTML += "<br><br>";
-          }
+          //   data = JSON.parse(token);
+          document.getElementById("result").innerHTML += token + "<br>";
 
           return reader.read().then(processResult);
         });
@@ -184,10 +180,9 @@
             return;
           }
           let token = decoder.decode(result.value);
-          data = JSON.parse(token);
-          console.log(data);
-          document.getElementById("result").innerHTML +=
-            data.response_message + "<br>";
+          //   data = JSON.parse(token);
+          console.log(token);
+          document.getElementById("result").innerHTML += token + "<br>";
 
           return reader.read().then(processResult);
         });
