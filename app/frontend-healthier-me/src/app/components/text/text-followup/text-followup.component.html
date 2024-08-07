@@ -1,0 +1,15 @@
+@if (followUps) {
+<div class="tw-flex tw-mb-2 tw-justify-around">
+    <p-button
+    (onClick)="sendFollowUp(followUp1)"
+    [label]="followUp1"
+    severity="secondary"
+    />
+
+    <p-button
+    (onClick)="sendFollowUp(followUp2)"
+    [label]="followUp2"
+    severity="secondary"
+    />
+</div>
+}
