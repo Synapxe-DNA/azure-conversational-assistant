@@ -28,8 +28,8 @@ function func_backend {
     Write-Host "`nStarting backend`n"
 
     $port = 50505
-    $host = "localhost"
-    & ../../.venv/bin/python -m quart --app main:app run --port $port --host $host --reload
+    $localhost = "127.0.0.1"
+    & ../.venv/Scripts/python -m quart --app main:app run --port $port --host $localhost --reload
     if ($LastExitCode -ne 0) {
         Write-Host "Failed to start backend"
         exit $LastExitCode
