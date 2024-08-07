@@ -42,6 +42,8 @@ from config import (
     CONFIG_SPEECH_SERVICE_LOCATION,
     CONFIG_SPEECH_SERVICE_TOKEN,
     CONFIG_SPEECH_SERVICE_VOICE,
+    CONFIG_SPEECH_TO_TEXT_SERVICE,
+    CONFIG_TEXT_TO_SPEECH_SERVICE,
     CONFIG_TRANSLATOR_SERVICE_API_KEY,
     CONFIG_TRANSLATOR_SERVICE_ENDPOINT,
     CONFIG_TRANSLATOR_SERVICE_LOCATION,
@@ -307,7 +309,8 @@ async def voice(auth_claims: Dict[str, Any] = None):
     wav_io.close()
 
     # Convert audio to text
-    stt = await SpeechToText.create()
+
+    stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
     transcription = stt.transcribe(audio_blob)
 
     # language = Utils.get_mode_language(transcription['language'])
@@ -435,7 +438,7 @@ async def setup_clients():
 
     AZURE_SPEECH_SERVICE_ID = os.getenv("AZURE_SPEECH_SERVICE_ID")
     AZURE_SPEECH_SERVICE_LOCATION = os.getenv("AZURE_SPEECH_SERVICE_LOCATION")
-    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-AndrewMultilingualNeural")
+    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-EmmaMultilingualNeural")
 
     AZURE_TRANSLATOR_SERVICE_API_KEY = os.getenv("AZURE_TRANSLATOR_SERVICE_API_KEY")
     AZURE_TRANSLATOR_SERVICE_ENDPOINT = os.getenv("AZURE_TRANSLATOR_SERVICE_ENDPOINT")
@@ -619,6 +622,11 @@ async def setup_clients():
         query_language=AZURE_SEARCH_QUERY_LANGUAGE,
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
     )
+
+    tts = await TextToSpeech.create()
+    stt = await SpeechToText.create()
+    current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
+    current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
 
     if USE_GPT4V:
         current_app.logger.info("USE_GPT4V is true, setting up GPT4V approach")
