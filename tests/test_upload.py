@@ -97,8 +97,8 @@ async def test_upload_file(auth_client, monkeypatch, mock_data_lake_service_clie
     assert response.status_code == 200
     assert len(documents_uploaded) == 1
     assert documents_uploaded[0]["id"] == "file-a_txt-612E7478747B276F696473273A205B274F49445F58275D7D-page-0"
-    assert documents_uploaded[0]["sourcepage"] == "a.txt"
-    assert documents_uploaded[0]["sourcefile"] == "a.txt"
+    assert documents_uploaded[0]["sourcePage"] == "a.txt"
+    assert documents_uploaded[0]["sourceFile"] == "a.txt"
     assert documents_uploaded[0]["embedding"] == [0.0023064255, -0.009327292, -0.0028842222]
     assert documents_uploaded[0]["category"] is None
     assert documents_uploaded[0]["oids"] == ["OID_X"]
@@ -156,8 +156,8 @@ async def test_delete_uploaded(auth_client, monkeypatch, mock_data_lake_service_
         def __init__(self):
             self.results = [
                 {
-                    "sourcepage": "a's doc.txt",
-                    "sourcefile": "a's doc.txt",
+                    "sourcePage": "a's doc.txt",
+                    "sourceFile": "a's doc.txt",
                     "content": "This is a test document.",
                     "embedding": [],
                     "category": None,
@@ -167,8 +167,8 @@ async def test_delete_uploaded(auth_client, monkeypatch, mock_data_lake_service_
                     "@search.reranker_score": 3.4577205181121826,
                 },
                 {
-                    "sourcepage": "a's doc.txt",
-                    "sourcefile": "a's doc.txt",
+                    "sourcePage": "a's doc.txt",
+                    "sourceFile": "a's doc.txt",
                     "content": "This is a test document.",
                     "embedding": [],
                     "category": None,
@@ -178,8 +178,8 @@ async def test_delete_uploaded(auth_client, monkeypatch, mock_data_lake_service_
                     "@search.reranker_score": 3.4577205181121826,
                 },
                 {
-                    "sourcepage": "a's doc.txt",
-                    "sourcefile": "a's doc.txt",
+                    "sourcePage": "a's doc.txt",
+                    "sourceFile": "a's doc.txt",
                     "content": "This is a test document.",
                     "embedding": [],
                     "category": None,

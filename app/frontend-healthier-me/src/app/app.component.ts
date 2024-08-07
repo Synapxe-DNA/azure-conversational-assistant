@@ -1,7 +1,8 @@
-import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute, RouterOutlet } from "@angular/router";
 import { ToastModule } from "primeng/toast";
 import { MessageService } from "primeng/api";
+import { ProfileService } from "./services/profile/profile.service";
 
 @Component({
   selector: "app-root",
@@ -13,4 +14,6 @@ import { MessageService } from "primeng/api";
 })
 export class AppComponent {
   title = "frontend";
+
+  constructor() {}
 }

@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, repeat, retry, Subject } from "rxjs";
 import { VoiceActivity } from "../../types/voice-activity.type";
+import { AudioService } from "../audio/audio.service";
 
 @Injectable({
   providedIn: "root",
@@ -8,9 +9,22 @@ import { VoiceActivity } from "../../types/voice-activity.type";
 export class VadService {
   private endTimeout: number = 0;
   private $speech: Subject<void> = new Subject<void>();
-  private recognition: SpeechRecognition;
+  private recognition!: SpeechRecognition;
 
-  constructor() {
+  // VAD is active during text mode; to prevent the constant blinking of the "mic" icon on mac devices,
+  // the user mic will continuously be referenced.
+  private __mic!: Promise<MediaStream>;
+
+  constructor(private audio: AudioService) {
+    this.__mic = this.audio.getMicInput();
+    this.configSpeechRecognition();
+  }
+
+  /**
+   * Method to start speech recognition
+   * @private
+   */
+  private configSpeechRecognition() {
     if (Object.hasOwn(window, "SpeechRecognition")) {
       this.recognition = new SpeechRecognition();
     } else if (Object.hasOwn(window, "webkitSpeechRecognition")) {
@@ -20,18 +34,21 @@ export class VadService {
       throw new Error("Fallback VAD not implemented!");
     }
 
-    this.configSpeechRecognition();
-  }
-
-  /**
-   * Method to start speech recognition
-   * @private
-   */
-  private configSpeechRecognition() {
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.onresult = () => {
       this.$speech.next();
+    };
+    this.recognition.onaudiostart = () => {
+      // console.log("VAD Start!");
+    };
+    this.recognition.onaudioend = () => {
+      // console.warn("VAD Ended! Starting new VAD session");
+      this.configSpeechRecognition();
+    };
+    this.recognition.onerror = () => {
+      // console.warn("VAD Error! Restarting VAD session");
+      this.configSpeechRecognition();
     };
     this.recognition.start();
   }

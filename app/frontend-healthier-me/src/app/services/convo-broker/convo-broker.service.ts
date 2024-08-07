@@ -22,7 +22,8 @@ import { ChatMode } from "../../types/chat-mode.type";
 })
 export class ConvoBrokerService {
   private recorder!: AudioRecorder;
-  private activeProfile: Profile | undefined;
+  private activeProfile: BehaviorSubject<Profile | undefined> =
+    new BehaviorSubject<Profile | undefined>(undefined);
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
     MicState.PENDING,
@@ -41,9 +42,9 @@ export class ConvoBrokerService {
     private route: ActivatedRoute,
   ) {
     this.initVoiceChat().catch(console.error);
-    this.profileService
-      .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
-      .subscribe((d) => (this.activeProfile = d || GeneralProfile));
+    this.profileService.$currentProfileInUrl.subscribe((p) => {
+      this.activeProfile = this.profileService.getProfile(p);
+    });
   }
 
   /**
@@ -114,7 +115,7 @@ export class ConvoBrokerService {
   private handleStopRecording() {
     this.$micState.next(MicState.DISABLED);
     this.recorder.stop().then((r) => {
-      this.sendVoice(r.data, this.activeProfile || GeneralProfile).catch(
+      this.sendVoice(r.data, this.activeProfile.value || GeneralProfile).catch(
         console.error,
       );
     });
@@ -152,7 +153,7 @@ export class ConvoBrokerService {
 
     const res = await this.endpointService.sendVoice(
       audio,
-      profile || GeneralProfile,
+      this.activeProfile.value || GeneralProfile,
       history.slice(-8),
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
