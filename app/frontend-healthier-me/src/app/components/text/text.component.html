@@ -7,12 +7,14 @@
       class="tw-w-[80ch] tw-max-w-full tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-6 tw-mx-4"
     >
       @for (message of messages; track message) {
-        @switch (message.role) {
-          @case (user) {
-            <app-text-user [message]="message"></app-text-user>
-          }
-          @case (system) {
-            <app-text-system [message]="message"></app-text-system>
+        @if (message.message.trim()) {
+          @switch (message.role) {
+            @case (user) {
+              <app-text-user [message]="message"></app-text-user>
+            }
+            @case (system) {
+              <app-text-system [message]="message"></app-text-system>
+            }
           }
         }
       }
