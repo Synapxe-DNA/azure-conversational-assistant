@@ -128,12 +128,31 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
+        if profile.user_age < 1:
+            age_group = "Infant"
+        elif profile.user_age <= 2:
+            age_group = "Toddler"
+        elif profile.user_age <= 6:
+            age_group = "Preschool"
+        elif profile.user_age <= 12:
+            age_group = "Child"
+        elif profile.user_age <= 17:
+            age_group = "Teen"
+        elif profile.user_age <= 64:
+            age_group = "Adult"
+        else:
+            age_group = "Senior"
+
         original_user_query = messages[-1]["content"]
         if not isinstance(original_user_query, str):
             raise ValueError("The most recent message content must be a string.")
-        user_query_request = "Generate search query for: " + original_user_query
 
-        # print(f"user_query_request: {user_query_request}")
+        if profile.profile_type == "general":
+            user_query_request = "Generate search query for: " + original_user_query
+        else:
+            user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
+
+        print(f"user_query_request: {user_query_request}")
 
         tools: List[ChatCompletionToolParam] = [
             {
@@ -159,21 +178,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             query_prompt = general_query_prompt
             answer_generation_prompt = general_prompt.format(follow_up_questions_prompt=follow_up_questions_prompt)
         else:
-            if profile.user_age < 1:
-                age_group = "Infant"
-            elif profile.user_age <= 2:
-                age_group = "Toddler"
-            elif profile.user_age <= 6:
-                age_group = "Preschool"
-            elif profile.user_age <= 12:
-                age_group = "Child"
-            elif profile.user_age <= 17:
-                age_group = "Teen"
-            elif profile.user_age <= 64:
-                age_group = "Adult"
-            else:
-                age_group = "Senior"
-
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
                 age_group=age_group,
