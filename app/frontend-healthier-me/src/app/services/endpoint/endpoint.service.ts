@@ -30,13 +30,17 @@ import { ApiChatResponse } from "../../types/api/response/api-chat-response.type
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
 
+/**
+   * Method to send previous system messages to backend for audio playback 
+   * @param text {string}
+   */
   async textToSpeech(
     text: string
   ): Promise<BehaviorSubject<{ audio: string } | null>> {
     const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
 
     this.httpClient
-      .post<{ audio: string }>("/tts", { text })
+      .post<{ audio: string }>("/speech", { "text": text })
       .pipe(
         map((response) => {
           return { audio: response.audio };
