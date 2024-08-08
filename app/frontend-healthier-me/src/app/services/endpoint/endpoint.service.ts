@@ -30,21 +30,21 @@ import { ApiChatResponse } from "../../types/api/response/api-chat-response.type
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
 
-/**
-   * Method to send previous system messages to backend for audio playback 
+  /**
+   * Method to send previous system messages to backend for audio playback
    * @param text {string}
    */
   async textToSpeech(
-    text: string
+    text: string,
   ): Promise<BehaviorSubject<{ audio: string } | null>> {
     const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
 
     this.httpClient
-      .post<{ audio: string }>("/speech", { "text": text })
+      .post<{ audio: string }>("/speech", { text: text })
       .pipe(
         map((response) => {
           return { audio: response.audio };
-        })
+        }),
       )
       .subscribe({
         next: (audioData) => {
@@ -130,7 +130,7 @@ export class EndpointService {
   async sendVoice(
     recording: Blob,
     profile: Profile,
-    history: Message[]
+    history: Message[],
   ): Promise<BehaviorSubject<VoiceResponse | null>> {
     const responseBS: BehaviorSubject<VoiceResponse | null> =
       new BehaviorSubject<VoiceResponse | null>(null);
@@ -161,8 +161,8 @@ export class EndpointService {
               }
               const responseData = JSON.parse(
                 (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength
-                )
+                  lastResponseLength,
+                ),
               ) as ApiVoiceResponse;
 
               if (responseData.audio_base64) {
@@ -216,7 +216,7 @@ export class EndpointService {
   async sendChat(
     message: Message,
     profile: Profile,
-    history: Message[]
+    history: Message[],
   ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> =
       new BehaviorSubject<ChatResponse | null>(null);
@@ -247,7 +247,6 @@ export class EndpointService {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-
 
               const currentResponseData = (
                 e as HttpDownloadProgressEvent

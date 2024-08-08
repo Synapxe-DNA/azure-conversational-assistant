@@ -1,3 +1,3 @@
 export interface SpeechRequest {
-  text: string
+  text: string;
 }

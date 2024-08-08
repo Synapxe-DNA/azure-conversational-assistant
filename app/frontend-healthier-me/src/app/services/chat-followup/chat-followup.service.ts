@@ -1,17 +1,18 @@
-import { Injectable } from '@angular/core';
-import { NgxIndexedDBService } from 'ngx-indexed-db';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { FollowUp } from '../../types/follow-up.type';
-
+import { Injectable } from "@angular/core";
+import { NgxIndexedDBService } from "ngx-indexed-db";
+import { BehaviorSubject, firstValueFrom } from "rxjs";
+import { FollowUp } from "../../types/follow-up.type";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class ChatFollowupService {
-  private $followUp: BehaviorSubject<FollowUp[]> = new BehaviorSubject<FollowUp[]>([]);
+  private $followUp: BehaviorSubject<FollowUp[]> = new BehaviorSubject<
+    FollowUp[]
+  >([]);
   private $currentProfileId: BehaviorSubject<string> = new BehaviorSubject("");
 
-  constructor(private indexedStore: NgxIndexedDBService) { }
+  constructor(private indexedStore: NgxIndexedDBService) {}
 
   async load(profileId: string): Promise<BehaviorSubject<FollowUp[]>> {
     this.$currentProfileId.next(profileId);
@@ -23,9 +24,7 @@ export class ChatFollowupService {
         IDBKeyRange.only(profileId),
       ),
     );
-    this.$followUp = new BehaviorSubject<FollowUp[]>(
-      followUps || []
-    );
+    this.$followUp = new BehaviorSubject<FollowUp[]>(followUps || []);
 
     return this.$followUp;
   }
@@ -78,5 +77,4 @@ export class ChatFollowupService {
 
     return this.insert(followup);
   }
-
 }

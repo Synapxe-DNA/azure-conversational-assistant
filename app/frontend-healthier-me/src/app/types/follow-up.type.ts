@@ -1,5 +1,5 @@
 export interface FollowUp {
-    id: string;
-    profile_id: string;
-    question: string;
+  id: string;
+  profile_id: string;
+  question: string;
 }
