@@ -175,6 +175,68 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
         yield json.dumps(error_dict(error))
 
 
+@bp.route("/chat", methods=["POST"])
+async def chat(auth_claims: Dict[str, Any]):
+    if not request.is_json:
+        return jsonify({"error": "request must be json"}), 415
+    request_json = await request.get_json()
+    context = request_json.get("context", {})
+    context["auth_claims"] = auth_claims
+    try:
+        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
+        approach: Approach
+        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
+            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
+        else:
+            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
+
+        result = await approach.run(
+            request_json["messages"],
+            context=context,
+            session_state=request_json.get("session_state"),
+        )
+        return jsonify(result)
+    except Exception as error:
+        return error_response(error, "/chat")
+
+
+@bp.route("/chat/stream", methods=["POST"])
+async def chat_stream(auth_claims: Dict[str, Any] = None):
+
+    # Receive data from the client
+    data = await request.form
+
+    context = data.get("context", {})
+    # Extract data from the JSON message
+    # profile = json.loads(data.get("profile"))
+    chat_history = json.loads(data.get("chat_history", "[]"))
+    query_text = json.loads(data["query"])
+    profile = json.loads(data.get("profile", "{}"))
+    profile = Profile(**profile)
+    context["auth_claims"] = auth_claims
+
+    messages = chat_history + [query_text]
+
+    try:
+        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
+        approach: Approach
+        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
+            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
+        else:
+            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
+
+        result = await approach.run_stream(
+            messages=messages,
+            context=context,
+            profile=profile,
+        )
+
+        response = await Utils.construct_streaming_chat_response(result)
+        return response, 200
+    except Exception as error:
+        return error_response(error, "/chat")
+
+
 # Send MSAL.js settings to the client UI
 @bp.route("/auth_setup", methods=["GET"])
 def auth_setup():

@@ -10,4 +10,8 @@ MINIMUM_SEARCH_SCORE = 0.0
 MINIMUM_RERANKER_SCORE = 0.0
 
 # answer generation parameters
-CHAT_RESPONSE_MAX_TOKENS = 200
+CHAT_RESPONSE_MAX_TOKENS = 400
+
+# user defined language
+# this parameter is for testing purpose now. once available on frontend, to take in variable input from frontend
+SELECTED_LANGUAGE = "CHINESE"
