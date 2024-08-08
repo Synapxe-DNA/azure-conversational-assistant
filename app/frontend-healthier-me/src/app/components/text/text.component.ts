@@ -45,7 +45,7 @@ export class TextComponent implements OnInit {
   >(undefined);
 
   messages: Message[] = [];
-  followUps: FollowUp[] = []
+  followUps: FollowUp[] = [];
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -98,4 +98,3 @@ export class TextComponent implements OnInit {
     });
   }
 }
- 

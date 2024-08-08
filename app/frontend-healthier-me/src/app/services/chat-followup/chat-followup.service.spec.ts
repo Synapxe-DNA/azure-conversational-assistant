@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from "@angular/core/testing";
 
-import { ChatFollowupService } from './chat-followup.service';
+import { ChatFollowupService } from "./chat-followup.service";
 
-describe('ChatFollowupService', () => {
+describe("ChatFollowupService", () => {
   let service: ChatFollowupService;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('ChatFollowupService', () => {
     service = TestBed.inject(ChatFollowupService);
   });
 
-  it('should be created', () => {
+  it("should be created", () => {
     expect(service).toBeTruthy();
   });
 });
