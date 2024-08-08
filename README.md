@@ -91,7 +91,7 @@ either you or they can follow these steps:
 
 5. Run `./scripts/roles.ps1` or `.scripts/roles.sh` to assign all of the necessary roles to the user. If they do not have the necessary permission to create roles in the subscription, then you may need to run this script for them. Once the script runs, they should be able to run the app locally.
 
-6. Manually set environment variables: Navigate to app folder and run `set-env`
+6. Manually set environment variables: Navigate to `app` folder and run `set-env`
 
 ## Running locally
 

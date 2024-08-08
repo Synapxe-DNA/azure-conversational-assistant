@@ -3,13 +3,15 @@ from io import BytesIO
 from typing import Any, Dict, cast
 
 from approaches.approach import Approach
-from config import CONFIG_CHAT_APPROACH, CONFIG_SPEECH_TO_TEXT_SERVICE
+from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
+from config import CONFIG_CHAT_APPROACH
 from error import error_response
 from models.profile import Profile
-from pydub import AudioSegment
+from openai import AsyncOpenAI
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
 
+# print(lang)
 voice = Blueprint("voice", __name__, url_prefix="/voice")
 
 
@@ -23,36 +25,23 @@ async def voice_endpoint(auth_claims: Dict[str, Any] = None):
 
     context = data.get("context", {})
 
-    # Process audio
-    target_sample_rate = 16000  # 16 kHz
-    target_channels = 1  # Mono
-    target_bit_depth = 16  # 16-bit
-
-    # Resample audio
-    audio_seg = AudioSegment.from_file(audio["query"], format="webm")
-    audio_seg = audio_seg.set_frame_rate(target_sample_rate)
-    audio_seg = audio_seg.set_channels(target_channels)
-    audio_seg = audio_seg.set_sample_width(target_bit_depth // 8)
-    wav_io = BytesIO()
-    audio_seg.export(wav_io, format="wav")
-
     # Extract data from the JSON message
     profile_json = json.loads(data.get("profile"))
     profile = Profile(**profile_json)
 
     chat_history = json.loads(data.get("chat_history", "[]"))
-    audio_blob = wav_io.getvalue()
     context["auth_claims"] = auth_claims
 
-    wav_io.close()
-
     # Convert audio to text
+    config: ChatReadRetrieveReadApproach = current_app.config[CONFIG_CHAT_APPROACH]
+    client: AsyncOpenAI = config.openai_client_2
+    audio_file = audio["query"]
+    buffer = BytesIO(audio_file.read())
+    buffer.name = f"file.{audio_file.filename.split('.')[-1]}"  # Required to indicate file type for whisper
 
-    stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
-    transcription = stt.transcribe(audio_blob)
-
-    # language = Utils.get_mode_language(transcription['language'])
-    query_text = " ".join(transcription["text"])
+    query_text = await client.audio.transcriptions.create(
+        file=buffer, model=config.whisiper_deployment, response_format="text"
+    )
 
     # Form message
     messages = chat_history + [{"content": query_text, "role": "user"}]
