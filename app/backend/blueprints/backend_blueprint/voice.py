@@ -1,25 +1,17 @@
 import json
-
-from typing import (
-    Dict,
-    Any,
-    cast,
-)
-from quart import (
-    Blueprint,
-    current_app,
-    request,
-)
-from pydub import AudioSegment
 from io import BytesIO
-from models.profile import Profile
-from config import CONFIG_CHAT_APPROACH, CONFIG_SPEECH_TO_TEXT_SERVICE
-from approaches.approach import Approach
-from utils.utils import Utils
-from error import error_response
+from typing import Any, Dict, cast
 
+from approaches.approach import Approach
+from config import CONFIG_CHAT_APPROACH, CONFIG_SPEECH_TO_TEXT_SERVICE
+from error import error_response
+from models.profile import Profile
+from pydub import AudioSegment
+from quart import Blueprint, current_app, request
+from utils.utils import Utils
 
 voice = Blueprint("voice", __name__, url_prefix="/voice")
+
 
 @voice.route("/", methods=["POST"])
 async def voice_endpoint(auth_claims: Dict[str, Any] = None):

@@ -1,25 +1,12 @@
-
 import json
+from typing import Any, Dict, cast
 
-from typing import (
-    Dict,
-    Any,
-    cast,
-)
-from quart import (
-    Blueprint,
-    current_app,
-    request,
-    jsonify,
-)
-from models.profile import Profile
-from config import (
-    CONFIG_CHAT_APPROACH, 
-    CONFIG_CHAT_VISION_APPROACH,
-    )
 from approaches.approach import Approach
-from utils.utils import Utils
+from config import CONFIG_CHAT_APPROACH, CONFIG_CHAT_VISION_APPROACH
 from error import error_response
+from models.profile import Profile
+from quart import Blueprint, current_app, jsonify, request
+from utils.utils import Utils
 
 chat = Blueprint("chat", __name__, url_prefix="/chat")
 
@@ -54,7 +41,7 @@ async def chat_stream_endpoint(auth_claims: Dict[str, Any] = None):
         return response, 200
     except Exception as error:
         return error_response(error, "/chat/stream")
-    
+
 
 # Not in use
 @chat.route("/", methods=["POST"])

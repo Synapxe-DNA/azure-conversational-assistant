@@ -1,10 +1,6 @@
 import logging
 
-from quart import (
-    Blueprint,
-    request,
-    jsonify,
-)
+from quart import Blueprint, jsonify, request
 from speech.text_to_speech import TextToSpeech
 
 speech = Blueprint("speech", __name__, url_prefix="/speech")

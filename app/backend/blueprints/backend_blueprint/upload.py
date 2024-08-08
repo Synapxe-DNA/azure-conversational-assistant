@@ -1,29 +1,20 @@
 import io
 import os
-
 from typing import Any
-from quart import (
-    Blueprint,
-    current_app,
-    request,
-    jsonify
-)
-from azure.storage.filedatalake.aio import FileSystemClient
+
 from azure.core.exceptions import ResourceNotFoundError
-from config import (
-    CONFIG_INGESTER,
-    CONFIG_USER_BLOB_CONTAINER_CLIENT,
-)
+from azure.storage.filedatalake.aio import FileSystemClient
+from config import CONFIG_INGESTER, CONFIG_USER_BLOB_CONTAINER_CLIENT
 from prepdocslib.filestrategy import UploadUserFileStrategy
 from prepdocslib.listfilestrategy import File
-
+from quart import Blueprint, current_app, jsonify, request
 
 static_folder_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "static", "browser")
-upload = Blueprint("upload", __name__, static_folder=static_folder_path,url_prefix="/")
+upload = Blueprint("upload", __name__, static_folder=static_folder_path, url_prefix="/")
 
 
 @upload.post("/upload")
-async def upload_endpoint(auth_claims: dict[str, Any]= None):
+async def upload_endpoint(auth_claims: dict[str, Any] = None):
     request_files = await request.files
     if "file" not in request_files:
         # If no files were included in the request, return an error response
@@ -51,7 +42,7 @@ async def upload_endpoint(auth_claims: dict[str, Any]= None):
 
 
 @upload.post("/delete_uploaded")
-async def delete_uploaded_endpoint(auth_claims: dict[str, Any]= None):
+async def delete_uploaded_endpoint(auth_claims: dict[str, Any] = None):
     request_json = await request.get_json()
     filename = request_json.get("filename")
     user_oid = auth_claims["oid"]
@@ -65,7 +56,7 @@ async def delete_uploaded_endpoint(auth_claims: dict[str, Any]= None):
 
 
 @upload.get("/list_uploaded")
-async def list_uploaded_endpoint(auth_claims: dict[str, Any]=None):
+async def list_uploaded_endpoint(auth_claims: dict[str, Any] = None):
     user_oid = auth_claims["oid"]
     user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
     files = []
