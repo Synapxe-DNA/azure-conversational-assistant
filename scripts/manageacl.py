@@ -10,10 +10,7 @@ from azure.core.credentials_async import AsyncTokenCredential
 from azure.identity.aio import AzureDeveloperCliCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import (
-    SearchFieldDataType,
-    SimpleField,
-)
+from azure.search.documents.indexes.models import SearchFieldDataType, SimpleField
 
 logger = logging.getLogger("manageacl")
 
@@ -177,7 +174,7 @@ class ManageAcl:
 
     async def update_storage_urls(self, search_client: SearchClient):
         filter = "storageUrl eq ''"
-        documents = await search_client.search("", filter=filter, select=["id", "storageUrl", "oids", "sourcefile"])
+        documents = await search_client.search("", filter=filter, select=["id", "storageUrl", "oids", "sourceFile"])
         found_documents = []
         documents_to_merge = []
         async for document in documents:
@@ -188,7 +185,7 @@ class ManageAcl:
                     document["id"],
                 )
             else:
-                storage_url = urljoin(self.url, document["sourcefile"])
+                storage_url = urljoin(self.url, document["sourceFile"])
                 documents_to_merge.append({"id": document["id"], "storageUrl": storage_url})
                 logger.info("Adding storage URL %s for document %s", storage_url, document["id"])
 

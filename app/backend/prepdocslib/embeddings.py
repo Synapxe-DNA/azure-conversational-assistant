@@ -62,7 +62,7 @@ class OpenAIEmbeddings(ABC):
     def before_retry_sleep(self, retry_state):
         logger.info("Rate limited on the OpenAI embeddings API, sleeping before retrying...")
 
-    def calculate_token_length(self, text: str):
+    def calculate_token_length(self, text: str) -> int:
         encoding = tiktoken.encoding_for_model(self.open_ai_model_name)
         return len(encoding.encode(text))
 
@@ -138,7 +138,6 @@ class OpenAIEmbeddings(ABC):
         return emb_response.data[0].embedding
 
     async def create_embeddings(self, texts: List[str]) -> List[List[float]]:
-
         dimensions_args: ExtraArgs = (
             {"dimensions": self.open_ai_dimensions}
             if OpenAIEmbeddings.SUPPORTED_DIMENSIONS_MODEL.get(self.open_ai_model_name)

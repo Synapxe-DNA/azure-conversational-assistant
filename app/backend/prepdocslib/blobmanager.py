@@ -2,16 +2,11 @@ import datetime
 import io
 import logging
 import os
-import re
 from typing import List, Optional, Union
 
 import fitz  # type: ignore
 from azure.core.credentials_async import AsyncTokenCredential
-from azure.storage.blob import (
-    BlobSasPermissions,
-    UserDelegationKey,
-    generate_blob_sas,
-)
+from azure.storage.blob import BlobSasPermissions, UserDelegationKey, generate_blob_sas
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from PIL import Image, ImageDraw, ImageFont
 from pypdf import PdfReader
@@ -149,16 +144,17 @@ class BlobManager:
                 blobs = container_client.list_blob_names()
             else:
                 prefix = os.path.splitext(os.path.basename(path))[0]
-                blobs = container_client.list_blob_names(name_starts_with=os.path.splitext(os.path.basename(prefix))[0])
+                blobs = container_client.list_blob_names(name_starts_with=prefix)
+
             async for blob_path in blobs:
-                # This still supports PDFs split into individual pages, but we could remove in future to simplify code
-                if (
-                    prefix is not None
-                    and (
-                        not re.match(rf"{prefix}-\d+\.pdf", blob_path) or not re.match(rf"{prefix}-\d+\.png", blob_path)
-                    )
-                ) or (path is not None and blob_path == os.path.basename(path)):
-                    continue
+                # # This still supports PDFs split into individual pages, but we could remove in future to simplify code
+                # if (
+                #     prefix is not None
+                #     and (
+                #         not re.match(rf"{prefix}-\d+\.pdf", blob_path) or not re.match(rf"{prefix}-\d+\.png", blob_path)
+                #     )
+                # ) or (path is not None and blob_path == os.path.basename(path)):
+                #     continue
                 logger.info("Removing blob %s", blob_path)
                 await container_client.delete_blob(blob_path)
 

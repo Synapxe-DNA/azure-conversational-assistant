@@ -82,7 +82,7 @@ either you or they can follow these steps:
 
 1. Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
-2. Run `azd init -t azure-search-openai-demo` or clone this repository.
+2. Clone this repository.
 
 3. Run `azd env refresh -e {environment name}`
    They will need the azd environment name, subscription ID, and location to run this command. You can find those values in your `.azure/{env name}/.env` file. This will populate their azd environment's `.env` file with all the settings needed to run the app locally.
@@ -90,6 +90,8 @@ either you or they can follow these steps:
 4. Set the environment variable `AZURE_PRINCIPAL_ID` either in that `.env` file or in the active shell to their Azure ID, which they can get with `az ad signed-in-user show`.
 
 5. Run `./scripts/roles.ps1` or `.scripts/roles.sh` to assign all of the necessary roles to the user. If they do not have the necessary permission to create roles in the subscription, then you may need to run this script for them. Once the script runs, they should be able to run the app locally.
+
+6. Manually set environment variables: Navigate to app folder and run `set-env`
 
 ## Running locally
 
@@ -111,3 +113,13 @@ Once in the web app:
 - Try different topics in chat or Q&A context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
+
+## Running backend locally
+
+1. Navigate to the `app` folder
+2. Run `make run-local'
+3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
+
+> [!NOTE]
+>
+> To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.

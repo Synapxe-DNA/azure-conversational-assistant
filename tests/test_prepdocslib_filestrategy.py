@@ -2,13 +2,10 @@ import os
 
 import pytest
 from azure.search.documents.aio import SearchClient
-
 from prepdocslib.blobmanager import BlobManager
 from prepdocslib.fileprocessor import FileProcessor
 from prepdocslib.filestrategy import FileStrategy
-from prepdocslib.listfilestrategy import (
-    ADLSGen2ListFileStrategy,
-)
+from prepdocslib.listfilestrategy import ADLSGen2ListFileStrategy
 from prepdocslib.strategy import SearchInfo
 from prepdocslib.textparser import TextParser
 from prepdocslib.textsplitter import SimpleTextSplitter
@@ -76,8 +73,8 @@ async def test_file_strategy_adls2(monkeypatch, mock_env, mock_data_lake_service
             "category": None,
             "groups": ["A-GROUP-ID"],
             "oids": ["A-USER-ID"],
-            "sourcepage": "a.txt",
-            "sourcefile": "a.txt",
+            "sourcePage": "a.txt",
+            "sourceFile": "a.txt",
             "storageUrl": "https://test.blob.core.windows.net/a.txt",
         },
         {
@@ -86,8 +83,8 @@ async def test_file_strategy_adls2(monkeypatch, mock_env, mock_data_lake_service
             "category": None,
             "groups": ["B-GROUP-ID"],
             "oids": ["B-USER-ID"],
-            "sourcepage": "b.txt",
-            "sourcefile": "b.txt",
+            "sourcePage": "b.txt",
+            "sourceFile": "b.txt",
             "storageUrl": "https://test.blob.core.windows.net/b.txt",
         },
         {
@@ -96,8 +93,8 @@ async def test_file_strategy_adls2(monkeypatch, mock_env, mock_data_lake_service
             "category": None,
             "groups": ["C-GROUP-ID"],
             "oids": ["C-USER-ID"],
-            "sourcepage": "c.txt",
-            "sourcefile": "c.txt",
+            "sourcePage": "c.txt",
+            "sourceFile": "c.txt",
             "storageUrl": "https://test.blob.core.windows.net/c.txt",
         },
     ]

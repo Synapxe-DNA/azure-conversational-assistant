@@ -4,17 +4,13 @@ import json
 import logging
 import mimetypes
 import os
-import time
-from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
-from azure.cognitiveservices.speech import (
-    ResultReason,
-    SpeechConfig,
-    SpeechSynthesisOutputFormat,
-    SpeechSynthesisResult,
-    SpeechSynthesizer,
-)
+from approaches.approach import Approach
+from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
+from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
+from approaches.retrievethenread import RetrieveThenReadApproach
+from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.monitor.opentelemetry import configure_azure_monitor
@@ -24,31 +20,11 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
-from openai import AsyncAzureOpenAI, AsyncOpenAI
-from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
-from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
-from opentelemetry.instrumentation.httpx import (
-    HTTPXClientInstrumentor,
-)
-from opentelemetry.instrumentation.openai import OpenAIInstrumentor
-from quart import (
-    Blueprint,
-    Quart,
-    abort,
-    current_app,
-    jsonify,
-    make_response,
-    request,
-    send_file,
-    send_from_directory,
-)
-from quart_cors import cors
-
-from approaches.approach import Approach
-from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
-from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionApproach
-from approaches.retrievethenread import RetrieveThenReadApproach
-from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
+from blueprints.backend_blueprint.chat import chat
+from blueprints.backend_blueprint.speech import speech
+from blueprints.backend_blueprint.upload import upload
+from blueprints.backend_blueprint.voice import voice
+from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_ASK_VISION_APPROACH,
@@ -69,13 +45,22 @@ from config import (
     CONFIG_SPEECH_SERVICE_LOCATION,
     CONFIG_SPEECH_SERVICE_TOKEN,
     CONFIG_SPEECH_SERVICE_VOICE,
+    CONFIG_SPEECH_TO_TEXT_SERVICE,
+    CONFIG_TEXT_TO_SPEECH_SERVICE,
+    CONFIG_TRANSLATOR_SERVICE_API_KEY,
+    CONFIG_TRANSLATOR_SERVICE_ENDPOINT,
+    CONFIG_TRANSLATOR_SERVICE_LOCATION,
     CONFIG_USER_BLOB_CONTAINER_CLIENT,
     CONFIG_USER_UPLOAD_ENABLED,
     CONFIG_VECTOR_SEARCH_ENABLED,
 )
 from core.authentication import AuthenticationHelper
-from decorators import authenticated, authenticated_path
 from error import error_dict, error_response
+from openai import AsyncAzureOpenAI, AsyncOpenAI
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 from prepdocs import (
     clean_key_if_exists,
     setup_embeddings_service,
@@ -83,38 +68,32 @@ from prepdocs import (
     setup_search_info,
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
-from prepdocslib.listfilestrategy import File
+from quart import (
+    Blueprint,
+    Quart,
+    abort,
+    current_app,
+    jsonify,
+    redirect,
+    request,
+    send_file,
+)
+from quart_cors import cors
+from speech.speech_to_text import SpeechToText
+from speech.text_to_speech import TextToSpeech
 
-bp = Blueprint("routes", __name__, static_folder="static")
+bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 
 
 @bp.route("/")
-async def index():
-    return await bp.send_static_file("index.html")
-
-
-# Empty page is recommended for login redirect to work.
-# See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/initialization.md#redirecturi-considerations for more information
-@bp.route("/redirect")
-async def redirect():
-    return ""
-
-
-@bp.route("/favicon.ico")
-async def favicon():
-    return await bp.send_static_file("favicon.ico")
-
-
-@bp.route("/assets/<path:path>")
-async def assets(path):
-    return await send_from_directory(Path(__file__).resolve().parent / "static" / "assets", path)
+async def serve_app():
+    return redirect("/app")
 
 
 @bp.route("/content/<path>")
-@authenticated_path
 async def content_file(path: str, auth_claims: Dict[str, Any]):
     """
     Serve content files from blob storage from within the app to keep the example self-contained.
@@ -159,7 +138,6 @@ async def content_file(path: str, auth_claims: Dict[str, Any]):
 
 
 @bp.route("/ask", methods=["POST"])
-@authenticated
 async def ask(auth_claims: Dict[str, Any]):
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
@@ -197,63 +175,6 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
         yield json.dumps(error_dict(error))
 
 
-@bp.route("/chat", methods=["POST"])
-@authenticated
-async def chat(auth_claims: Dict[str, Any]):
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    context = request_json.get("context", {})
-    context["auth_claims"] = auth_claims
-    try:
-        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
-        approach: Approach
-        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
-        else:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
-
-        result = await approach.run(
-            request_json["messages"],
-            context=context,
-            session_state=request_json.get("session_state"),
-        )
-        return jsonify(result)
-    except Exception as error:
-        return error_response(error, "/chat")
-
-
-@bp.route("/chat/stream", methods=["POST"])
-@authenticated
-async def chat_stream(auth_claims: Dict[str, Any]):
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    context = request_json.get(
-        "context", {}
-    )  # TODO: request_json must contain overrides with exclude_category key to filter for category
-    context["auth_claims"] = auth_claims
-    try:
-        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
-        approach: Approach
-        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
-        else:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
-
-        result = await approach.run_stream(
-            request_json["messages"],
-            context=context,
-            session_state=request_json.get("session_state"),
-        )
-        response = await make_response(format_as_ndjson(result))
-        response.timeout = None  # type: ignore
-        response.mimetype = "application/json-lines"
-        return response
-    except Exception as error:
-        return error_response(error, "/chat")
-
-
 # Send MSAL.js settings to the client UI
 @bp.route("/auth_setup", methods=["GET"])
 def auth_setup():
@@ -274,110 +195,6 @@ def config():
             "showSpeechOutputAzure": current_app.config[CONFIG_SPEECH_OUTPUT_AZURE_ENABLED],
         }
     )
-
-
-@bp.route("/speech", methods=["POST"])
-async def speech():
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-
-    speech_token = current_app.config.get(CONFIG_SPEECH_SERVICE_TOKEN)
-    if speech_token is None or speech_token.expires_on < time.time() + 60:
-        speech_token = await current_app.config[CONFIG_CREDENTIAL].get_token(
-            "https://cognitiveservices.azure.com/.default"
-        )
-        current_app.config[CONFIG_SPEECH_SERVICE_TOKEN] = speech_token
-
-    request_json = await request.get_json()
-    text = request_json["text"]
-    try:
-        # Construct a token as described in documentation:
-        # https://learn.microsoft.com/azure/ai-services/speech-service/how-to-configure-azure-ad-auth?pivots=programming-language-python
-        auth_token = (
-            "aad#"
-            + current_app.config[CONFIG_SPEECH_SERVICE_ID]
-            + "#"
-            + current_app.config[CONFIG_SPEECH_SERVICE_TOKEN].token
-        )
-        speech_config = SpeechConfig(auth_token=auth_token, region=current_app.config[CONFIG_SPEECH_SERVICE_LOCATION])
-        speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
-        speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3
-        synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=None)
-        result: SpeechSynthesisResult = synthesizer.speak_text_async(text).get()
-        if result.reason == ResultReason.SynthesizingAudioCompleted:
-            return result.audio_data, 200, {"Content-Type": "audio/mp3"}
-        elif result.reason == ResultReason.Canceled:
-            cancellation_details = result.cancellation_details
-            current_app.logger.error(
-                "Speech synthesis canceled: %s %s", cancellation_details.reason, cancellation_details.error_details
-            )
-            raise Exception("Speech synthesis canceled. Check logs for details.")
-        else:
-            current_app.logger.error("Unexpected result reason: %s", result.reason)
-            raise Exception("Speech synthesis failed. Check logs for details.")
-    except Exception as e:
-        logging.exception("Exception in /speech")
-        return jsonify({"error": str(e)}), 500
-
-
-@bp.post("/upload")
-@authenticated
-async def upload(auth_claims: dict[str, Any]):
-    request_files = await request.files
-    if "file" not in request_files:
-        # If no files were included in the request, return an error response
-        return jsonify({"message": "No file part in the request", "status": "failed"}), 400
-
-    user_oid = auth_claims["oid"]
-    file = request_files.getlist("file")[0]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    user_directory_client = user_blob_container_client.get_directory_client(user_oid)
-    try:
-        await user_directory_client.get_directory_properties()
-    except ResourceNotFoundError:
-        current_app.logger.info("Creating directory for user %s", user_oid)
-        await user_directory_client.create_directory()
-    await user_directory_client.set_access_control(owner=user_oid)
-    file_client = user_directory_client.get_file_client(file.filename)
-    file_io = file
-    file_io.name = file.filename
-    file_io = io.BufferedReader(file_io)
-    await file_client.upload_data(file_io, overwrite=True, metadata={"UploadedBy": user_oid})
-    file_io.seek(0)
-    ingester: UploadUserFileStrategy = current_app.config[CONFIG_INGESTER]
-    await ingester.add_file(File(content=file_io, acls={"oids": [user_oid]}, url=file_client.url))
-    return jsonify({"message": "File uploaded successfully"}), 200
-
-
-@bp.post("/delete_uploaded")
-@authenticated
-async def delete_uploaded(auth_claims: dict[str, Any]):
-    request_json = await request.get_json()
-    filename = request_json.get("filename")
-    user_oid = auth_claims["oid"]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    user_directory_client = user_blob_container_client.get_directory_client(user_oid)
-    file_client = user_directory_client.get_file_client(filename)
-    await file_client.delete_file()
-    ingester = current_app.config[CONFIG_INGESTER]
-    await ingester.remove_file(filename, user_oid)
-    return jsonify({"message": f"File {filename} deleted successfully"}), 200
-
-
-@bp.get("/list_uploaded")
-@authenticated
-async def list_uploaded(auth_claims: dict[str, Any]):
-    user_oid = auth_claims["oid"]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    files = []
-    try:
-        all_paths = user_blob_container_client.get_paths(path=user_oid)
-        async for path in all_paths:
-            files.append(path.name.split("/", 1)[1])
-    except ResourceNotFoundError as error:
-        if error.status_code != 404:
-            current_app.logger.exception("Error listing uploaded files", error)
-    return jsonify(files), 200
 
 
 @bp.before_app_serving
@@ -419,7 +236,7 @@ async def setup_clients():
     AZURE_AUTH_TENANT_ID = os.getenv("AZURE_AUTH_TENANT_ID", AZURE_TENANT_ID)
 
     KB_FIELDS_CONTENT = os.getenv("KB_FIELDS_CONTENT", "content")
-    KB_FIELDS_SOURCEPAGE = os.getenv("KB_FIELDS_SOURCEPAGE", "sourcepage")
+    KB_FIELDS_SOURCEPAGE = os.getenv("KB_FIELDS_SOURCEPAGE", "sourcePage")
 
     AZURE_SEARCH_QUERY_LANGUAGE = os.getenv("AZURE_SEARCH_QUERY_LANGUAGE", "en-us")
     AZURE_SEARCH_QUERY_SPELLER = os.getenv("AZURE_SEARCH_QUERY_SPELLER", "lexicon")
@@ -427,7 +244,11 @@ async def setup_clients():
 
     AZURE_SPEECH_SERVICE_ID = os.getenv("AZURE_SPEECH_SERVICE_ID")
     AZURE_SPEECH_SERVICE_LOCATION = os.getenv("AZURE_SPEECH_SERVICE_LOCATION")
-    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-AndrewMultilingualNeural")
+    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-EmmaMultilingualNeural")
+
+    AZURE_TRANSLATOR_SERVICE_API_KEY = os.getenv("AZURE_TRANSLATOR_SERVICE_API_KEY")
+    AZURE_TRANSLATOR_SERVICE_ENDPOINT = os.getenv("AZURE_TRANSLATOR_SERVICE_ENDPOINT")
+    AZURE_TRANSLATOR_SERVICE_LOCATION = os.getenv("AZURE_TRANSLATOR_SERVICE_LOCATION")
 
     USE_GPT4V = os.getenv("USE_GPT4V", "").lower() == "true"
     USE_USER_UPLOAD = os.getenv("USE_USER_UPLOAD", "").lower() == "true"
@@ -528,6 +349,10 @@ async def setup_clients():
         # Wait until token is needed to fetch for the first time
         current_app.config[CONFIG_SPEECH_SERVICE_TOKEN] = None
         current_app.config[CONFIG_CREDENTIAL] = azure_credential
+        # Translator will only be used when speech is used
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_API_KEY] = AZURE_TRANSLATOR_SERVICE_API_KEY
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_ENDPOINT] = AZURE_TRANSLATOR_SERVICE_ENDPOINT
+        current_app.config[CONFIG_TRANSLATOR_SERVICE_LOCATION] = AZURE_TRANSLATOR_SERVICE_LOCATION
 
     if OPENAI_HOST.startswith("azure"):
         api_version = os.getenv("AZURE_OPENAI_API_VERSION") or "2024-03-01-preview"
@@ -604,6 +429,11 @@ async def setup_clients():
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
     )
 
+    tts = await TextToSpeech.create()
+    stt = await SpeechToText.create()
+    current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
+    current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
+
     if USE_GPT4V:
         current_app.logger.info("USE_GPT4V is true, setting up GPT4V approach")
         if not AZURE_OPENAI_GPT4V_MODEL:
@@ -660,6 +490,12 @@ async def close_clients():
 def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
+    app.register_blueprint(frontend)
+    app.register_blueprint(voice)
+    app.register_blueprint(chat)
+    app.register_blueprint(speech)
+    app.register_blueprint(upload)
+    app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
         configure_azure_monitor()
@@ -677,7 +513,6 @@ def create_app():
     if os.getenv("WEBSITE_HOSTNAME"):  # In production, don't log as heavily
         default_level = "WARNING"
     logging.basicConfig(level=os.getenv("APP_LOG_LEVEL", default_level))
-
     if allowed_origin := os.getenv("ALLOWED_ORIGIN"):
         app.logger.info("CORS enabled for %s", allowed_origin)
         cors(app, allow_origin=allowed_origin, allow_methods=["GET", "POST"])

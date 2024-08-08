@@ -6,9 +6,7 @@ from typing import Optional
 import openai.types
 from azure.cognitiveservices.speech import ResultReason
 from azure.core.credentials_async import AsyncTokenCredential
-from azure.search.documents.models import (
-    VectorQuery,
-)
+from azure.search.documents.models import VectorQuery
 from azure.storage.blob import BlobProperties
 
 MOCK_EMBEDDING_DIMENSIONS = 1536
@@ -18,13 +16,11 @@ MockToken = namedtuple("MockToken", ["token", "expires_on", "value"])
 
 
 class MockAzureCredential(AsyncTokenCredential):
-
     async def get_token(self, uri):
         return MockToken("", 9999999999, "")
 
 
 class MockAzureCredentialExpired(AsyncTokenCredential):
-
     def __init__(self):
         self.access_number = 0
 
@@ -83,7 +79,7 @@ class MockAsyncSearchResultsIterator:
                 [
                     {
                         "category": None,
-                        "sourcefile": "Financial Market Analysis Report 2023.pdf",
+                        "sourceFile": "Financial Market Analysis Report 2023.pdf",
                         "image_embedding": [
                             -0.86035156,
                             1.3310547,
@@ -97,7 +93,7 @@ class MockAsyncSearchResultsIterator:
                         ],
                         "content": "3</td><td>1</td></tr></table>\nFinancial markets are interconnected, with movements in one segment often influencing others. This section examines the correlations between stock indices, cryptocurrency prices, and commodity prices, revealing how changes in one market can have ripple effects across the financial ecosystem.Impact of Macroeconomic Factors\nImpact of Interest Rates, Inflation, and GDP Growth on Financial Markets\n5\n4\n3\n2\n1\n0\n-1 2018 2019\n-2\n-3\n-4\n-5\n2020\n2021 2022 2023\nMacroeconomic factors such as interest rates, inflation, and GDP growth play a pivotal role in shaping financial markets. This section analyzes how these factors have influenced stock, cryptocurrency, and commodity markets over recent years, providing insights into the complex relationship between the economy and financial market performance.\n-Interest Rates % -Inflation Data % GDP Growth % :unselected: :unselected:Future Predictions and Trends\nRelative Growth Trends for S&P 500, Bitcoin, and Oil Prices (2024 Indexed to 100)\n2028\nBased on historical data, current trends, and economic indicators, this section presents predictions ",
                         "id": "file-Financial_Market_Analysis_Report_2023_pdf-46696E616E6369616C204D61726B657420416E616C79736973205265706F727420323032332E706466-page-14",
-                        "sourcepage": "Financial Market Analysis Report 2023-6.png",
+                        "sourcePage": "Financial Market Analysis Report 2023-6.png",
                         "embedding": [
                             -0.012668486,
                             -0.02251158,
@@ -121,8 +117,8 @@ class MockAsyncSearchResultsIterator:
             self.data = [
                 [
                     {
-                        "sourcepage": "Benefit_Options-2.pdf",
-                        "sourcefile": "Benefit_Options.pdf",
+                        "sourcePage": "Benefit_Options-2.pdf",
+                        "sourceFile": "Benefit_Options.pdf",
                         "content": "There is a whistleblower policy.",
                         "embedding": [],
                         "category": None,

@@ -21,10 +21,10 @@ from azure.search.documents.models import (
     VectorizedQuery,
     VectorQuery,
 )
+from core.authentication import AuthenticationHelper
+from models.profile import Profile
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
-
-from core.authentication import AuthenticationHelper
 from text import nonewlines
 
 
@@ -50,8 +50,8 @@ class Document:
             "embedding": Document.trim_embedding(self.embedding),
             "imageEmbedding": Document.trim_embedding(self.image_embedding),
             "category": self.category,
-            "sourcepage": self.sourcepage,
-            "sourcefile": self.sourcefile,
+            "sourcePage": self.sourcepage,
+            "sourceFile": self.sourcefile,
             "oids": self.oids,
             "groups": self.groups,
             "captions": (
@@ -173,8 +173,8 @@ class Approach(ABC):
                         embedding=document.get("embedding"),
                         image_embedding=document.get("imageEmbedding"),
                         category=document.get("category"),
-                        sourcepage=document.get("sourcepage"),
-                        sourcefile=document.get("sourcefile"),
+                        sourcepage=document.get("sourcePage"),
+                        sourcefile=document.get("sourceFile"),
                         oids=document.get("oids"),
                         groups=document.get("groups"),
                         captions=cast(List[QueryCaptionResult], document.get("@search.captions")),
@@ -263,6 +263,7 @@ class Approach(ABC):
     async def run(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
@@ -271,6 +272,7 @@ class Approach(ABC):
     async def run_stream(
         self,
         messages: list[ChatCompletionMessageParam],
+        profile: Profile,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:

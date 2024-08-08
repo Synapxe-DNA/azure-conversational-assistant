@@ -9,8 +9,9 @@ from azure.search.documents.indexes.models import (
     SimpleField,
 )
 
-from .mocks import MockAzureCredential
 from scripts.manageacl import ManageAcl
+
+from .mocks import MockAzureCredential
 
 
 class AsyncSearchResultsIterator:
@@ -175,11 +176,11 @@ async def test_add_acl(monkeypatch, caplog):
 async def test_update_storage_urls(monkeypatch, caplog):
     async def mock_search(self, *args, **kwargs):
         assert kwargs.get("filter") == "storageUrl eq ''"
-        assert kwargs.get("select") == ["id", "storageUrl", "oids", "sourcefile"]
+        assert kwargs.get("select") == ["id", "storageUrl", "oids", "sourceFile"]
         return AsyncSearchResultsIterator(
             [
-                {"id": 1, "oids": ["OID_EXISTS"], "storageUrl": "", "sourcefile": "a.txt"},
-                {"id": 2, "oids": [], "storageUrl": "", "sourcefile": "ab.txt"},
+                {"id": 1, "oids": ["OID_EXISTS"], "storageUrl": "", "sourceFile": "a.txt"},
+                {"id": 2, "oids": [], "storageUrl": "", "sourceFile": "ab.txt"},
             ]
         )
 

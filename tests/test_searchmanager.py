@@ -12,7 +12,6 @@ from azure.search.documents.indexes.models import (
     SimpleField,
 )
 from openai.types.create_embedding_response import Usage
-
 from prepdocslib.embeddings import AzureOpenAIEmbeddingService
 from prepdocslib.listfilestrategy import File
 from prepdocslib.searchmanager import SearchManager, Section
@@ -179,8 +178,8 @@ async def test_update_content(monkeypatch, search_info):
         assert documents[0]["id"] == "file-foo_pdf-666F6F2E706466-page-0"
         assert documents[0]["content"] == "test content"
         assert documents[0]["category"] == "test"
-        assert documents[0]["sourcepage"] == "foo.pdf#page=1"
-        assert documents[0]["sourcefile"] == "foo.pdf"
+        assert documents[0]["sourcePage"] == "foo.pdf#page=1"
+        assert documents[0]["sourceFile"] == "foo.pdf"
 
     monkeypatch.setattr(SearchClient, "upload_documents", mock_upload_documents)
 
@@ -334,8 +333,8 @@ async def test_remove_content(monkeypatch, search_info):
                 "id": "file-foo_pdf-666F6F2E706466-page-0",
                 "content": "test content",
                 "category": "test",
-                "sourcepage": "foo's bar.pdf#page=1",
-                "sourcefile": "foo's bar.pdf",
+                "sourcePage": "foo's bar.pdf#page=1",
+                "sourceFile": "foo's bar.pdf",
             }
         ]
     )
@@ -369,7 +368,6 @@ async def test_remove_content(monkeypatch, search_info):
 
 @pytest.mark.asyncio
 async def test_remove_content_no_docs(monkeypatch, search_info):
-
     search_results = AsyncSearchResultsIterator([])
 
     async def mock_search(self, *args, **kwargs):
@@ -400,8 +398,8 @@ async def test_remove_content_only_oid(monkeypatch, search_info):
                 "id": "file-foo_pdf-666",
                 "content": "test content",
                 "category": "test",
-                "sourcepage": "foo.pdf#page=1",
-                "sourcefile": "foo.pdf",
+                "sourcePage": "foo.pdf#page=1",
+                "sourceFile": "foo.pdf",
                 "oids": [],
             },
             {
@@ -409,8 +407,8 @@ async def test_remove_content_only_oid(monkeypatch, search_info):
                 "id": "file-foo_pdf-333",
                 "content": "test content",
                 "category": "test",
-                "sourcepage": "foo.pdf#page=1",
-                "sourcefile": "foo.pdf",
+                "sourcePage": "foo.pdf#page=1",
+                "sourceFile": "foo.pdf",
                 "oids": ["A-USER-ID", "B-USER-ID"],
             },
             {
@@ -418,8 +416,8 @@ async def test_remove_content_only_oid(monkeypatch, search_info):
                 "id": "file-foo_pdf-222",
                 "content": "test content",
                 "category": "test",
-                "sourcepage": "foo.pdf#page=1",
-                "sourcefile": "foo.pdf",
+                "sourcePage": "foo.pdf#page=1",
+                "sourceFile": "foo.pdf",
                 "oids": ["A-USER-ID"],
             },
         ]
@@ -453,7 +451,6 @@ async def test_remove_content_only_oid(monkeypatch, search_info):
 
 @pytest.mark.asyncio
 async def test_remove_content_no_inf_loop(monkeypatch, search_info):
-
     searched_filters = []
 
     async def mock_search(self, *args, **kwargs):
@@ -466,8 +463,8 @@ async def test_remove_content_no_inf_loop(monkeypatch, search_info):
                     "id": "file-foo_pdf-333",
                     "content": "test content",
                     "category": "test",
-                    "sourcepage": "foo.pdf#page=1",
-                    "sourcefile": "foo.pdf",
+                    "sourcePage": "foo.pdf#page=1",
+                    "sourceFile": "foo.pdf",
                     "oids": ["A-USER-ID", "B-USER-ID"],
                 }
             ]

@@ -333,6 +333,7 @@ pycparser==2.22
 pydantic==2.8.2
     # via openai
 pydantic-core==2.20.1
+pydub==0.25.1
     # via pydantic
 pyjwt[crypto]==2.8.0
     # via
@@ -345,6 +346,8 @@ pymupdfb==1.24.6
 pypdf==4.3.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
+    # via importlib-metadata
+python-dotenv==1.0.1
     # via
     #   microsoft-kiota-serialization-text
     #   pendulum
@@ -439,7 +442,5 @@ wsproto==1.2.0
 yarl==1.9.4
     # via aiohttp
 zipp==3.19.2
-    # via importlib-metadata
-
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
