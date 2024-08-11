@@ -26,6 +26,7 @@
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
+    "@angular/service-worker": "^18.0.0",
     "@ng-web-apis/common": "^4.2.0",
     "@ng-web-apis/speech": "^4.2.0",
     "@paralleldrive/cuid2": "^2.2.2",

@@ -1,7 +1,7 @@
 import {
   ApplicationConfig,
   importProvidersFrom,
-  provideZoneChangeDetection,
+  provideZoneChangeDetection, isDevMode,
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 
@@ -24,6 +24,7 @@ import {
 } from "lucide-angular";
 import { ToastModule } from "primeng/toast";
 import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -46,6 +47,12 @@ export const appConfig: ApplicationConfig = {
         Copy,
       }),
     ),
-    importProvidersFrom(ToastModule),
+    importProvidersFrom(ToastModule), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          }), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          }),
   ],
 };
