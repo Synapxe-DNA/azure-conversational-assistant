@@ -88,10 +88,10 @@
           },
           body: JSON.stringify({
             type: "Myself",
+            language: "chinese",
             age: 30,
             gender: "Male",
             existing_conditions: null,
-            name: "Bob",
           }),
         });
         var text = await response.text();
@@ -112,6 +112,7 @@
         chat_history = [];
         profile = JSON.stringify({
           profile_type: "Myself",
+          language: "chinese",
           user_age: 30,
           user_gender: "Female",
           user_condition: "Diabetes and hypertension",
@@ -163,6 +164,7 @@
         chat_history = [];
         profile = JSON.stringify({
           profile_type: "Myself",
+          language: "chinese",
           user_age: 30,
           user_gender: "Female",
           user_condition: "Diabetes and hypertension",
