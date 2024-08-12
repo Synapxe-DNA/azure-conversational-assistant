@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 from models.chat_history import ChatHistory
 from models.profile import Profile
@@ -10,7 +10,6 @@ class VoiceChatRequest(BaseModel):
     chat_history: Optional[List[ChatHistory]]
     profile: Optional[Profile]
     query: bytes
-    language: Literal["english", "chinese", "malay", "tamil", "default"]
 
 
 class VoiceChatResponse(BaseModel):

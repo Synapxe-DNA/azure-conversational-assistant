@@ -19,13 +19,12 @@ voice = Blueprint("voice", __name__, url_prefix="/voice")
 async def voice_endpoint(auth_claims: Dict[str, Any] = None):
 
     # Receive data from the client
-
     data = await request.form
     audio = await request.files
 
+    # Extract data from the JSON message
     context = data.get("context", {})
 
-    # Extract data from the JSON message
     profile_json = json.loads(data.get("profile"))
     profile = Profile(**profile_json)
 
