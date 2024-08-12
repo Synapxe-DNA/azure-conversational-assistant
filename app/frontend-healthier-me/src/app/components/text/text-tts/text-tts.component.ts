@@ -24,10 +24,10 @@ export class TextTtsComponent {
       responseBS.subscribe({
         next: (response) => {
           if (response) {
-            console.log("text-tts.component: textToSpeech()");
-            const audioBlob = this.base64ToBlob(response.audio);
-            console.log("audioBlob:", audioBlob);
-            this.audioPlayerService.play(audioBlob);
+            console.log("text-tts.component: textToSpeech() 2");
+            //const audioBlob = this.base64ToBlob(response.audio);
+            //console.log("audioBlob:", audioBlob);
+            //this.audioPlayerService.play(audioBlob);
           }
         },
         error: (err) => console.error("TTS Error:", err),

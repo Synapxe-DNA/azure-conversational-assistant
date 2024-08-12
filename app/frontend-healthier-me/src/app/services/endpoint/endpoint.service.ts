@@ -30,26 +30,19 @@ import { ApiChatResponse } from "../../types/api/response/api-chat-response.type
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
 
-  async textToSpeech(
-    text: string
-  ): Promise<BehaviorSubject<{ audio: string } | null>> {
-    const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
+  async textToSpeech(text: string): Promise<BehaviorSubject<string | null>> {
+    const responseBS = new BehaviorSubject<string | null>(null);
 
     this.httpClient
-      .post<{ audio: string }>("/tts", { text })
-      .pipe(
-        map((response) => {
-          return { audio: response.audio };
-        })
-      )
+      .post<{ audio: string }>("/speech", { text: text })
       .subscribe({
-        next: (audioData) => {
-          responseBS.next(audioData);
-          responseBS.complete();
+        next: (response) => {
+          responseBS.next(response.audio); // Emit the received audio base64 string
+          responseBS.complete(); // Complete the BehaviorSubject
         },
         error: (error) => {
-          console.error(error);
-          responseBS.error(error);
+          console.error("Error:", error);
+          responseBS.error(error); // Emit the error
         },
       });
 
