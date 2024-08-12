@@ -6,6 +6,7 @@ from approaches.approach import Approach
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from config import CONFIG_CHAT_APPROACH
 from error import error_response
+from lingua import Language, LanguageDetectorBuilder
 from models.profile import Profile
 from openai import AsyncOpenAI
 from quart import Blueprint, current_app, request
@@ -41,6 +42,14 @@ async def voice_endpoint(auth_claims: Dict[str, Any] = None):
     query_text = await client.audio.transcriptions.create(
         file=buffer, model=config.whisiper_deployment, response_format="text"
     )
+
+    # Detect language if default
+    if profile.language == "default":
+        languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
+        detector = LanguageDetectorBuilder.from_languages(*languages).build()
+        language = detector.detect_language_of(query_text)
+        language = str(language).split(".")[1].lower()  # get language name from enum
+        profile.language = language
 
     # Form message
     messages = chat_history + [{"content": query_text, "role": "user"}]
