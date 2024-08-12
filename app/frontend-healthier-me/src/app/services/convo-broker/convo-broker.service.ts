@@ -249,6 +249,8 @@ export class ConvoBrokerService {
           timestamp: new Date().getTime(),
           role: MessageRole.Assistant,
         });
+
+        // Plan to create follow_up indexDB here
       },
       error: console.error,
     });

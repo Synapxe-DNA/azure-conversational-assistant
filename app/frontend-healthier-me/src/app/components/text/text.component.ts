@@ -14,33 +14,9 @@ import { ActivatedRoute } from "@angular/router";
 import { createId } from "@paralleldrive/cuid2";
 import { TextClipboardComponent } from "./text-clipboard/text-clipboard.component";
 import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bottom.directive";
-
-const sources: MessageSource[] = [
-  {
-    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
-    title: "12 Essential Childhood Vaccinations in Singapore",
-    description:
-      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
-    cover_image_url:
-      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
-  },
-  {
-    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
-    title: "12 Essential Childhood Vaccinations in Singapore",
-    description:
-      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
-    cover_image_url:
-      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
-  },
-  {
-    url: "https://www.healthhub.sg/live-healthy/12-essential-childhood-vaccinations ",
-    title: "12 Essential Childhood Vaccinations in Singapore",
-    description:
-      "Every child in Singapore is vaccinated from infectious diseases according to the National Childhood Immunisation Programme. Learn more about the diseases that are covered by the 12 essential vaccines.",
-    cover_image_url:
-      "https://ch-api.healthhub.sg/api/public/content/bb1921c5cacb43ca96b8f86c3eee7cc5?v=a84c5fb4&t=livehealthyheaderimage",
-  },
-];
+import { TextFollowupComponent } from "./text-followup/text-followup.component";
+import { FollowUp } from "../../types/follow-up.type";
+import { ChatFollowupService } from "../../services/chat-followup/chat-followup.service";
 
 @Component({
   selector: "app-text",
@@ -53,6 +29,7 @@ const sources: MessageSource[] = [
     TextSystemComponent,
     TextUserComponent,
     TextClipboardComponent,
+    TextFollowupComponent,
     StickyBottomDirective,
   ],
   templateUrl: "./text.component.html",
@@ -66,10 +43,13 @@ export class TextComponent implements OnInit {
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
     Profile | undefined
   >(undefined);
+
   messages: Message[] = [];
+  followUps: FollowUp[] = [];
 
   constructor(
     private chatMessageService: ChatMessageService,
+    private followUpService: ChatFollowupService,
     private profileService: ProfileService,
     private route: ActivatedRoute,
   ) {}
@@ -92,6 +72,27 @@ export class TextComponent implements OnInit {
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
           this.messages = messages;
+        });
+      });
+    });
+
+    this.route.paramMap
+      .pipe(
+        takeWhile((p) => {
+          return p.get("profileId") !== undefined;
+        }, true),
+      )
+      .subscribe((p) => {
+        this.profile = this.profileService.getProfile(p.get("profileId")!);
+      });
+
+    this.profile.subscribe((p) => {
+      if (!p) {
+        return;
+      }
+      this.followUpService.load(p.id).then((m) => {
+        m.subscribe((followUps) => {
+          this.followUps = followUps;
         });
       });
     });

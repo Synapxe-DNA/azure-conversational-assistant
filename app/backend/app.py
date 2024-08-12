@@ -4,7 +4,6 @@ import json
 import logging
 import mimetypes
 import os
-from io import BytesIO
 from typing import Any, AsyncGenerator, Dict, Union, cast
 
 from approaches.approach import Approach
@@ -21,6 +20,10 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
+from blueprints.backend_blueprint.chat import chat
+from blueprints.backend_blueprint.speech import speech
+from blueprints.backend_blueprint.upload import upload
+from blueprints.backend_blueprint.voice import voice
 from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
@@ -42,6 +45,8 @@ from config import (
     CONFIG_SPEECH_SERVICE_LOCATION,
     CONFIG_SPEECH_SERVICE_TOKEN,
     CONFIG_SPEECH_SERVICE_VOICE,
+    CONFIG_SPEECH_TO_TEXT_SERVICE,
+    CONFIG_TEXT_TO_SPEECH_SERVICE,
     CONFIG_TRANSLATOR_SERVICE_API_KEY,
     CONFIG_TRANSLATOR_SERVICE_ENDPOINT,
     CONFIG_TRANSLATOR_SERVICE_LOCATION,
@@ -51,7 +56,6 @@ from config import (
 )
 from core.authentication import AuthenticationHelper
 from error import error_dict, error_response
-from models.profile import Profile
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -64,8 +68,6 @@ from prepdocs import (
     setup_search_info,
 )
 from prepdocslib.filestrategy import UploadUserFileStrategy
-from prepdocslib.listfilestrategy import File
-from pydub import AudioSegment
 from quart import (
     Blueprint,
     Quart,
@@ -79,7 +81,6 @@ from quart import (
 from quart_cors import cors
 from speech.speech_to_text import SpeechToText
 from speech.text_to_speech import TextToSpeech
-from utils.utils import Utils
 
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
@@ -174,68 +175,6 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
         yield json.dumps(error_dict(error))
 
 
-@bp.route("/chat", methods=["POST"])
-async def chat(auth_claims: Dict[str, Any]):
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    context = request_json.get("context", {})
-    context["auth_claims"] = auth_claims
-    try:
-        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
-        approach: Approach
-        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
-        else:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
-
-        result = await approach.run(
-            request_json["messages"],
-            context=context,
-            session_state=request_json.get("session_state"),
-        )
-        return jsonify(result)
-    except Exception as error:
-        return error_response(error, "/chat")
-
-
-@bp.route("/chat/stream", methods=["POST"])
-async def chat_stream(auth_claims: Dict[str, Any] = None):
-
-    # Receive data from the client
-    data = await request.form
-
-    context = data.get("context", {})
-    # Extract data from the JSON message
-    # profile = json.loads(data.get("profile"))
-    chat_history = json.loads(data.get("chat_history", "[]"))
-    query_text = json.loads(data["query"])
-    profile = json.loads(data.get("profile", "{}"))
-    profile = Profile(**profile)
-    context["auth_claims"] = auth_claims
-
-    messages = chat_history + [query_text]
-
-    try:
-        use_gpt4v = context.get("overrides", {}).get("use_gpt4v", False)
-        approach: Approach
-        if use_gpt4v and CONFIG_CHAT_VISION_APPROACH in current_app.config:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_VISION_APPROACH])
-        else:
-            approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
-
-        result = await approach.run_stream(
-            messages=messages,
-            context=context,
-            profile=profile,
-        )
-
-        response = await Utils.construct_streaming_chat_response(result)
-        return response, 200
-    except Exception as error:
-        return error_response(error, "/chat")
-
-
 # Send MSAL.js settings to the client UI
 @bp.route("/auth_setup", methods=["GET"])
 def auth_setup():
@@ -256,136 +195,6 @@ def config():
             "showSpeechOutputAzure": current_app.config[CONFIG_SPEECH_OUTPUT_AZURE_ENABLED],
         }
     )
-
-
-@bp.route("/speech", methods=["POST"])
-async def speech():
-    if not request.is_json:
-        return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
-    text = request_json["text"]
-    try:
-        tts = await TextToSpeech.create()
-        audio_data = tts.readText(text)
-        return audio_data, 200, {"Content-Type": "audio/mp3"}
-    except Exception as e:
-        logging.exception("Exception in /speech")
-        return jsonify({"error": str(e)}), 500
-
-
-@bp.route("/voice", methods=["POST"])
-async def voice(auth_claims: Dict[str, Any] = None):
-
-    # Receive data from the client
-
-    data = await request.form
-    audio = await request.files
-
-    context = data.get("context", {})
-
-    # Process audio
-    target_sample_rate = 16000  # 16 kHz
-    target_channels = 1  # Mono
-    target_bit_depth = 16  # 16-bit
-
-    # Resample audio
-    audio_seg = AudioSegment.from_file(audio["query"], format="webm")
-    audio_seg = audio_seg.set_frame_rate(target_sample_rate)
-    audio_seg = audio_seg.set_channels(target_channels)
-    audio_seg = audio_seg.set_sample_width(target_bit_depth // 8)
-    wav_io = BytesIO()
-    audio_seg.export(wav_io, format="wav")
-
-    # Extract data from the JSON message
-    profile_json = json.loads(data.get("profile"))
-    profile = Profile(**profile_json)
-
-    chat_history = json.loads(data.get("chat_history", "[]"))
-    audio_blob = wav_io.getvalue()
-    context["auth_claims"] = auth_claims
-
-    wav_io.close()
-
-    # Convert audio to text
-    stt = await SpeechToText.create()
-    transcription = stt.transcribe(audio_blob)
-
-    # language = Utils.get_mode_language(transcription['language'])
-    query_text = " ".join(transcription["text"])
-
-    # Form message
-    messages = chat_history + [{"content": query_text, "role": "user"}]
-
-    # Send transcribed text and data to LLM
-    try:
-        approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
-        result = await approach.run_stream(
-            messages=messages,
-            context=context,
-            profile=profile,
-        )
-
-        response = await Utils.construct_streaming_voice_response(result, query_text)
-        return response, 200
-    except Exception as error:
-        return error_response(error, "/voice")
-
-
-@bp.post("/upload")
-async def upload(auth_claims: dict[str, Any]):
-    request_files = await request.files
-    if "file" not in request_files:
-        # If no files were included in the request, return an error response
-        return jsonify({"message": "No file part in the request", "status": "failed"}), 400
-
-    user_oid = auth_claims["oid"]
-    file = request_files.getlist("file")[0]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    user_directory_client = user_blob_container_client.get_directory_client(user_oid)
-    try:
-        await user_directory_client.get_directory_properties()
-    except ResourceNotFoundError:
-        current_app.logger.info("Creating directory for user %s", user_oid)
-        await user_directory_client.create_directory()
-    await user_directory_client.set_access_control(owner=user_oid)
-    file_client = user_directory_client.get_file_client(file.filename)
-    file_io = file
-    file_io.name = file.filename
-    file_io = io.BufferedReader(file_io)
-    await file_client.upload_data(file_io, overwrite=True, metadata={"UploadedBy": user_oid})
-    file_io.seek(0)
-    ingester: UploadUserFileStrategy = current_app.config[CONFIG_INGESTER]
-    await ingester.add_file(File(content=file_io, acls={"oids": [user_oid]}, url=file_client.url))
-    return jsonify({"message": "File uploaded successfully"}), 200
-
-
-@bp.post("/delete_uploaded")
-async def delete_uploaded(auth_claims: dict[str, Any]):
-    request_json = await request.get_json()
-    filename = request_json.get("filename")
-    user_oid = auth_claims["oid"]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    user_directory_client = user_blob_container_client.get_directory_client(user_oid)
-    file_client = user_directory_client.get_file_client(filename)
-    await file_client.delete_file()
-    ingester = current_app.config[CONFIG_INGESTER]
-    await ingester.remove_file(filename, user_oid)
-    return jsonify({"message": f"File {filename} deleted successfully"}), 200
-
-
-@bp.get("/list_uploaded")
-async def list_uploaded(auth_claims: dict[str, Any]):
-    user_oid = auth_claims["oid"]
-    user_blob_container_client: FileSystemClient = current_app.config[CONFIG_USER_BLOB_CONTAINER_CLIENT]
-    files = []
-    try:
-        all_paths = user_blob_container_client.get_paths(path=user_oid)
-        async for path in all_paths:
-            files.append(path.name.split("/", 1)[1])
-    except ResourceNotFoundError as error:
-        if error.status_code != 404:
-            current_app.logger.exception("Error listing uploaded files", error)
-    return jsonify(files), 200
 
 
 @bp.before_app_serving
@@ -435,7 +244,7 @@ async def setup_clients():
 
     AZURE_SPEECH_SERVICE_ID = os.getenv("AZURE_SPEECH_SERVICE_ID")
     AZURE_SPEECH_SERVICE_LOCATION = os.getenv("AZURE_SPEECH_SERVICE_LOCATION")
-    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-AndrewMultilingualNeural")
+    AZURE_SPEECH_VOICE = os.getenv("AZURE_SPEECH_VOICE", "en-US-EmmaMultilingualNeural")
 
     AZURE_TRANSLATOR_SERVICE_API_KEY = os.getenv("AZURE_TRANSLATOR_SERVICE_API_KEY")
     AZURE_TRANSLATOR_SERVICE_ENDPOINT = os.getenv("AZURE_TRANSLATOR_SERVICE_ENDPOINT")
@@ -620,6 +429,11 @@ async def setup_clients():
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
     )
 
+    tts = await TextToSpeech.create()
+    stt = await SpeechToText.create()
+    current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
+    current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
+
     if USE_GPT4V:
         current_app.logger.info("USE_GPT4V is true, setting up GPT4V approach")
         if not AZURE_OPENAI_GPT4V_MODEL:
@@ -677,6 +491,10 @@ def create_app():
     app = Quart(__name__)
     app.register_blueprint(bp)
     app.register_blueprint(frontend)
+    app.register_blueprint(voice)
+    app.register_blueprint(chat)
+    app.register_blueprint(speech)
+    app.register_blueprint(upload)
     app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):

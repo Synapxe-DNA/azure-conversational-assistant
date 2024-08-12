@@ -15,7 +15,7 @@ export class TextTtsComponent {
 
   constructor(
     private endpointService: EndpointService,
-    private audioPlayerService: AudioPlayerService
+    private audioPlayerService: AudioPlayerService,
   ) {}
 
   async textToSpeech() {
@@ -39,7 +39,7 @@ export class TextTtsComponent {
 
   private base64ToBlob(
     base64String: string,
-    contentType: string = "audio/wav"
+    contentType: string = "audio/wav",
   ): Blob {
     try {
       const base64Data = base64String.replace(/^data:.+;base64,/, "");

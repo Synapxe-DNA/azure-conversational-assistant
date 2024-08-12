@@ -91,6 +91,8 @@ either you or they can follow these steps:
 
 5. Run `./scripts/roles.ps1` or `.scripts/roles.sh` to assign all of the necessary roles to the user. If they do not have the necessary permission to create roles in the subscription, then you may need to run this script for them. Once the script runs, they should be able to run the app locally.
 
+6. Manually set environment variables: Navigate to app folder and run `set-env`
+
 ## Running locally
 
 You can only run locally **after** having successfully run the `azd up` command. If you haven't yet, follow the [deploying](#deploying) steps above.
@@ -121,8 +123,3 @@ Once in the web app:
 > [!NOTE]
 >
 > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
-
-## Using SPEECH services for backend
-
-1. Run `azd env set USE_SPEECH_OUTPUT_AZURE true"
-2. This will populate your `.env` file with the necessary setting to use the speech services.
