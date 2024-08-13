@@ -14,4 +14,4 @@ CHAT_RESPONSE_MAX_TOKENS = 400
 
 # user defined language
 # this parameter is for testing purpose now. once available on frontend, to take in variable input from frontend
-SELECTED_LANGUAGE = "CHINESE"
+SELECTED_LANGUAGE = "Chinese"
