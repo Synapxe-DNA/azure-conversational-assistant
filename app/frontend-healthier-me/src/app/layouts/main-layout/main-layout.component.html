@@ -1,3 +1,4 @@
+@if (!isMobile) {
 <div
   class="tw-flex tw-flex-row tw-justify-center tw-items-stretch tw-h-screen tw-w-screen tw-max-h-[100dvh] tw-max-w-[100dvw]"
 >
@@ -9,3 +10,11 @@
     <router-outlet class="tw-w-full"></router-outlet>
   </div>
 </div>
+}
+
+@if (isMobile) {
+  <div class="tw-flex tw-flex-col">
+    <app-navbar-mobile />
+    <router-outlet />
+  </div>
+}
