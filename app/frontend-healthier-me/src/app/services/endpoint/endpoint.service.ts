@@ -34,8 +34,25 @@ export class EndpointService {
    * Method to send previous system messages to backend for audio playback
    * @param text {string}
    */
-  async textToSpeech(text: string): Promise<Observable<Blob>> {
-    return this.httpClient.post("/speech", { text }, { responseType: "blob" });
+  async textToSpeech(text: string): Promise<BehaviorSubject<Blob | null>> {
+    const audioSubject = new BehaviorSubject<Blob | null>(null);
+
+    try {
+      const blob = await this.httpClient
+        .post("/speech", { text }, { responseType: "blob" })
+        .toPromise();
+
+      if (blob instanceof Blob) {
+        audioSubject.next(blob);
+      } else {
+        throw new Error("Unexpected response type");
+      }
+    } catch (error) {
+      console.error("Error fetching audio:", error);
+      audioSubject.error(error);
+    }
+
+    return audioSubject;
   }
 
   /**

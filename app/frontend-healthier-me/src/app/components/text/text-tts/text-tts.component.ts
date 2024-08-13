@@ -20,16 +20,22 @@ export class TextTtsComponent {
 
   async textToSpeech() {
     try {
-      (await this.endpointService.textToSpeech(this.message)).subscribe({
+      const audioSubject = await this.endpointService.textToSpeech(
+        this.message
+      );
+
+      audioSubject.subscribe({
         next: (blob) => {
-          this.audioPlayerService.play(blob);
+          if (blob) {
+            this.audioPlayerService.play(blob);
+          }
         },
         error: (error) => {
           console.error("Error:", error);
         },
       });
-    } catch (err) {
-      console.error("TTS Error:", err);
+    } catch (error) {
+      console.error("Failed to get BehaviorSubject:", error);
     }
   }
 }
