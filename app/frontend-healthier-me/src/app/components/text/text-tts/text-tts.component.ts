@@ -23,7 +23,6 @@ export class TextTtsComponent {
       (await this.endpointService.textToSpeech(this.message)).subscribe({
         next: (blob) => {
           this.audioPlayerService.play(blob);
-          console.log("Audio is playing");
         },
         error: (error) => {
           console.error("Error:", error);
