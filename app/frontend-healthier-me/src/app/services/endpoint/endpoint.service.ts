@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { map } from "rxjs";
+import { Observable } from "rxjs";
 import { Profile, ProfileGender, ProfileType } from "../../types/profile.type";
 import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
@@ -34,30 +34,8 @@ export class EndpointService {
    * Method to send previous system messages to backend for audio playback
    * @param text {string}
    */
-  async textToSpeech(
-    text: string
-  ): Promise<BehaviorSubject<{ audio: string } | null>> {
-    const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
-
-    this.httpClient
-      .post<{ audio: string }>("/speech", { text: text })
-      .pipe(
-        map((response) => {
-          return { audio: response.audio };
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          responseBS.next(response.audio); // Emit the received audio base64 string
-          responseBS.complete(); // Complete the BehaviorSubject
-        },
-        error: (error) => {
-          console.error("Error:", error);
-          responseBS.error(error); // Emit the error
-        },
-      });
-
-    return responseBS;
+  async textToSpeech(text: string): Promise<Observable<Blob>> {
+    return this.httpClient.post("/speech", { text }, { responseType: "blob" });
   }
 
   /**
