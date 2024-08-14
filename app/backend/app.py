@@ -21,6 +21,7 @@ from azure.storage.blob.aio import StorageStreamDownloader as BlobDownloader
 from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
 from blueprints.backend_blueprint.chat import chat
+from blueprints.backend_blueprint.feedback import feedback
 from blueprints.backend_blueprint.speech import speech
 from blueprints.backend_blueprint.upload import upload
 from blueprints.backend_blueprint.voice import voice
@@ -275,6 +276,8 @@ async def setup_clients():
     OPENAI_EMB_DIMENSIONS = int(os.getenv("AZURE_OPENAI_EMB_DIMENSIONS", 1536))
     # Used with Azure OpenAI deployments
     AZURE_OPENAI_SERVICE = os.getenv("AZURE_OPENAI_SERVICE")
+    AZURE_OPENAI_SERVICE_2 = os.getenv("AZURE_OPENAI_SERVICE_2")
+    AZURE_OPENAI_WHISPER_DEPLOYMENT = os.getenv("AZURE_OPENAI_WHISPER_DEPLOYMENT")
     AZURE_OPENAI_GPT4V_DEPLOYMENT = os.environ.get("AZURE_OPENAI_GPT4V_DEPLOYMENT")
     AZURE_OPENAI_GPT4V_MODEL = os.environ.get("AZURE_OPENAI_GPT4V_MODEL")
     AZURE_OPENAI_CHATGPT_DEPLOYMENT = (
@@ -426,6 +429,9 @@ async def setup_clients():
             if not AZURE_OPENAI_SERVICE:
                 raise ValueError("AZURE_OPENAI_SERVICE must be set when OPENAI_HOST is azure")
             endpoint = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
+            if not AZURE_OPENAI_SERVICE_2:
+                raise ValueError("AZURE_OPENAI_WHISPER_SERVICE must be set when OPENAI_HOST is azure")
+            endpoint_2 = f"https://{AZURE_OPENAI_SERVICE_2}.openai.azure.com"
         if api_key := os.getenv("AZURE_OPENAI_API_KEY"):
             openai_client = AsyncAzureOpenAI(api_version=api_version, azure_endpoint=endpoint, api_key=api_key)
         else:
@@ -433,6 +439,11 @@ async def setup_clients():
             openai_client = AsyncAzureOpenAI(
                 api_version=api_version,
                 azure_endpoint=endpoint,
+                azure_ad_token_provider=token_provider,
+            )
+            openai_client_2 = AsyncAzureOpenAI(
+                api_version=api_version,
+                azure_endpoint=endpoint_2,
                 azure_ad_token_provider=token_provider,
             )
     elif OPENAI_HOST == "local":
@@ -479,6 +490,7 @@ async def setup_clients():
     current_app.config[CONFIG_CHAT_APPROACH] = ChatReadRetrieveReadApproach(
         search_client=search_client,
         openai_client=openai_client,
+        openai_client_2=openai_client_2,
         auth_helper=auth_helper,
         chatgpt_model=OPENAI_CHATGPT_MODEL,
         chatgpt_deployment=AZURE_OPENAI_CHATGPT_DEPLOYMENT,
@@ -489,6 +501,7 @@ async def setup_clients():
         content_field=KB_FIELDS_CONTENT,
         query_language=AZURE_SEARCH_QUERY_LANGUAGE,
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
+        whisper_deployment=AZURE_OPENAI_WHISPER_DEPLOYMENT,
     )
 
     tts = await TextToSpeech.create()
@@ -557,6 +570,7 @@ def create_app():
     app.register_blueprint(chat)
     app.register_blueprint(speech)
     app.register_blueprint(upload)
+    app.register_blueprint(feedback)
     app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):

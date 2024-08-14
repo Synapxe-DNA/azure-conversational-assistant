@@ -37,6 +37,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         search_client: SearchClient,
         auth_helper: AuthenticationHelper,
         openai_client: AsyncOpenAI,
+        openai_client_2: AsyncOpenAI,
         chatgpt_model: str,
         chatgpt_deployment: Optional[str],  # Not needed for non-Azure OpenAI
         embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
@@ -46,9 +47,11 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         content_field: str,
         query_language: str,
         query_speller: str,
+        whisper_deployment: str,
     ):
         self.search_client = search_client
         self.openai_client = openai_client
+        self.openai_client_2 = openai_client_2
         self.auth_helper = auth_helper
         self.chatgpt_model = chatgpt_model
         self.chatgpt_deployment = chatgpt_deployment
@@ -59,6 +62,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
+        self.whisiper_deployment = whisper_deployment
         # See: https://github.com/pamelafox/openai-messages-token-helper/issues/16
         self.chatgpt_token_limit = get_token_limit(chatgpt_model)  # gpt-4o-mini not yet supported
 
@@ -111,7 +115,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         use_text_search = config.USE_TEXT_SEARCH
         use_vector_search = config.USE_VECTOR_SEARCH
         use_semantic_ranker = config.USE_SEMANTIC_RANKER
-        use_semantic_captions = config.USE_SEMENTIC_CAPTIONS
+        use_semantic_captions = config.USE_SEMANTIC_CAPTIONS
         top = config.SEARCH_MAX_RESULTS
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
@@ -250,7 +254,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
 
-        data_points = {"text": sources_content}
+        # data_points = {"text": sources_content}
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -266,7 +270,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         end_time = time.time()
 
         extra_info = {
-            "data_points": data_points,
+            # "data_points": data_points,
             "thoughts": [
                 ThoughtStep(
                     "Prompt to generate search query",
@@ -309,21 +313,4 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             ],
         }
 
-        citation_info = []
-        sources_info = extra_info["thoughts"][2].description
-        for source in sources_info:
-            filtered_results = {
-                "title": source["sourcePage"],  # to be updated to required field
-                "url": "",  # to be updated to required field
-                "meta_desc": "",  # to be updated to required field
-                "image_url": "",  # to be updated to required field
-            }
-            citation_info.append(filtered_results)
-
-        for thought in extra_info["thoughts"]:
-            print(thought.title)
-            print(thought.description)
-            print(thought.props)
-            print("------------")
-
-        return (extra_info, chat_coroutine, citation_info)
+        return (extra_info, chat_coroutine)
