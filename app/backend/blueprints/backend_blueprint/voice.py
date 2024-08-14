@@ -38,7 +38,7 @@ async def voice_endpoint():
     buffer.name = "file.webm"  # Required to indicate file type for whisper
 
     query_text = await client.audio.transcriptions.create(
-        language="en", file=buffer, model=config.whisiper_deployment, response_format="text"
+        file=buffer, model=config.whisiper_deployment, response_format="text"
     )
 
     # Detect language if default

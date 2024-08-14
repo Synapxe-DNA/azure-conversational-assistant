@@ -1,7 +1,7 @@
 from typing import List, Literal
 
-from pydantic import BaseModel
 from models.chat_history import ChatHistory
+from pydantic import BaseModel
 
 
 class Feedback(BaseModel):
