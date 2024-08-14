@@ -22,6 +22,7 @@ from azure.storage.filedatalake.aio import FileSystemClient
 from azure.storage.filedatalake.aio import StorageStreamDownloader as DatalakeDownloader
 from blueprints.backend_blueprint.chat import chat
 from blueprints.backend_blueprint.speech import speech
+from blueprints.backend_blueprint.transcription import transcription
 from blueprints.backend_blueprint.upload import upload
 from blueprints.backend_blueprint.voice import voice
 from blueprints.frontend_blueprint.frontend import frontend
@@ -507,6 +508,7 @@ def create_app():
     app.register_blueprint(chat)
     app.register_blueprint(speech)
     app.register_blueprint(upload)
+    app.register_blueprint(transcription)
     app = cors(app, allow_origin="*")  # For local testing
 
     if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
