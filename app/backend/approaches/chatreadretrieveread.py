@@ -126,7 +126,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         use_text_search = config.USE_TEXT_SEARCH
         use_vector_search = config.USE_VECTOR_SEARCH
         use_semantic_ranker = config.USE_SEMANTIC_RANKER
-        use_semantic_captions = config.USE_SEMENTIC_CAPTIONS
+        use_semantic_captions = config.USE_SEMANTIC_CAPTIONS
         top = config.SEARCH_MAX_RESULTS
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
@@ -267,7 +267,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
 
-        data_points = {"text": sources_content}
+        # data_points = {"text": sources_content}
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -283,7 +283,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         end_time = time.time()
 
         extra_info = {
-            "data_points": data_points,
+            # "data_points": data_points,
             "thoughts": [
                 ThoughtStep(
                     "Prompt to generate search query",
@@ -326,19 +326,4 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             ],
         }
 
-        citation_info = []
-        sources_info = extra_info["thoughts"][2].description
-        for source in sources_info:
-            filtered_results = {
-                "title": source["sourcePage"],  # to be updated to required field
-                "url": "",  # to be updated to required field
-                "meta_desc": "",  # to be updated to required field
-                "image_url": "",  # to be updated to required field
-            }
-            citation_info.append(filtered_results)
-
-        # print(f"extra_info: {extra_info}")
-        # print(f"chat_coroutine: {chat_coroutine}")
-        # print(f"citation_info: {citation_info}")
-
-        return (extra_info, chat_coroutine, citation_info)
+        return (extra_info, chat_coroutine)
