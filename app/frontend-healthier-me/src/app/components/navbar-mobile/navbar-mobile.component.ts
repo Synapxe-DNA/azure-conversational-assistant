@@ -12,6 +12,8 @@ import { ProfileService } from "../../services/profile/profile.service";
 import { NavbarLanguageComponent } from "../navbar/navbar-language/navbar-language.component";
 import { Button } from "primeng/button";
 import { CommonModule } from "@angular/common";
+import { PreferenceService } from "../../services/preference/preference.service";
+import { ChatMode } from "../../types/chat-mode.type";
 
 @Component({
   selector: 'app-navbar-mobile',
@@ -23,19 +25,26 @@ import { CommonModule } from "@angular/common";
     NavbarProfileCreateComponent,
     NavbarLanguageComponent,
     Button,
-    CommonModule
+    CommonModule,
   ],
   templateUrl: './navbar-mobile.component.html',
   styleUrl: './navbar-mobile.component.css'
 })
 export class NavbarMobileComponent implements OnInit{
+  chatMode?: ChatMode;
   profiles: Profile[] = [];
-  sidebar: boolean = false;
+  sidebar?: boolean;
+  firstLoad: boolean = true;
 
   constructor(
     private profileService: ProfileService,
     private cdr: ChangeDetectorRef,
-  ) {}
+    private preferences: PreferenceService,
+  ) {
+    this.preferences.$chatMode.subscribe((m) => {
+      this.chatMode = m;
+    });
+  }
 
   ngOnInit() {
     this.profileService.getProfiles().subscribe((v) => {
@@ -46,10 +55,22 @@ export class NavbarMobileComponent implements OnInit{
 
   toggleSidebar() {
     this.sidebar = !this.sidebar;
+    this.firstLoad = false;
   }
   
   closeSidebar() {
     this.sidebar = false;
+  }
+
+  toggleChatMode() {
+    switch (this.chatMode) {
+      case ChatMode.Voice:
+        this.preferences.setChatMode(ChatMode.Text);
+        break
+      case ChatMode.Text:
+        this.preferences.setChatMode(ChatMode.Voice);
+        break
+    }
   }
 
   protected readonly GeneralProfile = GeneralProfile;

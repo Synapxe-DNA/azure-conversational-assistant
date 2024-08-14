@@ -1,10 +1,8 @@
 import {
   AfterContentInit,
   AfterViewChecked,
-  AfterViewInit,
   Directive,
   ElementRef,
-  OnInit,
 } from "@angular/core";
 
 @Directive({

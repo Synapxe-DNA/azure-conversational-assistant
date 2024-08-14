@@ -1,0 +1,28 @@
+<div
+    class="tw-bg-slate-200 tw-py-2"
+    >
+    <p-carousel
+    [value]="sources"
+    [numVisible]="3"
+    [numScroll]="1"
+    [circular]="false"
+    >
+    <ng-template let-product pTemplate="item">
+        <div class="tw-border-1 tw-rounded tw-m-2 tw-p-3">
+            <div class="tw-mb-3">
+                <div class="tw-relative tw-mx-auto">
+                    <a [href]="product.url">
+                        <img [src]="product.cover_image_url" class="tw-w-full tw-rounded">
+                    </a>
+                </div>
+            </div>
+            <div class="mb-3 tw-font-semibold tw-text-xl">
+                {{product.title}}
+            </div>
+            <div class="tw-font-medium">
+                {{product.description}}
+            </div>
+        </div>
+    </ng-template>
+    </p-carousel>
+</div>

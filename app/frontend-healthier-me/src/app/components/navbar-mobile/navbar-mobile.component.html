@@ -1,5 +1,5 @@
 <div 
-  class="tw-w-full tw-h-fit tw-flex tw-flex-row tw-justify-between tw-gap-5 tw-bg-gray-100"
+  class="tw-w-full tw-h-fit tw-flex tw-flex-row tw-justify-between tw-gap-5 tw-bg-gray-100 tw-fixed tw-top-0 tw-left-0 tw-z-10"
 >
     <p-button 
     icon="pi pi-bars"
@@ -15,13 +15,14 @@
     <p-button 
     icon="pi pi-cog"
     severity="secondary"
+    (onClick)="toggleChatMode()"
     />
 
 </div>
 
-<div
-[ngClass]="sidebar? 'tw-transition-[margin-left] tw-duration-[1s] tw-ease-in-out tw-z-1 tw-fixed tw-top-0 tw-left-0' : 'tw-ml-[-320px] tw-max-h-0 tw-transition-[margin-left] tw-duration-1000 tw-z-1 tw-fixed tw-top-0 tw-left-0' "
-  >
+  <div
+  class="firstLoad"
+  [ngClass]="{'firstLoad' : firstLoad && !sidebar, 'close': !sidebar, 'open': sidebar }">
   <div class="tw-max-w-[20rem] tw-h-screen tw-pt-8 tw-border-r tw-border-gray-300 tw-bg-white tw-border-solid tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-5">
   <app-navbar-logo-group></app-navbar-logo-group>
   <app-navbar-line></app-navbar-line>
@@ -37,8 +38,9 @@
 </div>
 </div>
 
-<div class="tw-fixed tw-z-[-1] tw-h-full tw-w-full tw-top-0 tw-left-0"
-(click)="closeSidebar()"
->
-
-
+@if (sidebar) {
+  <div
+  class="tw-fixed tw-top-[0px] tw-left-[280px] tw-h-full tw-w-full tw-z-10"
+  (click)="closeSidebar()"
+  ></div>
+}
