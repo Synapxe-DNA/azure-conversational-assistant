@@ -152,7 +152,7 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
         src = Source(
             id=source.get("id"),
             title=source.get("title"),
-            cover_image_url=source.get("cover_image_url"),
+            cover_image_url=str(source.get("cover_image_url")),
             full_url=source.get("full_url"),
             content_category=source.get("content_category"),
             chunks=source.get("chunks"),
