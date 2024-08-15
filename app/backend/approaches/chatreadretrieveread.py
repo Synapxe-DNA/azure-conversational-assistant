@@ -237,12 +237,13 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
+        print(sources_content)
 
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        print(f"chat history: {messages[:-1]}")
+        # print(f"chat history: {messages[:-1]}")
 
         # response_token_limit = 1024
         messages = build_messages(
