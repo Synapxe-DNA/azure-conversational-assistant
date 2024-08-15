@@ -13,7 +13,7 @@ run-local-frontend:
 lint:
 	pre-commit run --all-files
 
-set-env:
+set-env: # Manually set environment variables for Azure
 	azd env set AZURE_OPENAI_CHATGPT_DEPLOYMENT_VERSION 2024-05-13
 	azd env set AZURE_OPENAI_EMB_DEPLOYMENT_VERSION 1
 	azd env set USE_SPEECH_INPUT_BROWSER true
