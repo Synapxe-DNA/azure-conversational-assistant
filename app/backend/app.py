@@ -31,6 +31,7 @@ from config import (
     CONFIG_ASK_VISION_APPROACH,
     CONFIG_AUTH_CLIENT,
     CONFIG_BLOB_CONTAINER_CLIENT,
+    CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_CHAT_APPROACH,
     CONFIG_CHAT_VISION_APPROACH,
     CONFIG_CREDENTIAL,
@@ -203,6 +204,7 @@ async def setup_clients():
     # Replace these with your own values, either in environment variables or directly here
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
+    AZURE_FEEDBACK_STORAGE_CONTAINER = os.environ["AZURE_FEEDBACK_STORAGE_CONTAINER"]
     AZURE_USERSTORAGE_ACCOUNT = os.environ.get("AZURE_USERSTORAGE_ACCOUNT")
     AZURE_USERSTORAGE_CONTAINER = os.environ.get("AZURE_USERSTORAGE_CONTAINER")
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
@@ -275,6 +277,14 @@ async def setup_clients():
     blob_container_client = ContainerClient(
         f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", AZURE_STORAGE_CONTAINER, credential=azure_credential
     )
+
+    blob_feedback_service = ContainerClient(
+        f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net",
+        AZURE_FEEDBACK_STORAGE_CONTAINER,
+        credential=azure_credential,
+    )
+
+    current_app.config[CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT] = blob_feedback_service
 
     # Set up authentication helper
     search_index = None
