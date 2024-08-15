@@ -5,7 +5,6 @@ from approaches import config
 from approaches.approach import ThoughtStep
 from approaches.chatapproach import ChatApproach
 from approaches.prompts import (
-    follow_up_questions_prompt,
     general_prompt,
     general_query_prompt,
     profile_prompt,
@@ -111,16 +110,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
     ]:
         start_time = time.time()
 
-        # seed = overrides.get("seed", None)
-        # use_text_search = overrides.get("retrieval_mode") in ["text", "hybrid", None]
-        # use_vector_search = overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
-        # use_semantic_ranker = True if overrides.get("semantic_ranker") else False
-        # use_semantic_captions = True if overrides.get("semantic_captions") else False
-        # top = overrides.get("top", 3)
-        # minimum_search_score = overrides.get("minimum_search_score", 0.0)
-        # minimum_reranker_score = overrides.get("minimum_reranker_score", 0.0)
-        # filter = self.build_filter(overrides, auth_claims)
-
         seed = config.SEED
         temperature = config.TEMPERATURE
         use_text_search = config.USE_TEXT_SEARCH
@@ -131,6 +120,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
+
+        selected_language = config.SELECTED_LANGUAGE #to be removed. variable to come from frontend user selection instead of config file
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -180,7 +171,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(follow_up_questions_prompt=follow_up_questions_prompt)
+            answer_generation_prompt = general_prompt.format(
+                selected_language=selected_language
+            )
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
@@ -189,7 +182,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
-                follow_up_questions_prompt=follow_up_questions_prompt,
+                selected_language=selected_language,
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -244,18 +237,13 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-
-        # print(f"sources_content: {sources_content}")
+        print(sources_content)
 
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        # # Allow client to replace the entire prompt, or to inject into the exiting prompt using >>>
-        # system_message = self.get_system_prompt(
-        #     overrides.get("prompt_template"),
-        #     self.follow_up_questions_prompt_content if overrides.get("suggest_followup_questions") else "",
-        # )
+        # print(f"chat history: {messages[:-1]}")
 
         # response_token_limit = 1024
         messages = build_messages(
