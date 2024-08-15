@@ -121,7 +121,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
-        selected_language = config.SELECTED_LANGUAGE #to be removed. variable to come from frontend user selection instead of config file
+        selected_language = (
+            config.SELECTED_LANGUAGE
+        )  # to be removed. variable to come from frontend user selection instead of config file
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -171,9 +173,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(
-                selected_language=selected_language
-            )
+            answer_generation_prompt = general_prompt.format(selected_language=selected_language)
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
