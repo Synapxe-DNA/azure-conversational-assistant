@@ -1,0 +1,23 @@
+.voice-mobile-container {
+  @apply tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-bg-emerald-600 tw-flex tw-flex-col;
+}
+
+.voice-sources {
+  @apply tw-h-1/5;
+}
+
+.voice-message {
+  @apply tw-flex-1;
+}
+
+.voice-annotation {
+  @apply tw-flex-none;
+}
+
+.voice-microphone {
+  @apply tw-flex-none;
+}
+
+.footer-text {
+  @apply tw-fixed tw-bottom-0 tw-self-center tw-text-center tw-text-xs tw-text-white;
+}
