@@ -16,6 +16,8 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+make set-env
+
 cd ../
 echo 'Creating python virtual environment ".venv"'
 python3 -m venv .venv

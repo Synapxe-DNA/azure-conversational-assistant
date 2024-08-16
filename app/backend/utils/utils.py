@@ -8,6 +8,7 @@ from typing import Any, AsyncGenerator, List
 
 from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
+from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 
@@ -48,7 +49,7 @@ class Utils:
                 thoughts = res.get("context", {}).get("thoughts", [])
                 followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
-                    sources = extract_data_from_stream(thoughts)
+                    sources = extract_sources_from_thoughts(thoughts)
                     response = VoiceChatResponse(
                         response_message="",
                         query_message=query_message,
@@ -98,6 +99,9 @@ class Utils:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
             async for res in Utils.format_as_ndjson(result):
+                print("====================================")
+                print(res)
+                print("====================================")
                 # Extract sources
                 res = json.loads(res)
                 thoughts = res.get("context", {}).get("thoughts", [])
@@ -141,12 +145,19 @@ class Utils:
         return generator()
 
 
-def extract_data_from_stream(thoughts: List[dict[str, Any]]):
-    # sources_desc = thoughts[2].get("description", [])
+def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
+    sources_desc = thoughts[2].get("description", [])
     sources = []
-    # for source in sources_desc:  # sources[2] is search results
-    #     src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
-    #     sources.append(src)
+    for source in sources_desc:  # sources[2] is search results
+        src = Source(
+            id=source.get("id"),
+            title=source.get("title"),
+            cover_image_url=str(source.get("cover_image_url")),
+            full_url=source.get("full_url"),
+            content_category=source.get("content_category"),
+            chunks=source.get("chunks"),
+        )
+        sources.append(src)
     return sources
 
 
