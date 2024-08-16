@@ -3,21 +3,21 @@
 }
 
 .voice-sources {
-  @apply tw-h-1/5 tw-flex-none;
+  @apply tw-h-[20vh] tw-flex-none;
 }
 
 .voice-message {
-  @apply tw-flex-1 tw-overflow-y-auto tw-flex-none;
+  @apply tw-flex-1 tw-overflow-y-auto tw-py-[2vh] tw-px-[4vw] tw-h-[20vh];
 }
 
 .voice-annotation {
-  @apply tw-flex-none tw-py-1;
+  @apply tw-flex-none;
 }
 
 .voice-microphone {
-  @apply tw-flex-none tw-mb-4 tw-mx-auto;
+  @apply tw-flex-none tw-mx-auto tw-mb-[1vh];
 }
 
 .footer-text {
-  @apply tw-text-center tw-text-xs tw-text-white tw-pb-4;
+  @apply tw-text-center tw-text-xs tw-text-white tw-pb-[2vh];
 }
