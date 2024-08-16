@@ -1,23 +1,23 @@
 .voice-mobile-container {
-  @apply tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-bg-emerald-600 tw-flex tw-flex-col;
+  @apply tw-relative tw-top-0 tw-h-screen tw-bg-emerald-600 tw-flex tw-flex-col tw-overflow-hidden tw-justify-between;
 }
 
 .voice-sources {
-  @apply tw-h-1/5;
+  @apply tw-h-1/5 tw-flex-none;
 }
 
 .voice-message {
-  @apply tw-flex-1;
+  @apply tw-flex-1 tw-overflow-y-auto tw-flex-none;
 }
 
 .voice-annotation {
-  @apply tw-flex-none;
+  @apply tw-flex-none tw-py-1;
 }
 
 .voice-microphone {
-  @apply tw-flex-none;
+  @apply tw-flex-none tw-mb-4 tw-mx-auto;
 }
 
 .footer-text {
-  @apply tw-fixed tw-bottom-0 tw-self-center tw-text-center tw-text-xs tw-text-white;
+  @apply tw-text-center tw-text-xs tw-text-white tw-pb-4;
 }
