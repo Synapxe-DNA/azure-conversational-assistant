@@ -1,4 +1,4 @@
-@if (!isMobile) {
+<!-- @if (!isMobile) {
 @switch (chatMode) {
 @case (ChatMode.Voice) {
 <app-voice></app-voice>
@@ -17,5 +17,14 @@
 @case (ChatMode.Text) {
 <app-text-mobile />
 }
+}
+} -->
+
+@switch (chatMode) {
+@case (ChatMode.Voice) {
+<app-voice-mobile />
+}
+@case (ChatMode.Text) {
+<app-text-mobile />
 }
 }

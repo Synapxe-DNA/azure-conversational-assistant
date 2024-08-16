@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CarouselModule } from 'primeng/carousel';
+import { AccordionModule } from 'primeng/accordion';
 import { MessageSource } from '../../../types/message.type';
 
 const sources = [
@@ -33,11 +34,25 @@ const sources = [
   selector: 'app-voice-sources',
   standalone: true,
   imports: [
-    CarouselModule
+    CarouselModule,
+    AccordionModule,
   ],
   templateUrl: './voice-sources.component.html',
   styleUrl: './voice-sources.component.css'
 })
-export class VoiceSourcesComponent {
+export class VoiceSourcesComponent implements OnInit{
+
+  responsiveOptions: any[] | undefined;
+
   @Input() sources: MessageSource[] = sources;
+
+  ngOnInit(): void {
+    this.responsiveOptions = [
+      {
+          breakpoint: '768px',
+          numVisible: 1,
+          numScroll: 1
+      }
+  ];
+}
 }

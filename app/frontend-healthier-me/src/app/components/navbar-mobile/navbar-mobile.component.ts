@@ -14,6 +14,8 @@ import { Button } from "primeng/button";
 import { CommonModule } from "@angular/common";
 import { PreferenceService } from "../../services/preference/preference.service";
 import { ChatMode } from "../../types/chat-mode.type";
+import { SidebarModule } from 'primeng/sidebar';
+import { NavbarComponent } from "../navbar/navbar.component";
 
 @Component({
   selector: 'app-navbar-mobile',
@@ -24,8 +26,10 @@ import { ChatMode } from "../../types/chat-mode.type";
     NavbarProfileLinkComponent,
     NavbarProfileCreateComponent,
     NavbarLanguageComponent,
+    NavbarComponent,
     Button,
     CommonModule,
+    SidebarModule
   ],
   templateUrl: './navbar-mobile.component.html',
   styleUrl: './navbar-mobile.component.css'
@@ -33,7 +37,7 @@ import { ChatMode } from "../../types/chat-mode.type";
 export class NavbarMobileComponent implements OnInit{
   chatMode?: ChatMode;
   profiles: Profile[] = [];
-  sidebar?: boolean;
+  sidebar: boolean = false;
   firstLoad: boolean = true;
 
   constructor(
