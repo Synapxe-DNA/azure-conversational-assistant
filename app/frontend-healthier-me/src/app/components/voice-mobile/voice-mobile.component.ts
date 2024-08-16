@@ -24,6 +24,8 @@ import { VoiceSourcesComponent } from "./voice-sources/voice-sources.component";
 import { VoiceMessageComponent } from "./voice-message/voice-message.component";
 import { VoiceAnnotationComponent } from "./voice-annotation/voice-annotation.component";
 import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.component";
+import { Message } from "../../types/message.type";
+import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 
 @Component({
   selector: 'app-voice-mobile',
@@ -55,6 +57,7 @@ export class VoiceMobileComponent{
   private profile: Profile | undefined;
 
   micState: MicState = MicState.PENDING;
+  messages: Message[] = []
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -67,6 +70,7 @@ export class VoiceMobileComponent{
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
+    private chatMessageService: ChatMessageService,
   ) {}
 
   ngOnInit() {
@@ -90,8 +94,18 @@ export class VoiceMobileComponent{
   ngAfterViewInit() {
     this.profileService
       .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
-      .subscribe((d) => (this.profile = d || GeneralProfile));
+      .subscribe((d) => { (this.profile = d || GeneralProfile)
+      this.chatMessageService.load(this.profile.id).then((m) => {
+        m.subscribe((messages) => {
+          this.messages = messages;
+        });
+      });;
+    })
     this.initVoiceChat().catch(console.error);
+
+
+      
+    
   }
 
   private async initVoiceChat() {

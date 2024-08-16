@@ -32,7 +32,7 @@ export class VoiceMessageComponent implements AfterViewInit{
   }
 
   mainLoop() {
-    if (this.state === MicState.ACTIVE && this.audioAnalyser) {
+    if (this.audioAnalyser) {
       const raw_level = this.audioAnalyser.getAudioLevel();
       const level = (
         32 -
