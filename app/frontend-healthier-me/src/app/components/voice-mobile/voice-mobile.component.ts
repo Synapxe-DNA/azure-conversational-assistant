@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { PreferenceService } from "../../services/preference/preference.service";
 import { WaveformComponent } from "../waveform/waveform.component";
 import { MicrophoneButtonComponent } from "../microphone-button/microphone-button.component";
@@ -54,10 +54,12 @@ export class VoiceMobileComponent{
     true,
   );
   private recorder: AudioRecorder | undefined;
-  private profile: Profile | undefined;
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
+    Profile | undefined
+  >(undefined);
 
   micState: MicState = MicState.PENDING;
-  messages: Message[] = []
+  message: string = ''
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -91,21 +93,22 @@ export class VoiceMobileComponent{
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
-  ngAfterViewInit() {
-    this.profileService
+  ngAfterViewInit() {    
+    this.profile = this.profileService
       .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
-      .subscribe((d) => { (this.profile = d || GeneralProfile)
-      this.chatMessageService.load(this.profile.id).then((m) => {
+
+    this.profile.subscribe((p) => {
+      if (!p) {
+        return;
+      }
+      this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
-          this.messages = messages;
+          this.message = messages[messages.length - 1].message;
         });
-      });;
-    })
+      });
+    });
+
     this.initVoiceChat().catch(console.error);
-
-
-      
-    
   }
 
   private async initVoiceChat() {

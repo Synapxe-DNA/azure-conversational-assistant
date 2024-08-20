@@ -1,23 +1,27 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { Message } from '../../../types/message.type';
 import { MicState } from '../../../types/mic-state.type';
 import { AudioAnalyser } from '../../../utils/audio-analyser';
 import { AudioService } from '../../../services/audio/audio.service';
+import { MarkdownComponent } from '../../markdown/markdown.component';
 
 @Component({
   selector: 'app-voice-message',
   standalone: true,
-  imports: [],
+  imports: [MarkdownComponent],
   templateUrl: './voice-message.component.html',
   styleUrl: './voice-message.component.css'
 })
-export class VoiceMessageComponent implements AfterViewInit{
+export class VoiceMessageComponent implements AfterViewInit, OnInit{
   @Input() message!: string
   @Input() state?: string
   audioAnalyser: AudioAnalyser | undefined;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>
 
   constructor(private audioService: AudioService) {}
+
+  ngOnInit(): void {
+  }
 
   ngAfterViewInit(): void {
     this.startAnalyser().catch(console.error);
