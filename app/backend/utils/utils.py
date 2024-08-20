@@ -33,7 +33,7 @@ class Utils:
 
     @staticmethod
     async def construct_streaming_voice_response(
-        result: AsyncGenerator[dict[str, Any], None], query_message: str
+        result: AsyncGenerator[dict[str, Any], None]
     ) -> AsyncGenerator[str, None]:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
@@ -52,7 +52,6 @@ class Utils:
                     sources = extract_sources_from_thoughts(thoughts)
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message=query_message,
                         sources=sources,
                         additional_question_1="",
                         additional_question_2="",
@@ -62,7 +61,6 @@ class Utils:
                 elif not followup_question == []:
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message="",
                         sources=[],
                         additional_question_1=followup_question[0],
                         additional_question_2=followup_question[1],
@@ -81,7 +79,6 @@ class Utils:
                         audio_data = tts.readText(text_response)
                         response = VoiceChatResponse(
                             response_message=text_response,
-                            query_message="",
                             sources=[],
                             additional_question_1="",
                             additional_question_2="",
