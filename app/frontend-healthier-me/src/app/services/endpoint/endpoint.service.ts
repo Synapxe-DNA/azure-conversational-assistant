@@ -183,6 +183,7 @@ export class EndpointService {
                   responseData.additional_question_1,
                   responseData.additional_question_2,
                 ],
+                sources: responseData.sources,
               });
               lastResponseLength =
                 (e as HttpDownloadProgressEvent).partialText?.length || 0;
@@ -266,6 +267,7 @@ export class EndpointService {
                   // responseData.additional_question_1,
                   // responseData.additional_question_2,
                 ],
+                sources: [],
               });
 
               lastResponseLength =
@@ -274,6 +276,7 @@ export class EndpointService {
             }
 
             case HttpEventType.Response: {
+              console.log(responseBS.value)
               let latestData = responseBS.value;
               latestData!.status = ResponseStatus.Done;
               responseBS.next(latestData);
