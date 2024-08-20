@@ -1,4 +1,6 @@
-<div class="sm:tw-hidden tw-flex tw-flex-row tw-justify-start tw-items-stretch tw-h-full">
+<div
+  class="sm:tw-hidden tw-flex tw-flex-row tw-justify-start tw-items-stretch tw-h-full"
+>
   <div
     class="
     tw-transition-all
@@ -12,7 +14,7 @@
     class="tw-bg-emerald-600 tw-w-full tw-h-full tw-flex tw-flex-col tw-justify-center tw-items-center tw-gap-[20dvh] tw-relative"
   >
     <span class="tw-text-white tw-font-bold tw-text-4xl">HealthierME</span>
-    <app-waveform [bars]="8" />
+    <app-waveform [bars]="8" [heightScalingFactor]="0.5" />
     <div class="button-group">
       <app-secondary-button
         (click)="prefChatModeToText()"
@@ -72,5 +74,3 @@
     ></p-inputSwitch>
   </div>
 </p-overlayPanel>
-
-

@@ -22,10 +22,11 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
 })
 export class WaveformComponent implements AfterViewInit {
   @Input() bars: number = 8;
-  @Input() barWidth: string = "4px";
-  @Input() barHeight: string = "6px";
+  @Input() barWidth: string = "3px";
+  @Input() barHeight: string = "5px";
   @Input() containerHeight: string = "8rem";
   @Input() containerGap: string = "1rem";
+  @Input() heightScalingFactor: number = 0.5;
 
   @ViewChild("container") container!: ElementRef;
   @ViewChildren("bar") levelBars!: QueryList<ElementRef>;
@@ -68,7 +69,10 @@ export class WaveformComponent implements AfterViewInit {
         this.levelBars.forEach((b, index) => {
           // Scale height of bar based on audio levels.
           // Scaled for higher mid-tones
-          b.nativeElement.style.height = `${barHeights[index] * (1 + Math.sin((index / barHeights.length) * Math.PI)) * this.container.nativeElement.clientHeight}px`;
+          const heightMultiplier =
+            this.heightScalingFactor *
+            (1 + Math.sin((index / barHeights.length) * Math.PI));
+          b.nativeElement.style.height = `${barHeights[index] * heightMultiplier * this.container.nativeElement.clientHeight}px`;
         });
       }
     } catch (e) {

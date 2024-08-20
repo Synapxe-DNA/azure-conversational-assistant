@@ -25,8 +25,7 @@ tw-transform-gpu
   ></lucide-icon> -->
     <app-waveform
       [bars]="4"
-      [barWidth]="'3px'"
-      [barHeight]="'5px'"
+      [heightScalingFactor]="0.3"
       [containerHeight]="'5rem'"
       [containerGap]="'0.5rem'"
       *ngIf="state === MicState.DISABLED"
