@@ -113,7 +113,6 @@ export class VoiceMobileComponent{
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
           this.message = messages.filter((m) => m.role === MessageRole.Assistant).sort((b, a) => a.timestamp - b.timestamp)[0];
-          
         });
       });
     });
@@ -131,10 +130,6 @@ export class VoiceMobileComponent{
 
   prefChatModeToText(): void {
     this.preference.setChatMode(ChatMode.Text);
-  }
-
-  prefShowLiveTranscription(e: InputSwitchChangeEvent) {
-    this.preference.setShowLiveTranscription(e.checked);
   }
 
   prefVoiceInterrupt(e: InputSwitchChangeEvent) {
