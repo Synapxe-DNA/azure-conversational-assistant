@@ -14,7 +14,6 @@ class VoiceChatRequest(BaseModel):
 
 class VoiceChatResponse(BaseModel):
     response_message: str
-    query_message: str
     audio_base64: str
     sources: List[Source]
     additional_question_1: Optional[str]

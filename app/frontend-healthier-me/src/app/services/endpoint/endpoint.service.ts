@@ -19,6 +19,7 @@ import {
   ApiProfileType,
 } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
+import { ApiSource } from "../../types/api/api-source.type";
 import { ResponseStatus } from "../../types/responses/response-status.type";
 import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
 import { createId } from "@paralleldrive/cuid2";
@@ -183,6 +184,7 @@ export class EndpointService {
                   responseData.additional_question_1,
                   responseData.additional_question_2,
                 ],
+                sources: responseData.sources,
               });
               lastResponseLength =
                 (e as HttpDownloadProgressEvent).partialText?.length || 0;
@@ -211,7 +213,7 @@ export class EndpointService {
   async sendChat(
     message: Message,
     profile: Profile,
-    history: Message[]
+    history: Message[],
   ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> =
       new BehaviorSubject<ChatResponse | null>(null);
@@ -219,6 +221,7 @@ export class EndpointService {
 
     let lastResponseLength: number = 0;
     let currentResponseMessage: string = "";
+    let currentSources: ApiSource[] = [];
 
     const data: ApiChatRequest = {
       chat_history: this.messageToApiChatHistory(history),
@@ -245,20 +248,19 @@ export class EndpointService {
 
               const currentResponseData = (
                 e as HttpDownloadProgressEvent
-              ).partialText!.slice(lastResponseLength);
+              ).partialText!.slice(lastResponseLength); //splits response into chunks
+
               // console.log(currentResponseData)
-              currentResponseMessage += currentResponseData;
-              // const responseData = JSON.parse(currentResponseData) as ApiChatResponse
-              // console.log(responseData)
 
-              // const responseData = JSON.parse(
-              //   (e as HttpDownloadProgressEvent).partialText!.slice(
-              //     lastResponseLength,
-              //   ),
-              // ) as ApiChatResponse;
+              // parse chunks into multiple json objects
 
-              // currentResponseMessage = currentResponseMessage + responseData.response_message
-              //
+              const jsonParsed = this.aggregateResponseMessages(currentResponseData)
+
+              //adds response_message to local variable
+              currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
+              currentSources.push(...jsonParsed[1])
+              
+            
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
@@ -266,6 +268,7 @@ export class EndpointService {
                   // responseData.additional_question_1,
                   // responseData.additional_question_2,
                 ],
+                sources: currentSources,
               });
 
               lastResponseLength =
@@ -286,4 +289,48 @@ export class EndpointService {
 
     return responseBS;
   }
+
+  // Function to extract individual JSON objects from a concatenated raw JSON string
+private extractJsonObjects(rawString: string): string[] {
+  // Regular expression to match JSON objects
+  const jsonObjects: string[] = [];
+  const jsonRegex = /\{.*?\}(?=\{|\s*$)/g;  // Regex to capture non-nested JSON objects
+  let match;
+
+  // Find all matches
+  while ((match = jsonRegex.exec(rawString)) !== null) {
+      jsonObjects.push(match[0]);
+  }
+  // console.log(jsonObjects)
+
+  return jsonObjects;
+}
+
+// Function to aggregate response messages from concatenated JSON objects
+ private aggregateResponseMessages(rawJsonString: string): any[] {
+  let aggregatedResponseMessage: string = '';
+  let aggregatedSources: [] = []; 
+
+  // Extract individual JSON objects
+  const jsonObjects = this.extractJsonObjects(rawJsonString);
+
+  // Process each JSON object
+  for (const jsonObject of jsonObjects) {
+      try {
+          // Parse the JSON object
+          const data = JSON.parse(jsonObject);
+
+          // Extract and append the response message
+          const responseMessage: string = data.response_message || '';
+          const sources: [] = data.sources || [];
+          aggregatedResponseMessage += responseMessage;
+          aggregatedSources.push(...sources)
+
+
+      } catch (error) {
+          console.error('Error decoding JSON:', error);
+      }
+  }
+  return [aggregatedResponseMessage, aggregatedSources];
+}
 }

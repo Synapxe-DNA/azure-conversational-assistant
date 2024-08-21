@@ -15,6 +15,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
+make set-env
 
 function func_backend {
     Push-Location ..

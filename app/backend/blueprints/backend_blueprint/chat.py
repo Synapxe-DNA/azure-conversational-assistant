@@ -12,7 +12,7 @@ chat = Blueprint("chat", __name__, url_prefix="/chat")
 
 
 @chat.route("/stream", methods=["POST"])
-async def chat_stream_endpoint(auth_claims: Dict[str, Any] = None):
+async def chat_stream_endpoint():
 
     # Receive data from the client
     data = await request.form
@@ -24,7 +24,6 @@ async def chat_stream_endpoint(auth_claims: Dict[str, Any] = None):
     query_text = json.loads(data["query"])
     profile = json.loads(data.get("profile", "{}"))
     profile = Profile(**profile)
-    context["auth_claims"] = auth_claims
 
     messages = chat_history + [query_text]
 

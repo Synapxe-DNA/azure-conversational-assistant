@@ -169,6 +169,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
+          sources: []
         });
 
         // upsert assistant message
@@ -178,6 +179,7 @@ export class ConvoBrokerService {
           role: MessageRole.Assistant,
           message: d.assistant_response,
           timestamp: new Date().getTime(),
+          sources: d.sources,
         });
 
         const nonNullAudio = d.assistant_response_audio.map((v) => v);
@@ -223,6 +225,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
+      sources: []
     };
     const responseMessageId = createId();
 
@@ -242,12 +245,14 @@ export class ConvoBrokerService {
         if (!d || !d.response) {
           return;
         }
+        
         await this.chatMessageService.upsert({
           id: responseMessageId,
           profile_id: profile.id,
           message: d.response,
           timestamp: new Date().getTime(),
           role: MessageRole.Assistant,
+          sources: d.sources,
         });
 
         // Plan to create follow_up indexDB here

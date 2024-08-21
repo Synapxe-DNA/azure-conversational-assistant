@@ -8,6 +8,8 @@ from typing import Any, AsyncGenerator, List
 
 from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
+from models.chat import TextChatResponse
+from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 
@@ -32,7 +34,7 @@ class Utils:
 
     @staticmethod
     async def construct_streaming_voice_response(
-        result: AsyncGenerator[dict[str, Any], None], query_message: str
+        result: AsyncGenerator[dict[str, Any], None]
     ) -> AsyncGenerator[str, None]:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
@@ -48,10 +50,9 @@ class Utils:
                 thoughts = res.get("context", {}).get("thoughts", [])
                 followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
-                    sources = extract_data_from_stream(thoughts)
+                    sources = extract_sources_from_thoughts(thoughts)
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message=query_message,
                         sources=sources,
                         additional_question_1="",
                         additional_question_2="",
@@ -61,7 +62,6 @@ class Utils:
                 elif not followup_question == []:
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message="",
                         sources=[],
                         additional_question_1=followup_question[0],
                         additional_question_2=followup_question[1],
@@ -80,7 +80,6 @@ class Utils:
                         audio_data = tts.readText(text_response)
                         response = VoiceChatResponse(
                             response_message=text_response,
-                            query_message="",
                             sources=[],
                             additional_question_1="",
                             additional_question_2="",
@@ -98,55 +97,62 @@ class Utils:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
             async for res in Utils.format_as_ndjson(result):
+                print("====================================")
+                print(res)
+                print("====================================")
                 # Extract sources
                 res = json.loads(res)
                 thoughts = res.get("context", {}).get("thoughts", [])
                 followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
                     pass
-                    # sources = extract_data_from_stream(thoughts)
-                    # response = TextChatResponse(
-                    #     response_message="",
-                    #     sources=sources,
-                    #     additional_question_1="",
-                    #     additional_question_2="",
-                    # )
-                    # yield response.model_dump_json()
+                    sources = extract_sources_from_thoughts(thoughts)
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=sources,
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+                    yield response.model_dump_json()
                 elif not followup_question == []:
                     pass
-                    # response = TextChatResponse(
-                    #     response_message="",
-                    #     sources=[],
-                    #     additional_question_1=followup_question[0],
-                    #     additional_question_2=followup_question[1],
-                    # )
-                    # yield response.model_dump_json()
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=[],
+                        additional_question_1=followup_question[0],
+                        additional_question_2=followup_question[1],
+                    )
+                    yield response.model_dump_json()
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
                     if text_response_chunk is None:
                         break
-                    # response = TextChatResponse(
-                    #     response_message=text_response_chunk,
-                    #     sources=[],
-                    #     additional_question_1="",
-                    #     additional_question_2="",
-                    # )
-                    yield text_response_chunk
-                    # yield response.model_dump_json()
-                    print("====================================")
-                    print(text_response_chunk)
-                    print("====================================")
+                    response = TextChatResponse(
+                        response_message=text_response_chunk,
+                        sources=[],
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+
+                    yield response.model_dump_json()
 
         return generator()
 
 
-def extract_data_from_stream(thoughts: List[dict[str, Any]]):
-    # sources_desc = thoughts[2].get("description", [])
+def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
+    sources_desc = thoughts[2].get("description", [])
     sources = []
-    # for source in sources_desc:  # sources[2] is search results
-    #     src = Source(title=source.get("sourcepage"), url="", meta_description="", image_url="")
-    #     sources.append(src)
+    for source in sources_desc:  # sources[2] is search results
+        src = Source(
+            id=source.get("id"),
+            title=source.get("title"),
+            cover_image_url=str(source.get("cover_image_url")),
+            full_url=source.get("full_url"),
+            content_category=source.get("content_category"),
+            chunks=source.get("chunks"),
+        )
+        sources.append(src)
     return sources
 
 

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { PreferenceService } from "../../services/preference/preference.service";
 import { WaveformComponent } from "../waveform/waveform.component";
 import { MicrophoneButtonComponent } from "../microphone-button/microphone-button.component";
@@ -24,6 +24,8 @@ import { VoiceSourcesComponent } from "./voice-sources/voice-sources.component";
 import { VoiceMessageComponent } from "./voice-message/voice-message.component";
 import { VoiceAnnotationComponent } from "./voice-annotation/voice-annotation.component";
 import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.component";
+import { Message, MessageRole, MessageSource } from "../../types/message.type";
+import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 
 @Component({
   selector: 'app-voice-mobile',
@@ -52,9 +54,12 @@ export class VoiceMobileComponent{
     true,
   );
   private recorder: AudioRecorder | undefined;
-  private profile: Profile | undefined;
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
+    Profile | undefined
+  >(undefined);
 
   micState: MicState = MicState.PENDING;
+  message?: Message
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -67,7 +72,17 @@ export class VoiceMobileComponent{
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-  ) {}
+    private chatMessageService: ChatMessageService,
+  ) {
+    this.message = {
+      role: MessageRole.Assistant,
+      sources: [],
+      timestamp: 0,
+      id: "",
+      profile_id:'',
+      message: '',
+    }
+  }
 
   ngOnInit() {
     this.profileService.setProfileInUrl(
@@ -87,10 +102,22 @@ export class VoiceMobileComponent{
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
-  ngAfterViewInit() {
-    this.profileService
+  ngAfterViewInit() {    
+    this.profile = this.profileService
       .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
-      .subscribe((d) => (this.profile = d || GeneralProfile));
+
+    this.profile.subscribe((p) => {
+      if (!p) {
+        return;
+      }
+      this.chatMessageService.load(p.id).then((m) => {
+        m.subscribe((messages) => {
+          this.message = messages.filter((m) => m.role === MessageRole.Assistant).sort((b, a) => a.timestamp - b.timestamp)[0];
+          
+        });
+      });
+    });
+    console.log("voice-mobile afterviewinit", this.message);
     this.initVoiceChat().catch(console.error);
   }
 

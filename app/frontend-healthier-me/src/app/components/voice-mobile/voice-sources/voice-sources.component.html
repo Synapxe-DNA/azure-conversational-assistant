@@ -1,29 +1,39 @@
-<div
-  class="tw-bg-slate-200 tw-h-full tw-overflow-hidden tw-flex tw-flex-col tw-py-2"
->
-  <p-carousel
-    class="tw-flex-1 tw-overflow-auto tw-text-sm tw-h-min"
-    [value]="sources"
-    [numVisible]="3"
-    [numScroll]="1"
-    [circular]="false"
-  >
-    <ng-template let-product pTemplate="item">
-      <div class="tw-border tw-rounded tw-m-2 tw-text-xs tw-flex tw-flex-col">
-        <div class="tw-mb-2 tw-relative tw-mx-auto tw-h-1/4 tw-w-full">
-          <a [href]="product.url">
-            <img
-              [src]="product.cover_image_url"
-              class="tw-w-full tw-h-full tw-rounded tw-object-cover"
-            />
-          </a>
-        </div>
-        <div
-          class="tw-font-semibold tw-text-sm tw-h-1/5 tw-overflow-hidden tw-text-ellipsis"
+<div class="tw-bg-white tw-fixed tw-top-10 tw-h-max tw-z-10 tw-w-full">
+  <p-accordion class="tw-w-full">
+    <p-accordionTab header="Sources" class="source-header">
+      <div class="tw-w-full">
+        <p-carousel
+          *ngIf="sources.length > 0; else noSources"
+          [value]="sources"
+          [numVisible]="3"
+          [numScroll]="1"
+          [responsiveOptions]="responsiveOptions"
+          [circular]="false"
+          class="tw-w-full"
         >
-          {{ product.title }}
-        </div>
+          <ng-template let-product pTemplate="item">
+            <div class="tw-border-1 tw-rounded tw-m-2 tw-p-3">
+              <div class="tw-mb-3">
+                <div class="tw-relative tw-mx-auto">
+                  <a [href]="product.full_url">
+                    <img
+                      [src]="product.cover_image_url"
+                      class="tw-w-full tw-rounded"
+                    />
+                  </a>
+                </div>
+              </div>
+              <div class="mb-3 tw-font-semibold tw-text-xl">
+                {{ product.title }}
+              </div>
+            </div>
+          </ng-template>
+        </p-carousel>
       </div>
-    </ng-template>
-  </p-carousel>
+    </p-accordionTab>
+  </p-accordion>
 </div>
+
+<ng-template #noSources>
+  <p style="text-align: center; color: lightgrey">No Sources Detected</p>
+</ng-template>
