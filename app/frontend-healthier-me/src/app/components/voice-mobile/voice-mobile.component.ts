@@ -104,6 +104,7 @@ export class VoiceMobileComponent{
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
           this.message = messages.filter((m) => m.role === MessageRole.Assistant).sort((a, b) => a.timestamp - b.timestamp)[0];
+          console.log("voice-mobile afterviewinit", this.message);
         });
       });
     });

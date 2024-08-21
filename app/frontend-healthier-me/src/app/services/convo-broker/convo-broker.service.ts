@@ -245,7 +245,7 @@ export class ConvoBrokerService {
         if (!d || !d.response) {
           return;
         }
-        console.log(d)
+        
         await this.chatMessageService.upsert({
           id: responseMessageId,
           profile_id: profile.id,

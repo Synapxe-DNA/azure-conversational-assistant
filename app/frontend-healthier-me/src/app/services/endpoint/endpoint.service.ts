@@ -259,7 +259,6 @@ export class EndpointService {
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
               currentSources.push(...jsonParsed[1])
-              console.log(currentSources)
               
             
               responseBS.next({
