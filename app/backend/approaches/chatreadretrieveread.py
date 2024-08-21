@@ -22,7 +22,7 @@ from openai.types.chat import (
     ChatCompletionToolParam,
 )
 from openai_messages_token_helper import build_messages, get_token_limit
-
+# from lingua import Language, LanguageDetectorBuilder
 
 class ChatReadRetrieveReadApproach(ChatApproach):
     """
@@ -169,6 +169,12 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             }
         ]
 
+        # # identify language if selected_language is default
+        # languages = [Language.ENGLISH, Language.CHINESE, Language.MALAY, Language.TAMIL]
+        # if selected_language == "default":
+        #     detected_language = detector.detect_language_of(original_user_query)
+        #     selected_language = detected_language.name
+
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
             answer_generation_prompt = general_prompt.format(
@@ -214,8 +220,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
-        # print(f"query_text: {query_text}")
-
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
 
         # If retrieval mode includes vectors, compute an embedding for the query
@@ -237,13 +241,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-        print(sources_content)
 
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
-
-        # print(f"chat history: {messages[:-1]}")
 
         # response_token_limit = 1024
         messages = build_messages(
