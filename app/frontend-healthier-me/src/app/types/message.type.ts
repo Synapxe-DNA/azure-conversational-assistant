@@ -18,5 +18,5 @@ export interface Message {
   role: MessageRole;
   message: string;
   timestamp: number;
-  sources?: MessageSource[];
+  sources: MessageSource[];
 }

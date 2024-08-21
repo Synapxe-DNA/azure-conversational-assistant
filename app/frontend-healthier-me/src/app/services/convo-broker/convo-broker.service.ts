@@ -169,6 +169,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
+          sources: []
         });
 
         // upsert assistant message
@@ -224,6 +225,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
+      sources: []
     };
     const responseMessageId = createId();
 
