@@ -11,7 +11,7 @@ import {
   HttpEventType,
 } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
-import { ApiVoiceRequest } from "../../types/api/requests/voice-request.type";
+import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
 import { ApiChatHistory } from "../../types/api/api-chat-history.type";
 import {
   ApiProfile,
@@ -205,6 +205,100 @@ export class EndpointService {
   }
 
   /**
+   * Method to send transcribed text to the endpoint for LLM generation
+   * @param message {string} transcribed text from websocket
+   * @param profile {Profile}
+   * @param history {Message[]} history of chat to be used for LLM context
+   */
+  async sendVoice2(
+    message: string,
+    profile: Profile,
+    history: Message[]
+  ): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> =
+      new BehaviorSubject<VoiceResponse | null>(null);
+
+    let lastResponseLength: number = 0;
+    let currentAssistantMessage: string = "";
+    let currentQueryMessage: string = "";
+    let existingAudio: string[] = [];
+    let currentSources: ApiSource[] = [];
+
+    const data: ApiVoiceRequest2 = {
+      chat_history: this.messageToApiChatHistory(history),
+      profile: this.profileToApiProfile(profile),
+      query: message,
+    };
+
+    this.httpClient
+      .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
+        responseType: "text",
+        reportProgress: true,
+        observe: "events",
+      })
+      .subscribe({
+        next: (e) => {
+          switch (e.type) {
+            case HttpEventType.DownloadProgress: {
+              if (!(e as HttpDownloadProgressEvent).partialText) {
+                return;
+              }
+              const responseData = JSON.parse(
+                (e as HttpDownloadProgressEvent).partialText!.slice(
+                  lastResponseLength
+                )
+              ) as ApiVoiceResponse;
+
+              console.log('responseData', responseData)
+
+              if (responseData.audio_base64) {
+                existingAudio.push(responseData.audio_base64);
+              }
+
+              if (responseData.response_message) {
+                currentAssistantMessage =
+                  currentAssistantMessage + responseData.response_message;
+              }
+
+              if (responseData.query_message) {
+                currentQueryMessage =
+                  currentQueryMessage + responseData.query_message;
+              }
+
+              if (responseData.sources) {
+                currentSources.push(...responseData.sources)
+              }
+
+              responseBS.next({
+                status: ResponseStatus.Pending,
+                user_transcript: currentQueryMessage,
+                assistant_response: currentAssistantMessage,
+                assistant_response_audio: existingAudio,
+                additional_questions: [
+                  responseData.additional_question_1,
+                  responseData.additional_question_2,
+                ],
+                sources: currentSources
+              });
+              lastResponseLength =
+                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              return;
+            }
+            case HttpEventType.Response: {
+              let existingData = responseBS.value!;
+              existingData.status = ResponseStatus.Done;
+              responseBS.next(existingData);
+              return;
+            }
+          }
+        },
+        error: console.error,
+      });
+
+    return responseBS;
+  }
+
+  /**
    * Method to send chat message to LLM for generation
    * @param message {Message} user message
    * @param profile {Profile}
@@ -221,7 +315,7 @@ export class EndpointService {
 
     let lastResponseLength: number = 0;
     let currentResponseMessage: string = "";
-    let currentSources: ApiSource[] = [];
+    const currentSources: ApiSource[] = [];
 
     const data: ApiChatRequest = {
       chat_history: this.messageToApiChatHistory(history),
@@ -254,7 +348,7 @@ export class EndpointService {
 
               // parse chunks into multiple json objects
 
-              const jsonParsed = this.aggregateResponseMessages(currentResponseData)
+              const jsonParsed = this.parseSendChat(currentResponseData)
 
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
@@ -307,7 +401,7 @@ private extractJsonObjects(rawString: string): string[] {
 }
 
 // Function to aggregate response messages from concatenated JSON objects
- private aggregateResponseMessages(rawJsonString: string): any[] {
+ private parseSendChat(rawJsonString: string): any[] {
   let aggregatedResponseMessage: string = '';
   let aggregatedSources: [] = []; 
 

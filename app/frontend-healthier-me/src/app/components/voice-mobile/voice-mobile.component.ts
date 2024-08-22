@@ -26,6 +26,7 @@ import { VoiceAnnotationComponent } from "./voice-annotation/voice-annotation.co
 import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.component";
 import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
+import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 
 @Component({
   selector: 'app-voice-mobile',
@@ -53,7 +54,8 @@ export class VoiceMobileComponent{
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     true,
   );
-  private recorder: AudioRecorder | undefined;
+  // private recorder: AudioRecorder | undefined;
+  private recorder2: v2AudioRecorder | undefined
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
     Profile | undefined
   >(undefined);
@@ -112,7 +114,7 @@ export class VoiceMobileComponent{
       }
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
-          this.message = messages.filter((m) => m.role === MessageRole.Assistant).sort((b, a) => a.timestamp - b.timestamp)[0];
+          this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
         });
       });
     });
@@ -121,7 +123,8 @@ export class VoiceMobileComponent{
   }
 
   private async initVoiceChat() {
-    this.recorder = new AudioRecorder(await this.audio.getMicInput());
+    // this.recorder = new AudioRecorder(await this.audio.getMicInput());
+    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {
