@@ -4,6 +4,7 @@ from typing import Any, Dict, cast
 from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH, CONFIG_CHAT_VISION_APPROACH
 from error import error_response
+from models.chat import TextChatRequest
 from models.profile import Profile
 from quart import Blueprint, current_app, jsonify, request
 from utils.utils import Utils
@@ -17,15 +18,15 @@ async def chat_stream_endpoint():
     # Receive data from the client
     data = await request.form
 
-    context = data.get("context", {})
-    # Extract data from the JSON message
-    # profile = json.loads(data.get("profile"))
-    chat_history = json.loads(data.get("chat_history", "[]"))
-    query_text = json.loads(data["query"])
-    profile = json.loads(data.get("profile", "{}"))
-    profile = Profile(**profile)
+    context = data.get("context", {})  # for overrides
 
-    messages = chat_history + [query_text]
+    textChatRequest = TextChatRequest(
+        chat_history=json.loads(data.get("chat_history", "[]")),
+        query=json.loads(data["query"]),
+        profile=Profile(**json.loads(data.get("profile", "{}"))),
+    )
+
+    messages = [chat_history.model_dump() for chat_history in textChatRequest.chat_history] + [textChatRequest.query]
 
     try:
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
@@ -33,7 +34,7 @@ async def chat_stream_endpoint():
         result = await approach.run_stream(
             messages=messages,
             context=context,
-            profile=profile,
+            profile=textChatRequest.profile,
         )
 
         response = await Utils.construct_streaming_chat_response(result)

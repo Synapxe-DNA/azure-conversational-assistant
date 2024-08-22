@@ -11,7 +11,6 @@ from openai import AsyncOpenAI
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
 
-# print(lang)
 voice = Blueprint("voice", __name__, url_prefix="/voice")
 
 

@@ -149,8 +149,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         else:
             user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
 
-        print(f"user_query_request: {user_query_request}")
-
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -237,7 +235,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-        print(sources_content)
 
         content = "\n".join(sources_content)
 

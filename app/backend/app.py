@@ -12,6 +12,7 @@ from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionAppr
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from azure.core.exceptions import ResourceNotFoundError
+from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.monitor.opentelemetry import configure_azure_monitor
 from azure.search.documents.aio import SearchClient
@@ -31,10 +32,10 @@ from config import (
     CONFIG_ASK_VISION_APPROACH,
     CONFIG_AUTH_CLIENT,
     CONFIG_BLOB_CONTAINER_CLIENT,
-    CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_CHAT_APPROACH,
     CONFIG_CHAT_VISION_APPROACH,
     CONFIG_CREDENTIAL,
+    CONFIG_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_GPT4V_DEPLOYED,
     CONFIG_INGESTER,
     CONFIG_OPENAI_CLIENT,
@@ -204,7 +205,9 @@ async def setup_clients():
     # Replace these with your own values, either in environment variables or directly here
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
-    AZURE_FEEDBACK_STORAGE_CONTAINER = os.environ["AZURE_FEEDBACK_STORAGE_CONTAINER"]
+    AZURE_COSMOS_URL = os.environ["AZURE_COSMOS_URL"]
+    AZURE_FEEDBACK_DATABASE_ID = os.environ["AZURE_FEEDBACK_DATABASE_ID"]
+    AZURE_FEEDBACK_CONTAINER_ID = os.environ["AZURE_FEEDBACK_CONTAINER_ID"]
     AZURE_USERSTORAGE_ACCOUNT = os.environ.get("AZURE_USERSTORAGE_ACCOUNT")
     AZURE_USERSTORAGE_CONTAINER = os.environ.get("AZURE_USERSTORAGE_CONTAINER")
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
@@ -277,14 +280,10 @@ async def setup_clients():
     blob_container_client = ContainerClient(
         f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", AZURE_STORAGE_CONTAINER, credential=azure_credential
     )
-
-    blob_feedback_service = ContainerClient(
-        f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net",
-        AZURE_FEEDBACK_STORAGE_CONTAINER,
-        credential=azure_credential,
-    )
-
-    current_app.config[CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT] = blob_feedback_service
+    cosmos_client = CosmosClient(url=AZURE_COSMOS_URL, credential=azure_credential)
+    feedback_database_client = cosmos_client.get_database_client(AZURE_FEEDBACK_DATABASE_ID)
+    feedback_container_client = feedback_database_client.get_container_client(AZURE_FEEDBACK_CONTAINER_ID)
+    current_app.config[CONFIG_FEEDBACK_CONTAINER_CLIENT] = feedback_container_client
 
     # Set up authentication helper
     search_index = None
