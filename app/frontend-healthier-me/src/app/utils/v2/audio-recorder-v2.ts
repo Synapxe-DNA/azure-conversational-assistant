@@ -51,12 +51,13 @@ export class v2AudioRecorder {
                 const data = JSON.parse(event.data);
                 if (data.text) {
 
+
                     if (data.is_final) {
                         this.finalText = data.text;
                     }
                 
                     // upsert user message
-                    this.upsert(this.finalText)
+                    this.upsert(data.text)
 
                 }
                 else if (data.error) {
