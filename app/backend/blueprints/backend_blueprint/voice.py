@@ -7,6 +7,7 @@ from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from config import CONFIG_CHAT_APPROACH
 from error import error_response
 from models.profile import Profile
+from models.voice import VoiceChatRequest
 from openai import AsyncOpenAI
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
@@ -24,16 +25,16 @@ async def voice_endpoint():
     # Extract data from the JSON message
     context = data.get("context", {})
 
-    profile_json = json.loads(data.get("profile"))
-    profile = Profile(**profile_json)
-
-    chat_history = json.loads(data.get("chat_history", "[]"))
+    voiceChatRequest = VoiceChatRequest(
+        chat_history=json.loads(data.get("chat_history", "[]")),
+        profile=Profile(**json.loads(data.get("profile", "{}"))),
+        query=audio["query"].read(),
+    )
 
     # Convert audio to text
     config: ChatReadRetrieveReadApproach = current_app.config[CONFIG_CHAT_APPROACH]
     client: AsyncOpenAI = config.openai_client_2
-    audio_file = audio["query"]
-    buffer = BytesIO(audio_file.read())
+    buffer = BytesIO(voiceChatRequest.query)
     buffer.name = "file.webm"  # Required to indicate file type for whisper
 
     query_text = await client.audio.transcriptions.create(
@@ -49,7 +50,9 @@ async def voice_endpoint():
     #     profile.language = language
 
     # Form message
-    messages = chat_history + [{"content": query_text, "role": "user"}]
+    messages = [chat_history.model_dump() for chat_history in voiceChatRequest.chat_history] + [
+        {"content": query_text, "role": "user"}
+    ]
 
     # Send transcribed text and data to LLM
     try:
@@ -57,7 +60,7 @@ async def voice_endpoint():
         result = await approach.run_stream(
             messages=messages,
             context=context,
-            profile=profile,
+            profile=voiceChatRequest.profile,
         )
 
         response = await Utils.construct_streaming_voice_response(result, query_text)
