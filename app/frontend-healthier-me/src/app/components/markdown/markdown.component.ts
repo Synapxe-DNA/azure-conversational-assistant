@@ -10,5 +10,5 @@ import { MarkdownModule } from "ngx-markdown";
   styleUrls: ["./markdown.component.css"], // Changed to styleUrls
 })
 export class MarkdownComponent {
-  @Input() markdownContent: string = `# Default Markdown Content`;
+  @Input() markdownContent?: string = `# Default Markdown Content`;
 }

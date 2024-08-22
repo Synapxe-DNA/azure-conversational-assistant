@@ -13,7 +13,7 @@ import { MarkdownComponent } from '../../markdown/markdown.component';
   styleUrl: './voice-message.component.css'
 })
 export class VoiceMessageComponent implements AfterViewInit, OnInit{
-  @Input() message!: string
+  @Input() message?: Message
   @Input() state?: string
   audioAnalyser: AudioAnalyser | undefined;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>

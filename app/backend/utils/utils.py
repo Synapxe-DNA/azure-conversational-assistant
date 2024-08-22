@@ -8,6 +8,7 @@ from typing import Any, AsyncGenerator, List
 
 from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
+from models.chat import TextChatResponse
 from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
@@ -33,7 +34,7 @@ class Utils:
 
     @staticmethod
     async def construct_streaming_voice_response(
-        result: AsyncGenerator[dict[str, Any], None], query_message: str
+        result: AsyncGenerator[dict[str, Any], None]
     ) -> AsyncGenerator[str, None]:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
@@ -52,7 +53,6 @@ class Utils:
                     sources = extract_sources_from_thoughts(thoughts)
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message=query_message,
                         sources=sources,
                         additional_question_1="",
                         additional_question_2="",
@@ -62,7 +62,6 @@ class Utils:
                 elif not followup_question == []:
                     response = VoiceChatResponse(
                         response_message="",
-                        query_message="",
                         sources=[],
                         additional_question_1=followup_question[0],
                         additional_question_2=followup_question[1],
@@ -81,7 +80,6 @@ class Utils:
                         audio_data = tts.readText(text_response)
                         response = VoiceChatResponse(
                             response_message=text_response,
-                            query_message="",
                             sources=[],
                             additional_question_1="",
                             additional_question_2="",
@@ -108,39 +106,36 @@ class Utils:
                 followup_question = res.get("context", {}).get("followup_questions", [])
                 if not thoughts == []:
                     pass
-                    # sources = extract_data_from_stream(thoughts)
-                    # response = TextChatResponse(
-                    #     response_message="",
-                    #     sources=sources,
-                    #     additional_question_1="",
-                    #     additional_question_2="",
-                    # )
-                    # yield response.model_dump_json()
+                    sources = extract_sources_from_thoughts(thoughts)
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=sources,
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+                    yield response.model_dump_json()
                 elif not followup_question == []:
                     pass
-                    # response = TextChatResponse(
-                    #     response_message="",
-                    #     sources=[],
-                    #     additional_question_1=followup_question[0],
-                    #     additional_question_2=followup_question[1],
-                    # )
-                    # yield response.model_dump_json()
+                    response = TextChatResponse(
+                        response_message="",
+                        sources=[],
+                        additional_question_1=followup_question[0],
+                        additional_question_2=followup_question[1],
+                    )
+                    yield response.model_dump_json()
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
                     if text_response_chunk is None:
                         break
-                    # response = TextChatResponse(
-                    #     response_message=text_response_chunk,
-                    #     sources=[],
-                    #     additional_question_1="",
-                    #     additional_question_2="",
-                    # )
-                    yield text_response_chunk
-                    # yield response.model_dump_json()
-                    print("====================================")
-                    print(text_response_chunk)
-                    print("====================================")
+                    response = TextChatResponse(
+                        response_message=text_response_chunk,
+                        sources=[],
+                        additional_question_1="",
+                        additional_question_2="",
+                    )
+
+                    yield response.model_dump_json()
 
         return generator()
 

@@ -24,7 +24,7 @@ import { VoiceSourcesComponent } from "./voice-sources/voice-sources.component";
 import { VoiceMessageComponent } from "./voice-message/voice-message.component";
 import { VoiceAnnotationComponent } from "./voice-annotation/voice-annotation.component";
 import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.component";
-import { Message } from "../../types/message.type";
+import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 
 @Component({
@@ -59,7 +59,7 @@ export class VoiceMobileComponent{
   >(undefined);
 
   micState: MicState = MicState.PENDING;
-  message: string = ''
+  message!: Message
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -103,7 +103,8 @@ export class VoiceMobileComponent{
       }
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
-          this.message = messages[messages.length - 1].message;
+          this.message = messages.filter((m) => m.role === MessageRole.Assistant).sort((a, b) => a.timestamp - b.timestamp)[0];
+          console.log("voice-mobile afterviewinit", this.message);
         });
       });
     });
