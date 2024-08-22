@@ -92,6 +92,7 @@ mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 
 
+# region Not used functions
 @bp.route("/")
 async def serve_app():
     return redirect("/app")
@@ -199,6 +200,9 @@ def config():
             "showSpeechOutputAzure": current_app.config[CONFIG_SPEECH_OUTPUT_AZURE_ENABLED],
         }
     )
+
+
+# endregion
 
 
 @bp.before_app_serving
