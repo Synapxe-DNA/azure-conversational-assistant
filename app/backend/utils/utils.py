@@ -145,12 +145,12 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
     sources = []
     for source in sources_desc:  # sources[2] is search results
         src = Source(
-            id=source.get("id"),
-            title=source.get("title"),
+            id=str(source.get("id")),
+            title=str(source.get("title")),
             cover_image_url=str(source.get("cover_image_url")),
-            full_url=source.get("full_url"),
-            content_category=source.get("content_category"),
-            chunks=source.get("chunks"),
+            full_url=str(source.get("full_url")),
+            content_category=str(source.get("content_category")),
+            chunks=str(source.get("chunks")),
         )
         sources.append(src)
     return sources
