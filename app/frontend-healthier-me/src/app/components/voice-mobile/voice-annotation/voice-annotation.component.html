@@ -2,18 +2,18 @@
     <p-button
         icon="pi pi-thumbs-up-fill"
         severity="secondary"
-        (click)="submitFeedback(0)">
+        (click)="showDialog(0)">
     </p-button>
 
     <p-button
         icon="pi pi-thumbs-down-fill"
         severity="secondary"
-        (click)="submitFeedback(1)">
+        (click)="showDialog(1)">
     </p-button>
 </div>
 
 <p-dialog [(visible)]="displayModal" [modal]="true" [closable]="true" header="Feedback">
-    <!-- <div class="field">
+    <div class="field">
         <label for="feedback">Remarks:</label>
         <textarea
             id="feedback"
@@ -27,8 +27,12 @@
     </div>
     <div class="tw-mt-3">
         <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
-    </div> -->
-
-    <p>Your feedback has been submitted. Thank you!</p>
+    </div>
 </p-dialog>
 
+<!-- Confirmation Modal -->
+<p-dialog [(visible)]="confirmationModal" [modal]="true" [closable]="true" header="Thank You">
+    <p>Your feedback has been submitted. Thank you!</p>
+    <div class="tw-mt-3">
+    </div>
+</p-dialog>
