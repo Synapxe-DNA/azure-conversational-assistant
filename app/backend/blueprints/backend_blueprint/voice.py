@@ -51,7 +51,7 @@ async def voice_endpoint():
             profile=voiceChatRequest.profile,
         )
 
-        response = await Utils.construct_streaming_voice_response(result)
+        response = await Utils.construct_streaming_response(result, "voice")
         return response, 200
     except Exception as error:
         return error_response(error, "/voice")

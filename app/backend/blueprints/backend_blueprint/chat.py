@@ -37,7 +37,7 @@ async def chat_stream_endpoint():
             profile=textChatRequest.profile,
         )
 
-        response = await Utils.construct_streaming_chat_response(result)
+        response = await Utils.construct_streaming_response(result, "chat")
         return response, 200
     except Exception as error:
         return error_response(error, "/chat/stream")
