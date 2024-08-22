@@ -76,16 +76,6 @@ export class TextComponent implements OnInit {
       });
     });
 
-    this.route.paramMap
-      .pipe(
-        takeWhile((p) => {
-          return p.get("profileId") !== undefined;
-        }, true),
-      )
-      .subscribe((p) => {
-        this.profile = this.profileService.getProfile(p.get("profileId")!);
-      });
-
     this.profile.subscribe((p) => {
       if (!p) {
         return;

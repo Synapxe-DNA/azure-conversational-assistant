@@ -16,12 +16,14 @@ import { AudioRecorder } from "../../utils/audio-recorder";
 import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
 import { ChatMode } from "../../types/chat-mode.type";
+import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 
 @Injectable({
   providedIn: "root",
 })
 export class ConvoBrokerService {
   private recorder!: AudioRecorder;
+  private recorder2!: v2AudioRecorder;
   private activeProfile: BehaviorSubject<Profile | undefined> =
     new BehaviorSubject<Profile | undefined>(undefined);
 
@@ -52,7 +54,11 @@ export class ConvoBrokerService {
    * @private
    */
   private async initVoiceChat() {
-    this.recorder = new AudioRecorder(await this.audioService.getMicInput());
+    // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService,
+    );
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe((v) => {
@@ -105,7 +111,8 @@ export class ConvoBrokerService {
   private handleStartRecording() {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
-    this.recorder.start();
+    // this.recorder.start();
+    this.recorder2.setupWebSocket();
   }
 
   /**
@@ -114,8 +121,16 @@ export class ConvoBrokerService {
    */
   private handleStopRecording() {
     this.$micState.next(MicState.DISABLED);
-    this.recorder.stop().then((r) => {
-      this.sendVoice(r.data, this.activeProfile.value || GeneralProfile).catch(
+
+    // this.recorder.stop().then((r) => {
+    //   this.sendVoice(r.data, this.activeProfile.value || GeneralProfile).catch(
+    //     console.error,
+    //   );
+    // });
+
+    this.recorder2.stopAudioCapture().then((r) => {
+      this.recorder2.socket?.close();
+      this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(
         console.error,
       );
     });
@@ -169,6 +184,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
+          sources: [],
         });
 
         // upsert assistant message
@@ -178,6 +194,64 @@ export class ConvoBrokerService {
           role: MessageRole.Assistant,
           message: d.assistant_response,
           timestamp: new Date().getTime(),
+          sources: d.sources,
+        });
+
+        const nonNullAudio = d.assistant_response_audio.map((v) => v);
+        if (nonNullAudio.length > audio_base64.length) {
+          const newAudioStr = nonNullAudio.filter(
+            (a) => !audio_base64.includes(a),
+          );
+          audio_base64 = nonNullAudio;
+          newAudioStr.forEach((a) => {
+            this.playAudioBase64(a);
+          });
+        }
+      },
+      complete: () => {
+        this.$isWaitingForVoiceApi.next(false);
+      },
+    });
+  }
+
+  /**
+   * Method to send the transcribed text as a request to the backend.
+   * Handled by `EndpointService`
+   * @param message {string}
+   * @param profile {Profile}
+   * @private
+   */
+  private async sendVoice2(message: string, profile: Profile) {
+    this.$isWaitingForVoiceApi.next(true);
+
+    const requestTime: number = new Date().getTime();
+    const userMessageId = createId();
+    const assistantMessageId: string = createId();
+
+    const history: Message[] = await this.chatMessageService.staticLoad(
+      profile.id,
+    );
+
+    let audio_base64: string[] = [];
+
+    const res = await this.endpointService.sendVoice2(
+      message,
+      this.activeProfile.value || GeneralProfile,
+      history.slice(-8),
+    );
+    res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
+      next: async (d) => {
+        if (!d) {
+          return;
+        }
+        // upsert assistant message
+        await this.chatMessageService.upsert({
+          id: assistantMessageId,
+          profile_id: profile.id,
+          role: MessageRole.Assistant,
+          message: d.assistant_response,
+          timestamp: new Date().getTime(),
+          sources: d.sources,
         });
 
         const nonNullAudio = d.assistant_response_audio.map((v) => v);
@@ -223,6 +297,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
+      sources: [],
     };
     const responseMessageId = createId();
 
@@ -248,6 +323,7 @@ export class ConvoBrokerService {
           message: d.response,
           timestamp: new Date().getTime(),
           role: MessageRole.Assistant,
+          sources: d.sources,
         });
 
         // Plan to create follow_up indexDB here

@@ -9,12 +9,11 @@ from pydantic import BaseModel
 class VoiceChatRequest(BaseModel):
     chat_history: Optional[List[ChatHistory]]
     profile: Optional[Profile]
-    query: bytes
+    query: str
 
 
 class VoiceChatResponse(BaseModel):
     response_message: str
-    query_message: str
     audio_base64: str
     sources: List[Source]
     additional_question_1: Optional[str]

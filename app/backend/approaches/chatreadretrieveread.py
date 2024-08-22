@@ -39,7 +39,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         search_client: SearchClient,
         auth_helper: AuthenticationHelper,
         openai_client: AsyncOpenAI,
-        openai_client_2: AsyncOpenAI,
         chatgpt_model: str,
         chatgpt_deployment: Optional[str],  # Not needed for non-Azure OpenAI
         embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
@@ -49,11 +48,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         content_field: str,
         query_language: str,
         query_speller: str,
-        whisper_deployment: str,
     ):
         self.search_client = search_client
         self.openai_client = openai_client
-        self.openai_client_2 = openai_client_2
         self.auth_helper = auth_helper
         self.chatgpt_model = chatgpt_model
         self.chatgpt_deployment = chatgpt_deployment
@@ -64,7 +61,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.whisiper_deployment = whisper_deployment
         # See: https://github.com/pamelafox/openai-messages-token-helper/issues/16
         self.chatgpt_token_limit = get_token_limit(chatgpt_model)  # gpt-4o-mini not yet supported
 
