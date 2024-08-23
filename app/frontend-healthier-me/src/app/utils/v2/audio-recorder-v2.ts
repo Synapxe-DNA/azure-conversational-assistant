@@ -13,8 +13,8 @@ export class v2AudioRecorder {
   userMessageId: string = "";
   private activeProfile: BehaviorSubject<Profile | undefined> =
     new BehaviorSubject<Profile | undefined>(undefined);
-  finalText: string = "";
-  requestTime: number = new Date().getTime();
+    finalText: string = '';
+    requestTime: number = 0;
 
   constructor(
     private chatMessageService: ChatMessageService,

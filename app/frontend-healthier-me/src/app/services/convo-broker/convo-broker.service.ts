@@ -17,6 +17,7 @@ import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
 import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
+import { Language } from "../../types/language.type";
 
 @Injectable({
   providedIn: "root",
@@ -26,6 +27,10 @@ export class ConvoBrokerService {
   private recorder2!: v2AudioRecorder;
   private activeProfile: BehaviorSubject<Profile | undefined> =
     new BehaviorSubject<Profile | undefined>(undefined);
+
+  $language: BehaviorSubject<string> = new BehaviorSubject<string>(
+    Language.Spoken,
+  )
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
     MicState.PENDING,
@@ -46,6 +51,9 @@ export class ConvoBrokerService {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe((p) => {
       this.activeProfile = this.profileService.getProfile(p);
+    });
+    this.preferenceService.$language.subscribe((l) => {
+      this.$language.next(l);
     });
   }
 
@@ -234,10 +242,13 @@ export class ConvoBrokerService {
 
     let audio_base64: string[] = [];
 
+    console.log("send Voice convo-broker", this.$language.value)
+
     const res = await this.endpointService.sendVoice2(
       message,
       this.activeProfile.value || GeneralProfile,
       history.slice(-8),
+      this.$language.value || Language.Spoken,
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
@@ -307,10 +318,13 @@ export class ConvoBrokerService {
 
     await this.chatMessageService.insert(newMessage);
 
+    console.log("sendChat convo-broker", this.$language.value)
+
     const res = await this.endpointService.sendChat(
       newMessage,
       profile,
       history,
+      this.$language.value || Language.Spoken,
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
