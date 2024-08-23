@@ -16,7 +16,7 @@ export class v2AudioRecorder {
     private activeProfile: BehaviorSubject<Profile | undefined> =
     new BehaviorSubject<Profile | undefined>(undefined);
     finalText: string = '';
-    requestTime: number = new Date().getTime();
+    requestTime: number = 0;
 
     constructor(
         private chatMessageService: ChatMessageService,

@@ -11,4 +11,5 @@ export interface ApiVoiceRequest2 {
   chat_history: ApiChatHistory[];
   profile: ApiProfile;
   query: string;
+  language: string;
 }
