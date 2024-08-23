@@ -6,7 +6,7 @@ export const NgxIndexedDbConfig: DBConfig = {
   name: "HealthierME",
   version: 1,
   objectStoresMeta: NgxIndexedDbSchema["version_1"],
-  migrationFactory
+  migrationFactory,
 };
 
 export function migrationFactory() {

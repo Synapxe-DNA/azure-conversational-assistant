@@ -217,7 +217,7 @@ export class EndpointService {
     message: string,
     profile: Profile,
     history: Message[],
-    language: string
+    language: string,
   ): Promise<BehaviorSubject<VoiceResponse | null>> {
     const responseBS: BehaviorSubject<VoiceResponse | null> =
       new BehaviorSubject<VoiceResponse | null>(null);
@@ -232,10 +232,10 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
       query: message,
-      language: language.toLowerCase()
+      language: language.toLowerCase(),
     };
 
-    console.log("sendvoice", language)
+    console.log("sendvoice", language);
 
     this.httpClient
       .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
@@ -315,7 +315,7 @@ export class EndpointService {
     message: Message,
     profile: Profile,
     history: Message[],
-    language: string
+    language: string,
   ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> =
       new BehaviorSubject<ChatResponse | null>(null);
@@ -335,7 +335,7 @@ export class EndpointService {
       language: language.toLowerCase(),
     };
 
-    console.log("sendChat", language)
+    console.log("sendChat", language);
 
     this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {

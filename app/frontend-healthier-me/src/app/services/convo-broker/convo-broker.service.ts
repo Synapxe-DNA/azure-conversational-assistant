@@ -30,7 +30,7 @@ export class ConvoBrokerService {
 
   $language: BehaviorSubject<string> = new BehaviorSubject<string>(
     Language.Spoken,
-  )
+  );
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
     MicState.PENDING,
@@ -242,7 +242,7 @@ export class ConvoBrokerService {
 
     let audio_base64: string[] = [];
 
-    console.log("send Voice convo-broker", this.$language.value)
+    console.log("send Voice convo-broker", this.$language.value);
 
     const res = await this.endpointService.sendVoice2(
       message,
@@ -318,7 +318,7 @@ export class ConvoBrokerService {
 
     await this.chatMessageService.insert(newMessage);
 
-    console.log("sendChat convo-broker", this.$language.value)
+    console.log("sendChat convo-broker", this.$language.value);
 
     const res = await this.endpointService.sendChat(
       newMessage,
