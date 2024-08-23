@@ -3,11 +3,13 @@ import logging
 import re
 from typing import Any, AsyncGenerator, List
 
-from config import CONFIG_TEXT_TO_SPEECH_SERVICE
+from azure.search.documents.aio import SearchClient
+from config import CONFIG_SEARCH_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
 from models.chat import TextChatResponse
+from models.feedback import FeedbackRequest, FeedbackStore
 from models.request_type import RequestType
-from models.source import Source
+from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
@@ -70,6 +72,36 @@ class Utils:
 
         return generator()
 
+    @staticmethod
+    async def construct_feedback_for_storing(feedback_request: FeedbackRequest) -> FeedbackStore:
+        search_client: SearchClient = current_app.config[CONFIG_SEARCH_CLIENT]
+        sources: List[SourceWithChunk] = []
+        for source in feedback_request.retrieved_sources:
+            for id in source.ids:
+                result = await search_client.get_document(id)  # Retrieve text chunks via id
+                sources.append(
+                    SourceWithChunk(
+                        id=id,
+                        title=source.title,
+                        cover_image_url=source.cover_image_url,
+                        full_url=source.full_url,
+                        content_category=source.content_category,
+                        chunk=result["chunks"],
+                    )  # Attribute name may change based on data
+                )
+
+        feedback_store = FeedbackStore(
+            date_time=feedback_request.date_time,
+            feedback_type=feedback_request.feedback_type,
+            feedback_category=feedback_request.feedback_category,
+            feedback_remarks=feedback_request.feedback_remarks,
+            user_profile=feedback_request.user_profile,
+            chat_history=feedback_request.chat_history,
+            retrieved_sources=sources,
+        )
+
+        return feedback_store
+
 
 # Helper functions
 
@@ -79,7 +111,7 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
     sources = []
     for source in sources_desc:
         src_instance = Source(
-            id=[str(source.get("id"))],
+            ids=[str(source.get("id"))],
             title=str(source.get("title")),
             cover_image_url=str(source.get("cover_image_url")),
             full_url=str(source.get("full_url")),
