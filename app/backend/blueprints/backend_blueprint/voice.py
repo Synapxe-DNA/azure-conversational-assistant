@@ -5,6 +5,7 @@ from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH
 from error import error_response
 from models.profile import Profile
+from models.request_type import RequestType
 from models.voice import VoiceChatRequest
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
@@ -51,7 +52,7 @@ async def voice_endpoint():
             profile=voiceChatRequest.profile,
         )
 
-        response = await Utils.construct_streaming_response(result, "voice")
+        response = await Utils.construct_streaming_response(result, RequestType.VOICE)
         return response, 200
     except Exception as error:
         return error_response(error, "/voice")

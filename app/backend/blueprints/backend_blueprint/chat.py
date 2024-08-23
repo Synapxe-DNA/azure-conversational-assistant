@@ -6,6 +6,7 @@ from config import CONFIG_CHAT_APPROACH, CONFIG_CHAT_VISION_APPROACH
 from error import error_response
 from models.chat import TextChatRequest
 from models.profile import Profile
+from models.request_type import RequestType
 from quart import Blueprint, current_app, jsonify, request
 from utils.utils import Utils
 
@@ -37,7 +38,7 @@ async def chat_stream_endpoint():
             profile=textChatRequest.profile,
         )
 
-        response = await Utils.construct_streaming_response(result, "chat")
+        response = await Utils.construct_streaming_response(result, RequestType.CHAT)
         return response, 200
     except Exception as error:
         return error_response(error, "/chat/stream")

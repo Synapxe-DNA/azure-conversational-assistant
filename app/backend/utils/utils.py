@@ -1,11 +1,12 @@
 import json
 import logging
 import re
-from typing import Any, AsyncGenerator, List, Literal
+from typing import Any, AsyncGenerator, List
 
 from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
 from models.chat import TextChatResponse
+from models.request_type import RequestType
 from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
@@ -17,7 +18,7 @@ class Utils:
     @staticmethod
     async def construct_streaming_response(
         result: AsyncGenerator[dict[str, Any], None],
-        request_type: Literal["chat", "voice"],
+        request_type: RequestType,
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
@@ -34,40 +35,11 @@ class Utils:
                 error_msg = res.get("error", None)
                 thoughts = res.get("context", {}).get("thoughts", [])
                 text_response_chunk = ""
-                sources = []
 
                 if error_msg is not None:
-                    if request_type == "chat":
-                        response = TextChatResponse(
-                            response_message=error_msg,
-                            sources=[],
-                        )
-                        yield response.model_dump_json()
-                    else:
-                        audio_data = tts.readText(error_msg)
-                        response = VoiceChatResponse(
-                            response_message=error_msg,
-                            sources=[],
-                            audio_base64=audio_data,
-                        )
-                        yield response.model_dump_json()
+                    yield construct_error_response(error_msg, request_type)
                 elif not thoughts == []:
-                    sources = extract_sources_from_thoughts(thoughts)
-
-                    if request_type == "chat":
-                        response = TextChatResponse(
-                            response_message="",
-                            sources=sources,
-                        )
-                        yield response.model_dump_json()
-
-                    else:
-                        response = VoiceChatResponse(
-                            response_message="",
-                            sources=sources,
-                            audio_base64="",
-                        )
-                        yield response.model_dump_json()
+                    yield construct_source_response(thoughts, request_type)
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
@@ -75,7 +47,7 @@ class Utils:
                     if text_response_chunk is None:
                         break
 
-                    if request_type == "chat":
+                    if request_type == RequestType.CHAT:
                         response = TextChatResponse(
                             response_message=text_response_chunk,
                             sources=[],
@@ -131,3 +103,38 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
     except Exception as error:
         logging.exception("Exception while generating response stream: %s", error)
         yield json.dumps(error_dict(error))
+
+
+def construct_error_response(error_msg: str, request_type: RequestType) -> str:
+    tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+
+    if request_type == RequestType.CHAT:
+        response = TextChatResponse(
+            response_message=error_msg,
+            sources=[],
+        )
+    else:
+        audio_data = tts.readText(error_msg)
+        response = VoiceChatResponse(
+            response_message=error_msg,
+            sources=[],
+            audio_base64=audio_data,
+        )
+    return response.model_dump_json()
+
+
+def construct_source_response(thoughts: List[dict[str, Any]], request_type: RequestType) -> str:
+    sources = extract_sources_from_thoughts(thoughts)
+
+    if request_type == RequestType.CHAT:
+        response = TextChatResponse(
+            response_message="",
+            sources=sources,
+        )
+    else:
+        response = VoiceChatResponse(
+            response_message="",
+            sources=sources,
+            audio_base64="",
+        )
+    return response.model_dump_json()
