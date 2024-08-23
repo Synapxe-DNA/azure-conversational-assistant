@@ -9,7 +9,12 @@ import { TextMobileComponent } from "../../components/text-mobile/text-mobile.co
 @Component({
   selector: "app-chat",
   standalone: true,
-  imports: [VoiceComponent, TextComponent, VoiceMobileComponent, TextMobileComponent],
+  imports: [
+    VoiceComponent,
+    TextComponent,
+    VoiceMobileComponent,
+    TextMobileComponent,
+  ],
   templateUrl: "./chat.component.html",
   styleUrl: "./chat.component.css",
 })
@@ -24,11 +29,11 @@ export class ChatComponent {
     this.isMobile = window.innerWidth < 768;
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener("window:resize", ["$event"])
   onResize(event: any) {
     this.checkViewport();
   }
-   checkViewport() {
+  checkViewport() {
     this.isMobile = window.innerWidth < 768; // Adjust this value as needed
   }
 

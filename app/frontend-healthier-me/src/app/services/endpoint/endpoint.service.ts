@@ -11,7 +11,10 @@ import {
   HttpEventType,
 } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
-import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
+import {
+  ApiVoiceRequest,
+  ApiVoiceRequest2,
+} from "../../types/api/requests/voice-request.type";
 import { ApiChatHistory } from "../../types/api/api-chat-history.type";
 import {
   ApiProfile,
@@ -126,7 +129,7 @@ export class EndpointService {
   async sendVoice(
     recording: Blob,
     profile: Profile,
-    history: Message[]
+    history: Message[],
   ): Promise<BehaviorSubject<VoiceResponse | null>> {
     const responseBS: BehaviorSubject<VoiceResponse | null> =
       new BehaviorSubject<VoiceResponse | null>(null);
@@ -157,8 +160,8 @@ export class EndpointService {
               }
               const responseData = JSON.parse(
                 (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength
-                )
+                  lastResponseLength,
+                ),
               ) as ApiVoiceResponse;
 
               if (responseData.audio_base64) {
@@ -249,11 +252,11 @@ export class EndpointService {
               }
               const responseData = JSON.parse(
                 (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength
-                )
+                  lastResponseLength,
+                ),
               ) as ApiVoiceResponse;
 
-              console.log('responseData', responseData)
+              console.log("responseData", responseData);
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
@@ -270,7 +273,7 @@ export class EndpointService {
               }
 
               if (responseData.sources) {
-                currentSources.push(...responseData.sources)
+                currentSources.push(...responseData.sources);
               }
 
               responseBS.next({
@@ -282,7 +285,7 @@ export class EndpointService {
                   responseData.additional_question_1,
                   responseData.additional_question_2,
                 ],
-                sources: currentSources
+                sources: currentSources,
               });
               lastResponseLength =
                 (e as HttpDownloadProgressEvent).partialText?.length || 0;
@@ -356,13 +359,12 @@ export class EndpointService {
 
               // parse chunks into multiple json objects
 
-              const jsonParsed = this.parseSendChat(currentResponseData)
+              const jsonParsed = this.parseSendChat(currentResponseData);
 
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
-              currentSources.push(...jsonParsed[1])
-              
-            
+              currentSources.push(...jsonParsed[1]);
+
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
@@ -393,46 +395,44 @@ export class EndpointService {
   }
 
   // Function to extract individual JSON objects from a concatenated raw JSON string
-private extractJsonObjects(rawString: string): string[] {
-  // Regular expression to match JSON objects
-  const jsonObjects: string[] = [];
-  const jsonRegex = /\{.*?\}(?=\{|\s*$)/g;  // Regex to capture non-nested JSON objects
-  let match;
+  private extractJsonObjects(rawString: string): string[] {
+    // Regular expression to match JSON objects
+    const jsonObjects: string[] = [];
+    const jsonRegex = /\{.*?\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
+    let match;
 
-  // Find all matches
-  while ((match = jsonRegex.exec(rawString)) !== null) {
+    // Find all matches
+    while ((match = jsonRegex.exec(rawString)) !== null) {
       jsonObjects.push(match[0]);
+    }
+    // console.log(jsonObjects)
+
+    return jsonObjects;
   }
-  // console.log(jsonObjects)
 
-  return jsonObjects;
-}
+  // Function to aggregate response messages from concatenated JSON objects
+  private parseSendChat(rawJsonString: string): any[] {
+    let aggregatedResponseMessage: string = "";
+    let aggregatedSources: [] = [];
 
-// Function to aggregate response messages from concatenated JSON objects
- private parseSendChat(rawJsonString: string): any[] {
-  let aggregatedResponseMessage: string = '';
-  let aggregatedSources: [] = []; 
+    // Extract individual JSON objects
+    const jsonObjects = this.extractJsonObjects(rawJsonString);
 
-  // Extract individual JSON objects
-  const jsonObjects = this.extractJsonObjects(rawJsonString);
-
-  // Process each JSON object
-  for (const jsonObject of jsonObjects) {
+    // Process each JSON object
+    for (const jsonObject of jsonObjects) {
       try {
-          // Parse the JSON object
-          const data = JSON.parse(jsonObject);
+        // Parse the JSON object
+        const data = JSON.parse(jsonObject);
 
-          // Extract and append the response message
-          const responseMessage: string = data.response_message || '';
-          const sources: [] = data.sources || [];
-          aggregatedResponseMessage += responseMessage;
-          aggregatedSources.push(...sources)
-
-
+        // Extract and append the response message
+        const responseMessage: string = data.response_message || "";
+        const sources: [] = data.sources || [];
+        aggregatedResponseMessage += responseMessage;
+        aggregatedSources.push(...sources);
       } catch (error) {
-          console.error('Error decoding JSON:', error);
+        console.error("Error decoding JSON:", error);
       }
+    }
+    return [aggregatedResponseMessage, aggregatedSources];
   }
-  return [aggregatedResponseMessage, aggregatedSources];
-}
 }

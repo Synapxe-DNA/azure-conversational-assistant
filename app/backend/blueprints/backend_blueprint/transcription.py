@@ -2,8 +2,8 @@ import asyncio
 import logging
 import queue
 
-from quart import Blueprint, websocket
-from speech.speech_to_text import SpeechToText
+from config import CONFIG_SPEECH_TO_TEXT_SERVICE
+from quart import Blueprint, current_app, websocket
 
 transcription = Blueprint("transcription", __name__, url_prefix="/ws")
 
@@ -16,7 +16,7 @@ async def ws_transcribe():
     result_queue = queue.Queue()
 
     # create stt object and get recognizer and speech
-    stt = await SpeechToText.create()
+    stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
     recognizer = stt.getSpeechRecognizer()
     stream = stt.getStream()
 

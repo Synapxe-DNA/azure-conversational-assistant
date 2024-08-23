@@ -5,10 +5,11 @@ from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH
 from error import error_response
 from models.profile import Profile
+from models.request_type import RequestType
+from models.voice import VoiceChatRequest
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
 
-# print(lang)
 voice = Blueprint("voice", __name__, url_prefix="/voice")
 
 
@@ -23,13 +24,24 @@ async def voice_endpoint():
 
     context = data.get("context", {})
 
-    profile_json = json.loads(data.get("profile"))
-    profile = Profile(**profile_json)
+    voiceChatRequest = VoiceChatRequest(
+        chat_history=json.loads(data.get("chat_history", "[]")),
+        profile=Profile(**json.loads(data.get("profile", "{}"))),
+        query=data["query"],
+    )
 
-    chat_history = json.loads(data.get("chat_history", "[]"))
+    # Detect language if default
+    # if profile.language == "default":
+    #     languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
+    #     detector = LanguageDetectorBuilder.from_languages(*languages).build()
+    #     language = detector.detect_language_of(query_text)
+    #     language = str(language).split(".")[1].lower()  # get language name from enum
+    #     profile.language = language
 
     # Form message
-    messages = chat_history + [{"content": query_text, "role": "user"}]
+    messages = [chat_history.model_dump() for chat_history in voiceChatRequest.chat_history] + [
+        {"content": query_text, "role": "user"}
+    ]
 
     # Send transcribed text and data to LLM
     try:
@@ -37,10 +49,10 @@ async def voice_endpoint():
         result = await approach.run_stream(
             messages=messages,
             context=context,
-            profile=profile,
+            profile=voiceChatRequest.profile,
         )
 
-        response = await Utils.construct_streaming_voice_response(result)
+        response = await Utils.construct_streaming_response(result, RequestType.VOICE)
         return response, 200
     except Exception as error:
         return error_response(error, "/voice")

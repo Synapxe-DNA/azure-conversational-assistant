@@ -1,27 +1,33 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { Message } from '../../../types/message.type';
-import { MicState } from '../../../types/mic-state.type';
-import { AudioAnalyser } from '../../../utils/audio-analyser';
-import { AudioService } from '../../../services/audio/audio.service';
-import { MarkdownComponent } from '../../markdown/markdown.component';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
+import { Message } from "../../../types/message.type";
+import { MicState } from "../../../types/mic-state.type";
+import { AudioAnalyser } from "../../../utils/audio-analyser";
+import { AudioService } from "../../../services/audio/audio.service";
+import { MarkdownComponent } from "../../markdown/markdown.component";
 
 @Component({
-  selector: 'app-voice-message',
+  selector: "app-voice-message",
   standalone: true,
   imports: [MarkdownComponent],
-  templateUrl: './voice-message.component.html',
-  styleUrl: './voice-message.component.css'
+  templateUrl: "./voice-message.component.html",
+  styleUrl: "./voice-message.component.css",
 })
-export class VoiceMessageComponent implements AfterViewInit, OnInit{
-  @Input() message?: Message
-  @Input() state?: string
+export class VoiceMessageComponent implements AfterViewInit, OnInit {
+  @Input() message?: Message;
+  @Input() state?: string;
   audioAnalyser: AudioAnalyser | undefined;
-  @ViewChild("box") box!: ElementRef<HTMLDivElement>
+  @ViewChild("box") box!: ElementRef<HTMLDivElement>;
 
   constructor(private audioService: AudioService) {}
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.startAnalyser().catch(console.error);
@@ -46,6 +52,4 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit{
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }
   }
-
-
 }

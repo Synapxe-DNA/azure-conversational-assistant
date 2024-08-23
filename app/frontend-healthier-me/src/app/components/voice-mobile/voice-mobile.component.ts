@@ -29,7 +29,7 @@ import { ChatMessageService } from "../../services/chat-message/chat-message.ser
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 
 @Component({
-  selector: 'app-voice-mobile',
+  selector: "app-voice-mobile",
   standalone: true,
   imports: [
     WaveformComponent,
@@ -47,21 +47,21 @@ import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
     VoiceAnnotationComponent,
     VoiceMicrophoneComponent,
   ],
-  templateUrl: './voice-mobile.component.html',
-  styleUrl: './voice-mobile.component.css'
+  templateUrl: "./voice-mobile.component.html",
+  styleUrl: "./voice-mobile.component.css",
 })
-export class VoiceMobileComponent{
+export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     true,
   );
   // private recorder: AudioRecorder | undefined;
-  private recorder2: v2AudioRecorder | undefined
+  private recorder2: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
     Profile | undefined
   >(undefined);
 
   micState: MicState = MicState.PENDING;
-  message?: Message
+  message?: Message;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -81,9 +81,9 @@ export class VoiceMobileComponent{
       sources: [],
       timestamp: 0,
       id: "",
-      profile_id:'',
-      message: '',
-    }
+      profile_id: "",
+      message: "",
+    };
   }
 
   ngOnInit() {
@@ -104,9 +104,10 @@ export class VoiceMobileComponent{
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
-  ngAfterViewInit() {    
-    this.profile = this.profileService
-      .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
+  ngAfterViewInit() {
+    this.profile = this.profileService.getProfile(
+      this.route.snapshot.paramMap.get("profileId") as string,
+    );
 
     this.profile.subscribe((p) => {
       if (!p) {
@@ -124,7 +125,10 @@ export class VoiceMobileComponent{
 
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService,
+    );
   }
 
   handleMicButtonClick() {
@@ -146,5 +150,4 @@ export class VoiceMobileComponent{
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
   }
-
 }

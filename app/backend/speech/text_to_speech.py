@@ -1,3 +1,4 @@
+import base64
 import time
 
 from azure.cognitiveservices.speech import (
@@ -50,7 +51,7 @@ class TextToSpeech:
     def readText(self, text):
         result: SpeechSynthesisResult = self.speech_synthesizer.speak_text_async(text).get()
         if result.reason == ResultReason.SynthesizingAudioCompleted:
-            return result.audio_data
+            return base64.b64encode(result.audio_data).decode("utf-8")
         elif result.reason == ResultReason.Canceled:
             cancellation_details = result.cancellation_details
             current_app.logger.error(

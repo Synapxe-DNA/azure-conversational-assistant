@@ -10,14 +10,14 @@ import { NavbarMobileComponent } from "../../components/navbar-mobile/navbar-mob
   templateUrl: "./main-layout.component.html",
   styleUrl: "./main-layout.component.css",
 })
-export class MainLayoutComponent implements OnInit{
-  isMobile?: boolean
+export class MainLayoutComponent implements OnInit {
+  isMobile?: boolean;
 
   ngOnInit(): void {
-      this.checkViewport();
+    this.checkViewport();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener("window:resize", ["$event"])
   onResize(event: any) {
     this.checkViewport();
   }
@@ -25,5 +25,4 @@ export class MainLayoutComponent implements OnInit{
   checkViewport() {
     this.isMobile = window.innerWidth < 768; // Adjust this value as needed
   }
-
 }

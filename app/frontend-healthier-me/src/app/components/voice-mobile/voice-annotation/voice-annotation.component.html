@@ -1,19 +1,26 @@
 <div class="tw-flex tw-justify-center tw-gap-4 tw-mt-5">
-    <p-button
-        icon="pi pi-thumbs-up-fill"
-        severity="secondary"
-        (click)="submitFeedback(0)">
-    </p-button>
+  <p-button
+    icon="pi pi-thumbs-up-fill"
+    severity="secondary"
+    (click)="submitFeedback(0)"
+  >
+  </p-button>
 
-    <p-button
-        icon="pi pi-thumbs-down-fill"
-        severity="secondary"
-        (click)="submitFeedback(1)">
-    </p-button>
+  <p-button
+    icon="pi pi-thumbs-down-fill"
+    severity="secondary"
+    (click)="submitFeedback(1)"
+  >
+  </p-button>
 </div>
 
-<p-dialog [(visible)]="displayModal" [modal]="true" [closable]="true" header="Feedback">
-    <!-- <div class="field">
+<p-dialog
+  [(visible)]="displayModal"
+  [modal]="true"
+  [closable]="true"
+  header="Feedback"
+>
+  <!-- <div class="field">
         <label for="feedback">Remarks:</label>
         <textarea
             id="feedback"
@@ -29,6 +36,5 @@
         <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
     </div> -->
 
-    <p>Your feedback has been submitted. Thank you!</p>
+  <p>Your feedback has been submitted. Thank you!</p>
 </p-dialog>
-

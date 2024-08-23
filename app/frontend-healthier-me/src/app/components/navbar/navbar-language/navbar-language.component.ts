@@ -5,23 +5,14 @@ import { DropdownModule } from 'primeng/dropdown';
 import { PreferenceService } from '../../../services/preference/preference.service';
 import { Language } from '../../../types/language.type';
 
-interface LanguageOption {
-  label: string;
-  value: Language;
-}
 
 
 @Component({
-  selector: 'app-navbar-language',
+  selector: "app-navbar-language",
   standalone: true,
-  imports: [
-    DropdownModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-  ],
-  templateUrl: './navbar-language.component.html',
-  styleUrl: './navbar-language.component.css'
+  imports: [DropdownModule, FormsModule, ReactiveFormsModule, CommonModule],
+  templateUrl: "./navbar-language.component.html",
+  styleUrl: "./navbar-language.component.css",
 })
 export class NavbarLanguageComponent implements OnInit {
   

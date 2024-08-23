@@ -1,73 +1,45 @@
-import base64
-import dataclasses
 import json
 import logging
 import re
-from collections import Counter
 from typing import Any, AsyncGenerator, List
 
 from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
 from models.chat import TextChatResponse
+from models.request_type import RequestType
 from models.source import Source
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
+from utils.json_encoder import JSONEncoder
 
 
 class Utils:
 
-    async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:
-        try:
-            async for event in r:
-                yield json.dumps(event, ensure_ascii=False, cls=JSONEncoder) + "\n"
-        except Exception as error:
-            logging.exception("Exception while generating response stream: %s", error)
-            yield json.dumps(error_dict(error))
-
     @staticmethod
-    def get_mode_language(languages: List[str]):
-        counter = Counter(languages)
-        max_count = max(counter.values())
-        mode = [string for string, count in counter.items() if count == max_count]
-
-        return mode[0]  # Tiebreaker: Language that comes first in the list
-
-    @staticmethod
-    async def construct_streaming_voice_response(
-        result: AsyncGenerator[dict[str, Any], None]
+    async def construct_streaming_response(
+        result: AsyncGenerator[dict[str, Any], None],
+        request_type: RequestType,
     ) -> AsyncGenerator[str, None]:
+        """
+        Reconstructing the generator response from LLM to a new generator response in our format
+        """
+
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
-            text_response = ""
+            response_message = ""
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
 
-            async for res in Utils.format_as_ndjson(result):
-                print("====================================")
-                print(res)
-                print("====================================")
+            async for res in format_as_ndjson(result):
                 # Extract sources
                 res = json.loads(res)
+                error_msg = res.get("error", None)
                 thoughts = res.get("context", {}).get("thoughts", [])
-                followup_question = res.get("context", {}).get("followup_questions", [])
-                if not thoughts == []:
-                    sources = extract_sources_from_thoughts(thoughts)
-                    response = VoiceChatResponse(
-                        response_message="",
-                        sources=sources,
-                        additional_question_1="",
-                        additional_question_2="",
-                        audio_base64="",
-                    )
-                    yield response.model_dump_json()
-                elif not followup_question == []:
-                    response = VoiceChatResponse(
-                        response_message="",
-                        sources=[],
-                        additional_question_1=followup_question[0],
-                        additional_question_2=followup_question[1],
-                        audio_base64="",
-                    )
-                    yield response.model_dump_json()
+                text_response_chunk = ""
+
+                if error_msg is not None:
+                    yield construct_error_response(error_msg, request_type)
+                elif not thoughts == []:
+                    yield construct_source_response(thoughts, request_type)
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
@@ -75,89 +47,94 @@ class Utils:
                     if text_response_chunk is None:
                         break
 
-                    text_response += text_response_chunk
-                    if bool(re.search(r"[.,!?。，！？]", text_response_chunk)):
-                        audio_data = tts.readText(text_response)
-                        response = VoiceChatResponse(
-                            response_message=text_response,
+                    if request_type == RequestType.CHAT:
+                        response = TextChatResponse(
+                            response_message=text_response_chunk,
                             sources=[],
-                            additional_question_1="",
-                            additional_question_2="",
-                            audio_base64=base64.b64encode(audio_data).decode("utf-8"),
                         )
                         yield response.model_dump_json()
-                        text_response = ""
+
+                    else:
+                        response_message += text_response_chunk
+                        if bool(
+                            re.search(r"[.,!?。，！？]", text_response_chunk)
+                        ):  # Transcribe text only when punctuation is detected
+                            audio_data = tts.readText(response_message)
+                            response = VoiceChatResponse(
+                                response_message=response_message,
+                                sources=[],
+                                audio_base64=audio_data,
+                            )
+                            yield response.model_dump_json()
+                            response_message = ""
 
         return generator()
 
-    @staticmethod
-    async def construct_streaming_chat_response(
-        result: AsyncGenerator[dict[str, Any], None]
-    ) -> AsyncGenerator[str, None]:
-        @stream_with_context
-        async def generator() -> AsyncGenerator[str, None]:
-            async for res in Utils.format_as_ndjson(result):
-                print("====================================")
-                print(res)
-                print("====================================")
-                # Extract sources
-                res = json.loads(res)
-                thoughts = res.get("context", {}).get("thoughts", [])
-                followup_question = res.get("context", {}).get("followup_questions", [])
-                if not thoughts == []:
-                    pass
-                    sources = extract_sources_from_thoughts(thoughts)
-                    response = TextChatResponse(
-                        response_message="",
-                        sources=sources,
-                        additional_question_1="",
-                        additional_question_2="",
-                    )
-                    yield response.model_dump_json()
-                elif not followup_question == []:
-                    pass
-                    response = TextChatResponse(
-                        response_message="",
-                        sources=[],
-                        additional_question_1=followup_question[0],
-                        additional_question_2=followup_question[1],
-                    )
-                    yield response.model_dump_json()
-                else:
-                    # Extract text response
-                    text_response_chunk = res.get("delta", {}).get("content", "")
-                    if text_response_chunk is None:
-                        break
-                    response = TextChatResponse(
-                        response_message=text_response_chunk,
-                        sources=[],
-                        additional_question_1="",
-                        additional_question_2="",
-                    )
 
-                    yield response.model_dump_json()
-
-        return generator()
+# Helper functions
 
 
 def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
-    sources_desc = thoughts[2].get("description", [])
+    sources_desc = thoughts[2].get("description", [])  # thoughts[2] is search results
     sources = []
-    for source in sources_desc:  # sources[2] is search results
-        src = Source(
-            id=str(source.get("id")),
+    for source in sources_desc:
+        src_instance = Source(
+            id=[str(source.get("id"))],
             title=str(source.get("title")),
             cover_image_url=str(source.get("cover_image_url")),
             full_url=str(source.get("full_url")),
             content_category=str(source.get("content_category")),
-            chunks=str(source.get("chunks")),
         )
-        sources.append(src)
+
+        if src_instance.full_url in [s.full_url for s in sources]:
+            for s in sources:
+                if s.full_url == src_instance.full_url:
+                    s.id.extend(src_instance.id)
+        else:
+            sources.append(src_instance)
+
     return sources
 
 
-class JSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o) and not isinstance(o, type):
-            return dataclasses.asdict(o)
-        return super().default(o)
+async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:
+    try:
+        async for event in r:
+            yield json.dumps(event, ensure_ascii=False, cls=JSONEncoder) + "\n"
+    except Exception as error:
+        logging.exception("Exception while generating response stream: %s", error)
+        yield json.dumps(error_dict(error))
+
+
+def construct_error_response(error_msg: str, request_type: RequestType) -> str:
+    tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+
+    if request_type == RequestType.CHAT:
+        response = TextChatResponse(
+            response_message=error_msg,
+            sources=[],
+        )
+    else:
+        audio_data = tts.readText(error_msg)
+        response = VoiceChatResponse(
+            response_message=error_msg,
+            sources=[],
+            audio_base64=audio_data,
+        )
+    return response.model_dump_json()
+
+
+def construct_source_response(thoughts: List[dict[str, Any]], request_type: RequestType) -> str:
+    sources = extract_sources_from_thoughts(thoughts)
+
+    if request_type == RequestType.CHAT:
+        response = TextChatResponse(
+            response_message="",
+            sources=sources,
+        )
+    else:
+        response = VoiceChatResponse(
+            response_message="",
+            sources=sources,
+            audio_base64="",
+        )
+    return response.model_dump_json()

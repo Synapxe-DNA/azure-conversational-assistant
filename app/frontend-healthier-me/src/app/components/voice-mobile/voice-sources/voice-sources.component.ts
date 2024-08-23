@@ -1,8 +1,13 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from "@angular/core";
 import { CarouselModule } from "primeng/carousel";
 import { AccordionModule } from "primeng/accordion";
 import { MessageSource } from "../../../types/message.type";
-
 
 @Component({
   selector: "app-voice-sources",
@@ -17,9 +22,8 @@ export class VoiceSourcesComponent implements OnInit {
   @Input() sources: MessageSource[] = [];
 
   ngOnInit(): void {
-
     console.log("voice-sources input", this.sources);
-    
+
     this.responsiveOptions = [
       {
         breakpoint: "768px",

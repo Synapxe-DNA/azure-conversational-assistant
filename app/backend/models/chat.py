@@ -15,5 +15,3 @@ class TextChatRequest(BaseModel):
 class TextChatResponse(BaseModel):
     response_message: str
     sources: List[Source]
-    additional_question_1: Optional[str]
-    additional_question_2: Optional[str]

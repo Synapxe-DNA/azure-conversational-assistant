@@ -23,6 +23,8 @@ from openai.types.chat import (
 )
 from openai_messages_token_helper import build_messages, get_token_limit
 
+# from lingua import Language, LanguageDetectorBuilder
+
 
 class ChatReadRetrieveReadApproach(ChatApproach):
     """
@@ -37,7 +39,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         search_client: SearchClient,
         auth_helper: AuthenticationHelper,
         openai_client: AsyncOpenAI,
-        openai_client_2: AsyncOpenAI,
         chatgpt_model: str,
         chatgpt_deployment: Optional[str],  # Not needed for non-Azure OpenAI
         embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
@@ -47,11 +48,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         content_field: str,
         query_language: str,
         query_speller: str,
-        whisper_deployment: str,
     ):
         self.search_client = search_client
         self.openai_client = openai_client
-        self.openai_client_2 = openai_client_2
         self.auth_helper = auth_helper
         self.chatgpt_model = chatgpt_model
         self.chatgpt_deployment = chatgpt_deployment
@@ -62,7 +61,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.whisiper_deployment = whisper_deployment
         # See: https://github.com/pamelafox/openai-messages-token-helper/issues/16
         self.chatgpt_token_limit = get_token_limit(chatgpt_model)  # gpt-4o-mini not yet supported
 
@@ -149,8 +147,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         else:
             user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
 
-        print(f"user_query_request: {user_query_request}")
-
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -170,6 +166,12 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 },
             }
         ]
+
+        # # identify language if selected_language is default
+        # languages = [Language.ENGLISH, Language.CHINESE, Language.MALAY, Language.TAMIL]
+        # if selected_language == "default":
+        #     detected_language = detector.detect_language_of(original_user_query)
+        #     selected_language = detected_language.name
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
@@ -214,8 +216,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
-        # print(f"query_text: {query_text}")
-
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
 
         # If retrieval mode includes vectors, compute an embedding for the query
@@ -237,13 +237,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-        print(sources_content)
 
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
-
-        # print(f"chat history: {messages[:-1]}")
 
         # response_token_limit = 1024
         messages = build_messages(

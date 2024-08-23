@@ -17,11 +17,11 @@ import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { WaveformComponent } from "../../waveform/waveform.component";
 
 @Component({
-  selector: 'app-voice-microphone',
+  selector: "app-voice-microphone",
   standalone: true,
   imports: [CommonModule, LucideAngularModule, WaveformComponent],
-  templateUrl: './voice-microphone.component.html',
-  styleUrl: './voice-microphone.component.css'
+  templateUrl: "./voice-microphone.component.html",
+  styleUrl: "./voice-microphone.component.css",
 })
 export class VoiceMicrophoneComponent {
   @Input() state!: MicState;

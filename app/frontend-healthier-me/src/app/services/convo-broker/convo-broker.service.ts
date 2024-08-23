@@ -63,7 +63,10 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService)
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService,
+    );
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe((v) => {
@@ -117,7 +120,7 @@ export class ConvoBrokerService {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
-    this.recorder2.setupWebSocket()
+    this.recorder2.setupWebSocket();
   }
 
   /**
@@ -134,7 +137,7 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then((r) => {
-      this.recorder2.socket?.close()
+      this.recorder2.socket?.close();
       this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(
         console.error,
       );
@@ -189,7 +192,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
-          sources: []
+          sources: [],
         });
 
         // upsert assistant message
@@ -305,7 +308,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
-      sources: []
+      sources: [],
     };
     const responseMessageId = createId();
 
