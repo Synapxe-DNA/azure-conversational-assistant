@@ -1,4 +1,3 @@
-import base64
 import json
 import logging
 import re
@@ -32,11 +31,27 @@ class Utils:
             async for res in format_as_ndjson(result):
                 # Extract sources
                 res = json.loads(res)
+                error_msg = res.get("error", None)
                 thoughts = res.get("context", {}).get("thoughts", [])
                 text_response_chunk = ""
                 sources = []
 
-                if not thoughts == []:
+                if error_msg is not None:
+                    if request_type == "chat":
+                        response = TextChatResponse(
+                            response_message=error_msg,
+                            sources=[],
+                        )
+                        yield response.model_dump_json()
+                    else:
+                        audio_data = tts.readText(error_msg)
+                        response = VoiceChatResponse(
+                            response_message=error_msg,
+                            sources=[],
+                            audio_base64=audio_data,
+                        )
+                        yield response.model_dump_json()
+                elif not thoughts == []:
                     sources = extract_sources_from_thoughts(thoughts)
 
                     if request_type == "chat":
@@ -76,7 +91,7 @@ class Utils:
                             response = VoiceChatResponse(
                                 response_message=response_message,
                                 sources=[],
-                                audio_base64=base64.b64encode(audio_data).decode("utf-8"),
+                                audio_base64=audio_data,
                             )
                             yield response.model_dump_json()
                             response_message = ""
