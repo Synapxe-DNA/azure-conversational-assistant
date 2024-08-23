@@ -19,16 +19,16 @@ class SpeechToText:
         auth_token = self.getAuthToken(resource_id, speech_token.token)
 
         # create recognizer
-        speech_config = speechsdk.SpeechConfig(auth_token=auth_token, region=region)
-        auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
+        self.speech_config = speechsdk.SpeechConfig(auth_token=auth_token, region=region)
+        self.auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
             languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
         )
         self.stream = speechsdk.audio.PushAudioInputStream()
         audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
         self.speech_recognizer = speechsdk.SpeechRecognizer(
-            speech_config=speech_config,
+            speech_config=self.speech_config,
             audio_config=audio_config,
-            auto_detect_source_language_config=auto_detect_source_language_config,
+            auto_detect_source_language_config=self.auto_detect_source_language_config,
         )
 
     @classmethod
@@ -49,8 +49,17 @@ class SpeechToText:
     def getAuthToken(self, resource_id, token):
         return "aad#" + resource_id + "#" + token
 
-    def getSpeechRecognizer(self):
+    def getSpeechRecognizer(self) -> speechsdk.SpeechRecognizer:
         return self.speech_recognizer
 
     def getStream(self):
         return self.stream
+
+    def resetStream(self):
+        self.stream = speechsdk.audio.PushAudioInputStream()
+        audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
+        self.speech_recognizer = speechsdk.SpeechRecognizer(
+            speech_config=self.speech_config,
+            audio_config=audio_config,
+            auto_detect_source_language_config=self.auto_detect_source_language_config,
+        )

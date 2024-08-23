@@ -231,7 +231,10 @@ export class EndpointService {
     const data: ApiVoiceRequest2 = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
-      query: message,
+      query: {
+        role: "user",
+        content: message,
+      },
       language: language.toLowerCase(),
     };
 

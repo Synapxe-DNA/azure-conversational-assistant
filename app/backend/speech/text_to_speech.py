@@ -1,4 +1,5 @@
 import base64
+import re
 import time
 
 from azure.cognitiveservices.speech import (
@@ -48,10 +49,14 @@ class TextToSpeech:
     def getAuthToken(self):
         return "aad#" + self.resource_id + "#" + self.speech_token.token
 
-    def readText(self, text):
+    def readText(self, text, encode: bool):
+        text = re.sub(r"\*", "", text)  # remove * from markdown
         result: SpeechSynthesisResult = self.speech_synthesizer.speak_text_async(text).get()
         if result.reason == ResultReason.SynthesizingAudioCompleted:
-            return base64.b64encode(result.audio_data).decode("utf-8")
+            if encode:
+                return base64.b64encode(result.audio_data).decode("utf-8")
+            else:
+                return result.audio_data
         elif result.reason == ResultReason.Canceled:
             cancellation_details = result.cancellation_details
             current_app.logger.error(

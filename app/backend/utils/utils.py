@@ -6,13 +6,19 @@ from typing import Any, AsyncGenerator, List
 from azure.search.documents.aio import SearchClient
 from config import CONFIG_SEARCH_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
+from lingua import Language, LanguageDetectorBuilder
 from models.chat import TextChatResponse
+from models.chat_history import ChatHistory
 from models.feedback import FeedbackRequest, FeedbackStore
+from models.language import LanguageSelected
+from models.profile import Profile
+from models.request import Request
 from models.request_type import RequestType
 from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
+from werkzeug.datastructures import MultiDict
 
 
 class Utils:
@@ -61,7 +67,7 @@ class Utils:
                         if bool(
                             re.search(r"[.,!?。，！？]", text_response_chunk)
                         ):  # Transcribe text only when punctuation is detected
-                            audio_data = tts.readText(response_message)
+                            audio_data = tts.readText(response_message, True)  # remove * from markdown
                             response = VoiceChatResponse(
                                 response_message=response_message,
                                 sources=[],
@@ -102,6 +108,28 @@ class Utils:
 
         return feedback_store
 
+    @staticmethod
+    def form_message(chat_history_list: List[ChatHistory], query: dict[str, str]) -> list[dict[str, Any]]:
+        messages = [chat_history.model_dump() for chat_history in chat_history_list] + [query]
+        return messages
+
+    @staticmethod
+    def form_request(data: MultiDict) -> Request:
+
+        language = json.loads(data["language"])
+        print("CHOSEN LANGUAGE: ", language)
+        query = json.loads(data["query"])
+        language = get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else data["language"]
+        print("DETECTED LANGUAGE: ", language)
+
+        request = Request(
+            chat_history=json.loads(data.get("chat_history", "[]")),
+            profile=Profile(**json.loads(data.get("profile", "{}"))),
+            query=query,
+            language=language,
+        )
+        return request
+
 
 # Helper functions
 
@@ -121,7 +149,7 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
         if src_instance.full_url in [s.full_url for s in sources]:
             for s in sources:
                 if s.full_url == src_instance.full_url:
-                    s.id.extend(src_instance.id)
+                    s.ids.extend(src_instance.ids)
         else:
             sources.append(src_instance)
 
@@ -170,3 +198,15 @@ def construct_source_response(thoughts: List[dict[str, Any]], request_type: Requ
             audio_base64="",
         )
     return response.model_dump_json()
+
+
+def get_language(query_text: str):
+    languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
+    detector = LanguageDetectorBuilder.from_languages(*languages).build()
+    language = detector.detect_language_of(query_text)
+    if language is None:
+        language = "english"
+        print("Language not detected. Defaulting to English.")
+    else:
+        language = str(language).split(".")[1].lower()  # get language name from enum
+    return language
