@@ -4,6 +4,8 @@ import os
 from typing import List, Optional
 
 from azure.search.documents.indexes.models import (
+    AzureOpenAIParameters,
+    AzureOpenAIVectorizer,
     HnswAlgorithmConfiguration,
     HnswParameters,
     SearchableField,
@@ -18,11 +20,8 @@ from azure.search.documents.indexes.models import (
     VectorSearch,
     VectorSearchProfile,
     VectorSearchVectorizer,
-    AzureOpenAIParameters,
-    AzureOpenAIVectorizer,
 )
 
-from .blobmanager import BlobManager
 from .embeddings import OpenAIEmbeddings
 from .listfilestrategy import File
 from .strategy import SearchInfo
@@ -71,7 +70,7 @@ class SearchManager:
 
         async with self.search_info.create_search_index_client() as search_index_client:
             fields = []
-            
+
             if self.use_int_vectorization:
                 fields.append(SearchableField(name="parent_id", type=SearchFieldDataType.String, filterable=True))
                 fields.append(
@@ -122,7 +121,7 @@ class SearchManager:
                     ),
                 ]
             )
-            
+
             if self.use_acls:
                 fields.extend(
                     [
@@ -173,14 +172,18 @@ class SearchManager:
                 vector_search=VectorSearch(
                     # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchalgorithmconfiguration?view=azure-python
                     # Algorithm used for vector search
-                    algorithms=[HnswAlgorithmConfiguration(name="hnsw_config", parameters=HnswParameters(metric="cosine"))],
+                    algorithms=[
+                        HnswAlgorithmConfiguration(name="hnsw_config", parameters=HnswParameters(metric="cosine"))
+                    ],
                     # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchprofile?view=azure-python
                     # Specify the profiles for the vector search and computing the embeddings
                     profiles=[
                         VectorSearchProfile(
                             name="embedding_config",
                             algorithm_configuration_name="hnsw_config",
-                            vectorizer=(f"{self.search_info.index_name}-vectorizer" if self.use_int_vectorization else None),
+                            vectorizer=(
+                                f"{self.search_info.index_name}-vectorizer" if self.use_int_vectorization else None
+                            ),
                         ),
                     ],
                     # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchvectorizer?view=azure-python
@@ -217,7 +220,7 @@ class SearchManager:
                 documents = [
                     {
                         "id": f"{section.content.filename_to_id()}-page-{section_index + batch_index * MAX_BATCH_SIZE}",
-                        "title": section.split_page.title, # Using 'title' for the split page title
+                        "title": section.split_page.title,  # Using 'title' for the split page title
                         "cover_image_url": section.cover_image_url,  # Adding a placeholder for cover image URL
                         "full_url": section.full_url,  # Adding a placeholder for the full URL
                         "content_category": section.category,  # Using 'content_category' for the section category

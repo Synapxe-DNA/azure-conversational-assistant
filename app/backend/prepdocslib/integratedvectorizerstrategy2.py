@@ -88,39 +88,39 @@ class IntegratedVectorizerStrategy(Strategy):
             raise ValueError("Expecting Azure Open AI instance")
 
         embedding_skill = AzureOpenAIEmbeddingSkill(
-                description="Skill to generate embeddings via Azure OpenAI",
-                context="/document/content/pages/*",
-                resource_uri=f"https://{self.embeddings.open_ai_service}.openai.azure.com",
-                deployment_id=self.embeddings.open_ai_deployment,
-                inputs=[InputFieldMappingEntry(name="text", source="/document/content/pages/*")],
-                outputs=[OutputFieldMappingEntry(name="embedding", target_name="vector")],
+            description="Skill to generate embeddings via Azure OpenAI",
+            context="/document/content/pages/*",
+            resource_uri=f"https://{self.embeddings.open_ai_service}.openai.azure.com",
+            deployment_id=self.embeddings.open_ai_deployment,
+            inputs=[InputFieldMappingEntry(name="text", source="/document/content/pages/*")],
+            outputs=[OutputFieldMappingEntry(name="embedding", target_name="vector")],
         )
 
         index_projections = SearchIndexerIndexProjections(
-                selectors=[
-                    SearchIndexerIndexProjectionSelector(
-                        target_index_name=index_name,
-                        parent_key_field_name="parent_id",
-                        source_context="/document/content/pages/*",
-                        mappings=[
-                            # Maps the outputs from the indexer to the fields in the index (this is where the data is populated in the index, you must have a field in the index for it to match, the "name" is the name of the input field in the index)
-                            # InputFieldMappingEntry(name="id", source="/document/id"), # the parent_id field in the index which is needed for the indexing process will prevent this field from being mapped
-                            InputFieldMappingEntry(name="title", source="/document/title"),
-                            InputFieldMappingEntry(name="cover_image_url", source="/document/cover_image_url"),
-                            InputFieldMappingEntry(name="full_url", source="/document/full_url"),
-                            InputFieldMappingEntry(name="content_category", source="/document/content_category"),
-                            InputFieldMappingEntry(name="category_description", source="/document/category_description"),
-                            # InputFieldMappingEntry(name="content", source="/document/content"), # only the parent document will have this field, we took it out to prevent content overlap in the search
-                            InputFieldMappingEntry(name="chunks", source="/document/content/pages/*"),
-                            InputFieldMappingEntry(name="embedding", source="/document/content/pages/*/vector"),
-                        ],
-                    )
-                ],
-                parameters=SearchIndexerIndexProjectionsParameters(
-                    # Source document will be skipped from writing into the indexer's target index
-                    projection_mode=IndexProjectionMode.SKIP_INDEXING_PARENT_DOCUMENTS  # or INCLUDE_INDEXING_PARENT_DOCUMENTS
-                ),
-            )
+            selectors=[
+                SearchIndexerIndexProjectionSelector(
+                    target_index_name=index_name,
+                    parent_key_field_name="parent_id",
+                    source_context="/document/content/pages/*",
+                    mappings=[
+                        # Maps the outputs from the indexer to the fields in the index (this is where the data is populated in the index, you must have a field in the index for it to match, the "name" is the name of the input field in the index)
+                        # InputFieldMappingEntry(name="id", source="/document/id"), # the parent_id field in the index which is needed for the indexing process will prevent this field from being mapped
+                        InputFieldMappingEntry(name="title", source="/document/title"),
+                        InputFieldMappingEntry(name="cover_image_url", source="/document/cover_image_url"),
+                        InputFieldMappingEntry(name="full_url", source="/document/full_url"),
+                        InputFieldMappingEntry(name="content_category", source="/document/content_category"),
+                        InputFieldMappingEntry(name="category_description", source="/document/category_description"),
+                        # InputFieldMappingEntry(name="content", source="/document/content"), # only the parent document will have this field, we took it out to prevent content overlap in the search
+                        InputFieldMappingEntry(name="chunks", source="/document/content/pages/*"),
+                        InputFieldMappingEntry(name="embedding", source="/document/content/pages/*/vector"),
+                    ],
+                )
+            ],
+            parameters=SearchIndexerIndexProjectionsParameters(
+                # Source document will be skipped from writing into the indexer's target index
+                projection_mode=IndexProjectionMode.SKIP_INDEXING_PARENT_DOCUMENTS  # or INCLUDE_INDEXING_PARENT_DOCUMENTS
+            ),
+        )
 
         skillset = SearchIndexerSkillset(
             name=skillset_name,
