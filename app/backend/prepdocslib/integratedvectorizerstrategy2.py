@@ -8,7 +8,8 @@ from azure.search.documents.indexes.models import (
     AzureOpenAIEmbeddingSkill,
     AzureOpenAIParameters,
     AzureOpenAIVectorizer,
-    FieldMapping,
+    IndexingParameters,
+    IndexingParametersConfiguration,
     IndexProjectionMode,
     InputFieldMappingEntry,
     OutputFieldMappingEntry,
@@ -199,8 +200,9 @@ class IntegratedVectorizerStrategy(Strategy):
             skillset_name=f"{self.search_info.index_name}-skillset",
             target_index_name=self.search_info.index_name,
             data_source_name=f"{self.search_info.index_name}-blob",
-            # Map the metadata_storage_name field to the title field in the index to display the PDF title in the search results
-            field_mappings=[FieldMapping(source_field_name="metadata_storage_name", target_field_name="title")],
+            parameters=IndexingParameters(
+                configuration=IndexingParametersConfiguration(parsing_mode="jsonArray", query_timeout=None)
+            ),
         )
 
         indexer_client = self.search_info.create_search_indexer_client()
