@@ -119,7 +119,7 @@ class Utils:
         language = json.loads(data["language"])
         print("CHOSEN LANGUAGE: ", language)
         query = json.loads(data["query"])
-        language = get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else data["language"]
+        language = get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else language
         print("DETECTED LANGUAGE: ", language)
 
         request = Request(
