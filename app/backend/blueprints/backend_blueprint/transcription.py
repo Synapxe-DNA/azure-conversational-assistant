@@ -18,6 +18,7 @@ async def ws_transcribe():
 
     # create stt object and get recognizer and speech
     stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
+    stt.resetStream()
     recognizer: speechsdk.SpeechRecognizer = stt.getSpeechRecognizer()
     stream = stt.getStream()
 
@@ -38,7 +39,6 @@ async def ws_transcribe():
     recognizer.recognizing.connect(recognizing_cb)
     recognizer.recognized.connect(recognized_cb)
     recognizer.canceled.connect(canceled_cb)
-
     # Start continuous recognition
     recognizer.start_continuous_recognition_async()
 
@@ -72,4 +72,3 @@ async def ws_transcribe():
         except asyncio.CancelledError:
             pass  # Task was cancelled successfully
         stream.close()
-        stt.resetStream()
