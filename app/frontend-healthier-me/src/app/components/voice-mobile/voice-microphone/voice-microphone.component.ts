@@ -28,6 +28,8 @@ export class VoiceMicrophoneComponent {
 
   @ViewChild("btn") btn!: ElementRef<HTMLButtonElement>;
 
+  @Output() audioLevelChange = new EventEmitter<number>();
+
   audioAnalyser: AudioAnalyser | undefined;
 
   constructor(private audioService: AudioService) {}
@@ -56,7 +58,7 @@ export class VoiceMicrophoneComponent {
     this.audioAnalyser = new AudioAnalyser(
       await this.audioService.getMicInput(),
       4,
-      0.001,
+      0.001
     );
   }
 
@@ -70,6 +72,10 @@ export class VoiceMicrophoneComponent {
       this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }
+  }
+
+  handleAudioLevelChange(level: number) {
+    this.audioLevelChange.emit(level);
   }
 
   buttonStateClasses() {

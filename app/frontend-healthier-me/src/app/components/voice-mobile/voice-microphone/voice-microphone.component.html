@@ -29,6 +29,7 @@ tw-transform-gpu
       [containerHeight]="'5rem'"
       [containerGap]="'0.5rem'"
       *ngIf="state === MicState.DISABLED"
+      (audioLevelChange)="handleAudioLevelChange($event)"
     >
     </app-waveform>
   </button>
