@@ -4,20 +4,20 @@ import { SecondaryButtonComponent } from "./secondary-button.component";
 import { icons, LucideAngularModule } from "lucide-angular";
 
 describe("SecondaryButtonComponent", () => {
-    let component: SecondaryButtonComponent;
-    let fixture: ComponentFixture<SecondaryButtonComponent>;
+  let component: SecondaryButtonComponent;
+  let fixture: ComponentFixture<SecondaryButtonComponent>;
 
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            imports: [SecondaryButtonComponent, LucideAngularModule.pick(icons)]
-        }).compileComponents();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [SecondaryButtonComponent, LucideAngularModule.pick(icons)]
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(SecondaryButtonComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(SecondaryButtonComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should create", () => {
-        expect(component).toBeTruthy();
-    });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 });

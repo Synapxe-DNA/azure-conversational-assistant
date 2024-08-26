@@ -17,244 +17,244 @@ import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 
 @Injectable({
-    providedIn: "root"
+  providedIn: "root"
 })
 export class EndpointService {
-    constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: HttpClient) {}
 
-    /**
-     * Method to send previous system messages to backend for audio playback
-     * @param text {string}
-     */
-    async textToSpeech(text: string): Promise<BehaviorSubject<{ audio: string } | null>> {
-        const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
+  /**
+   * Method to send previous system messages to backend for audio playback
+   * @param text {string}
+   */
+  async textToSpeech(text: string): Promise<BehaviorSubject<{ audio: string } | null>> {
+    const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
 
-        this.httpClient
-            .post<{ audio: string }>("/speech", { text: text })
-            .pipe(
-                map(response => {
-                    return { audio: response.audio };
-                })
-            )
-            .subscribe({
-                next: audioData => {
-                    responseBS.next(audioData);
-                    responseBS.complete();
-                },
-                error: error => {
-                    console.error(error);
-                    responseBS.error(error);
-                }
-            });
+    this.httpClient
+      .post<{ audio: string }>("/speech", { text: text })
+      .pipe(
+        map(response => {
+          return { audio: response.audio };
+        })
+      )
+      .subscribe({
+        next: audioData => {
+          responseBS.next(audioData);
+          responseBS.complete();
+        },
+        error: error => {
+          console.error(error);
+          responseBS.error(error);
+        }
+      });
 
-        return responseBS;
-    }
+    return responseBS;
+  }
 
-    /**
-     * Method to convert messages (frontend format) to format suitable for backend consumption
-     * @param messages {Message[]}
-     * @return {ApiChatHistory[]}
-     * @private
-     */
-    private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
-        return messages.map(m => {
-            const role = () => {
-                switch (m.role) {
-                    case MessageRole.User:
-                        return "user";
-                    case MessageRole.Assistant:
-                        return "assistant";
-                }
-            };
+  /**
+   * Method to convert messages (frontend format) to format suitable for backend consumption
+   * @param messages {Message[]}
+   * @return {ApiChatHistory[]}
+   * @private
+   */
+  private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
+    return messages.map(m => {
+      const role = () => {
+        switch (m.role) {
+          case MessageRole.User:
+            return "user";
+          case MessageRole.Assistant:
+            return "assistant";
+        }
+      };
 
-            return {
-                role: role(),
-                content: m.message
-            };
-        });
-    }
+      return {
+        role: role(),
+        content: m.message
+      };
+    });
+  }
 
-    /**
-     * Method to convert profile (frontend format) to format suitable for backend consumption
-     * @param profile {Profile}
-     * @return {ApiProfile}
-     * @private
-     */
-    private profileToApiProfile(profile: Profile): ApiProfile {
-        const profileType = () => {
-            switch (profile.profile_type) {
-                case ProfileType.Myself:
-                    return ApiProfileType.Myself;
-                case ProfileType.Others:
-                    return ApiProfileType.Others;
-                default:
-                    return ApiProfileType.General;
+  /**
+   * Method to convert profile (frontend format) to format suitable for backend consumption
+   * @param profile {Profile}
+   * @return {ApiProfile}
+   * @private
+   */
+  private profileToApiProfile(profile: Profile): ApiProfile {
+    const profileType = () => {
+      switch (profile.profile_type) {
+        case ProfileType.Myself:
+          return ApiProfileType.Myself;
+        case ProfileType.Others:
+          return ApiProfileType.Others;
+        default:
+          return ApiProfileType.General;
+      }
+    };
+
+    const profileGender = () => {
+      switch (profile.gender) {
+        case ProfileGender.Male:
+          return ApiProfileGender.Male;
+        case ProfileGender.Female:
+          return ApiProfileGender.Female;
+        default:
+          return ApiProfileGender.Male; // can't spell female without male
+      }
+    };
+
+    return {
+      profile_type: profileType(),
+      user_age: profile.age || -1,
+      user_condition: profile.existing_conditions,
+      user_gender: profileGender()
+    };
+  }
+
+  /**
+   * Method to send voice blob to the endpoint for LLM generation
+   * @param recording {Blob} Audio file with user recording
+   * @param profile {Profile}
+   * @param history {Message[]} history of chat to be used for LLM context
+   */
+  async sendVoice(recording: Blob, profile: Profile, history: Message[]): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
+
+    let lastResponseLength: number = 0;
+    let currentAssistantMessage: string = "";
+    let currentQueryMessage: string = "";
+    let existingAudio: string[] = [];
+
+    const data: ApiVoiceRequest = {
+      chat_history: this.messageToApiChatHistory(history),
+      profile: this.profileToApiProfile(profile),
+      query: recording
+    };
+
+    this.httpClient
+      .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
+        responseType: "text",
+        reportProgress: true,
+        observe: "events"
+      })
+      .subscribe({
+        next: e => {
+          switch (e.type) {
+            case HttpEventType.DownloadProgress: {
+              if (!(e as HttpDownloadProgressEvent).partialText) {
+                return;
+              }
+              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
+
+              if (responseData.audio_base64) {
+                existingAudio.push(responseData.audio_base64);
+              }
+
+              if (responseData.response_message) {
+                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
+              }
+
+              if (responseData.query_message) {
+                currentQueryMessage = currentQueryMessage + responseData.query_message;
+              }
+
+              responseBS.next({
+                status: ResponseStatus.Pending,
+                user_transcript: currentQueryMessage,
+                assistant_response: currentAssistantMessage,
+                assistant_response_audio: existingAudio,
+                additional_questions: [responseData.additional_question_1, responseData.additional_question_2]
+              });
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              return;
             }
-        };
-
-        const profileGender = () => {
-            switch (profile.gender) {
-                case ProfileGender.Male:
-                    return ApiProfileGender.Male;
-                case ProfileGender.Female:
-                    return ApiProfileGender.Female;
-                default:
-                    return ApiProfileGender.Male; // can't spell female without male
+            case HttpEventType.Response: {
+              let existingData = responseBS.value!;
+              existingData.status = ResponseStatus.Done;
+              responseBS.next(existingData);
+              return;
             }
-        };
+          }
+        },
+        error: console.error
+      });
 
-        return {
-            profile_type: profileType(),
-            user_age: profile.age || -1,
-            user_condition: profile.existing_conditions,
-            user_gender: profileGender()
-        };
-    }
+    return responseBS;
+  }
 
-    /**
-     * Method to send voice blob to the endpoint for LLM generation
-     * @param recording {Blob} Audio file with user recording
-     * @param profile {Profile}
-     * @param history {Message[]} history of chat to be used for LLM context
-     */
-    async sendVoice(recording: Blob, profile: Profile, history: Message[]): Promise<BehaviorSubject<VoiceResponse | null>> {
-        const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
+  /**
+   * Method to send chat message to LLM for generation
+   * @param message {Message} user message
+   * @param profile {Profile}
+   * @param history {Message[]} history of conversation for LLM context
+   */
+  async sendChat(message: Message, profile: Profile, history: Message[]): Promise<BehaviorSubject<ChatResponse | null>> {
+    const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
+    const responseId = createId();
 
-        let lastResponseLength: number = 0;
-        let currentAssistantMessage: string = "";
-        let currentQueryMessage: string = "";
-        let existingAudio: string[] = [];
+    let lastResponseLength: number = 0;
+    let currentResponseMessage: string = "";
 
-        const data: ApiVoiceRequest = {
-            chat_history: this.messageToApiChatHistory(history),
-            profile: this.profileToApiProfile(profile),
-            query: recording
-        };
+    const data: ApiChatRequest = {
+      chat_history: this.messageToApiChatHistory(history),
+      profile: this.profileToApiProfile(profile),
+      query: {
+        role: "user",
+        content: message.message
+      }
+    };
 
-        this.httpClient
-            .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
-                responseType: "text",
-                reportProgress: true,
-                observe: "events"
-            })
-            .subscribe({
-                next: e => {
-                    switch (e.type) {
-                        case HttpEventType.DownloadProgress: {
-                            if (!(e as HttpDownloadProgressEvent).partialText) {
-                                return;
-                            }
-                            const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
+    this.httpClient
+      .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
+        responseType: "text",
+        reportProgress: true,
+        observe: "events"
+      })
+      .subscribe({
+        next: e => {
+          switch (e.type) {
+            case HttpEventType.DownloadProgress: {
+              if (!(e as HttpDownloadProgressEvent).partialText) {
+                return;
+              }
 
-                            if (responseData.audio_base64) {
-                                existingAudio.push(responseData.audio_base64);
-                            }
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
+              // console.log(currentResponseData)
+              currentResponseMessage += currentResponseData;
+              // const responseData = JSON.parse(currentResponseData) as ApiChatResponse
+              // console.log(responseData)
+              // const responseData = JSON.parse(
+              //   (e as HttpDownloadProgressEvent).partialText!.slice(
+              //     lastResponseLength,
+              //   ),
+              // ) as ApiChatResponse;
 
-                            if (responseData.response_message) {
-                                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
-                            }
+              // currentResponseMessage = currentResponseMessage + responseData.response_message
+              //
+              responseBS.next({
+                status: ResponseStatus.Pending,
+                response: currentResponseMessage,
+                additional_questions: [
+                  // responseData.additional_question_1,
+                  // responseData.additional_question_2,
+                ]
+              });
 
-                            if (responseData.query_message) {
-                                currentQueryMessage = currentQueryMessage + responseData.query_message;
-                            }
-
-                            responseBS.next({
-                                status: ResponseStatus.Pending,
-                                user_transcript: currentQueryMessage,
-                                assistant_response: currentAssistantMessage,
-                                assistant_response_audio: existingAudio,
-                                additional_questions: [responseData.additional_question_1, responseData.additional_question_2]
-                            });
-                            lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
-                            return;
-                        }
-                        case HttpEventType.Response: {
-                            let existingData = responseBS.value!;
-                            existingData.status = ResponseStatus.Done;
-                            responseBS.next(existingData);
-                            return;
-                        }
-                    }
-                },
-                error: console.error
-            });
-
-        return responseBS;
-    }
-
-    /**
-     * Method to send chat message to LLM for generation
-     * @param message {Message} user message
-     * @param profile {Profile}
-     * @param history {Message[]} history of conversation for LLM context
-     */
-    async sendChat(message: Message, profile: Profile, history: Message[]): Promise<BehaviorSubject<ChatResponse | null>> {
-        const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
-        const responseId = createId();
-
-        let lastResponseLength: number = 0;
-        let currentResponseMessage: string = "";
-
-        const data: ApiChatRequest = {
-            chat_history: this.messageToApiChatHistory(history),
-            profile: this.profileToApiProfile(profile),
-            query: {
-                role: "user",
-                content: message.message
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              break;
             }
-        };
 
-        this.httpClient
-            .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
-                responseType: "text",
-                reportProgress: true,
-                observe: "events"
-            })
-            .subscribe({
-                next: e => {
-                    switch (e.type) {
-                        case HttpEventType.DownloadProgress: {
-                            if (!(e as HttpDownloadProgressEvent).partialText) {
-                                return;
-                            }
+            case HttpEventType.Response: {
+              let latestData = responseBS.value;
+              latestData!.status = ResponseStatus.Done;
+              responseBS.next(latestData);
+              break;
+            }
+          }
+        },
+        error: console.error
+      });
 
-                            const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
-                            // console.log(currentResponseData)
-                            currentResponseMessage += currentResponseData;
-                            // const responseData = JSON.parse(currentResponseData) as ApiChatResponse
-                            // console.log(responseData)
-                            // const responseData = JSON.parse(
-                            //   (e as HttpDownloadProgressEvent).partialText!.slice(
-                            //     lastResponseLength,
-                            //   ),
-                            // ) as ApiChatResponse;
-
-                            // currentResponseMessage = currentResponseMessage + responseData.response_message
-                            //
-                            responseBS.next({
-                                status: ResponseStatus.Pending,
-                                response: currentResponseMessage,
-                                additional_questions: [
-                                    // responseData.additional_question_1,
-                                    // responseData.additional_question_2,
-                                ]
-                            });
-
-                            lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
-                            break;
-                        }
-
-                        case HttpEventType.Response: {
-                            let latestData = responseBS.value;
-                            latestData!.status = ResponseStatus.Done;
-                            responseBS.next(latestData);
-                            break;
-                        }
-                    }
-                },
-                error: console.error
-            });
-
-        return responseBS;
-    }
+    return responseBS;
+  }
 }

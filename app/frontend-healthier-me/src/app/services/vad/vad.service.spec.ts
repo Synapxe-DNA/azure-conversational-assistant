@@ -10,18 +10,18 @@ import { VadService } from "./vad.service";
  * Tests here will cause the GH Action to time out and throw a "Browser Disconnection Error."
  */
 describe("VadService", () => {
-    // let service: VadService;
-    //
-    // beforeEach(() => {
-    //   TestBed.configureTestingModule({});
-    //   service = TestBed.inject(VadService);
-    // });
-    //
-    // it('should be created', () => {
-    //   expect(service).toBeTruthy();
-    // });
+  // let service: VadService;
+  //
+  // beforeEach(() => {
+  //   TestBed.configureTestingModule({});
+  //   service = TestBed.inject(VadService);
+  // });
+  //
+  // it('should be created', () => {
+  //   expect(service).toBeTruthy();
+  // });
 
-    it("should not have any test cases", () => {
-        expect(1).toBe(1);
-    });
+  it("should not have any test cases", () => {
+    expect(1).toBe(1);
+  });
 });

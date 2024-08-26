@@ -1,239 +1,239 @@
 <!doctype html>
 <html>
-    <head>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                background-color: #f2f2f2;
-            }
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f2f2f2;
+      }
 
-            .chat-container {
-                border-radius: 5px;
-                background-color: white;
-                padding: 20px;
-                max-width: 500px;
-                width: 100%;
-                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            }
+      .chat-container {
+        border-radius: 5px;
+        background-color: white;
+        padding: 20px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
 
-            #result {
-                height: 400px;
-                overflow-y: auto;
-                border: 1px solid #ccc;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
+      #result {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
 
-            #message {
-                width: 70%;
-                padding: 10px;
-                margin-right: 10px;
-                border-radius: 5px;
-                border: 1px solid #ccc;
-            }
+      #message {
+        width: 70%;
+        padding: 10px;
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
 
-            button {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                background-color: #007bff;
-                color: white;
-            }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+      }
 
-            button:disabled {
-                background-color: #cccccc;
-            }
-        </style>
-        <link rel="shortcut icon" href="#" />
-    </head>
+      button:disabled {
+        background-color: #cccccc;
+      }
+    </style>
+    <link rel="shortcut icon" href="#" />
+  </head>
 
-    <body>
-        <div class="chat-container">
-            <h1>Chat with AI</h1>
-            <div id="result"></div>
-            <div>
-                <input type="text" id="message" placeholder="Type your message here" />
-                <input type="file" id="fileInput" accept=".wav, .mp3, .webm" required />
-            </div>
-            <button onclick="sendText()" id="sendButton">Send Message</button>
-            <button onclick="sendVoice()">Send audio</button>
-            <button onclick="setProfile()">Set Profile</button>
-            <button onclick="sendTTS()">TTS</button>
+  <body>
+    <div class="chat-container">
+      <h1>Chat with AI</h1>
+      <div id="result"></div>
+      <div>
+        <input type="text" id="message" placeholder="Type your message here" />
+        <input type="file" id="fileInput" accept=".wav, .mp3, .webm" required />
+      </div>
+      <button onclick="sendText()" id="sendButton">Send Message</button>
+      <button onclick="sendVoice()">Send audio</button>
+      <button onclick="setProfile()">Set Profile</button>
+      <button onclick="sendTTS()">TTS</button>
 
-            <audio controls id="audioPlayer">Your browser does not support the audio element.</audio>
-        </div>
-        <div></div>
+      <audio controls id="audioPlayer">Your browser does not support the audio element.</audio>
+    </div>
+    <div></div>
 
-        <script>
-            let ws;
-            async function setProfile() {
-                var msg = document.getElementById("message").value;
-                var response = await fetch("http://0.0.0.0:8000/profile/set", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        type: "Myself",
-                        age: 30,
-                        gender: "Male",
-                        existing_conditions: null,
-                        name: "Bob"
-                    })
-                });
-                var text = await response.text();
-                document.getElementById("result").innerHTML += text + "<br>";
-            }
+    <script>
+      let ws;
+      async function setProfile() {
+        var msg = document.getElementById("message").value;
+        var response = await fetch("http://0.0.0.0:8000/profile/set", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            type: "Myself",
+            age: 30,
+            gender: "Male",
+            existing_conditions: null,
+            name: "Bob"
+          })
+        });
+        var text = await response.text();
+        document.getElementById("result").innerHTML += text + "<br>";
+      }
 
-            async function sendText() {
-                const msg = document.getElementById("message").value;
-                const sendButton = document.getElementById("sendButton");
-                sendButton.disabled = true; // Disable button to prevent multiple submissions
-                const formData = new FormData();
+      async function sendText() {
+        const msg = document.getElementById("message").value;
+        const sendButton = document.getElementById("sendButton");
+        sendButton.disabled = true; // Disable button to prevent multiple submissions
+        const formData = new FormData();
 
-                // Append the file to the FormData object
-                // chat_history = [
-                //   { content: "User chat history", role: "user" },
-                //   { content: "System chat history", role: "assistant" },
-                // ];
-                chat_history = [];
-                profile = JSON.stringify({
-                    profile_type: "Myself",
-                    user_age: 30,
-                    user_gender: "Female",
-                    user_condition: "Diabetes and hypertension"
-                });
+        // Append the file to the FormData object
+        // chat_history = [
+        //   { content: "User chat history", role: "user" },
+        //   { content: "System chat history", role: "assistant" },
+        // ];
+        chat_history = [];
+        profile = JSON.stringify({
+          profile_type: "Myself",
+          user_age: 30,
+          user_gender: "Female",
+          user_condition: "Diabetes and hypertension"
+        });
 
-                query = { content: msg, role: "user" };
+        query = { content: msg, role: "user" };
 
-                formData.append("query", JSON.stringify(query));
-                formData.append("chat_history", JSON.stringify(chat_history));
-                formData.append("profile", profile);
+        formData.append("query", JSON.stringify(query));
+        formData.append("chat_history", JSON.stringify(chat_history));
+        formData.append("profile", profile);
 
-                const response = await fetch("http://0.0.0.0:8000/chat/stream", {
-                    method: "POST",
-                    body: formData
-                });
+        const response = await fetch("http://0.0.0.0:8000/chat/stream", {
+          method: "POST",
+          body: formData
+        });
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
 
-                reader.read().then(function processResult(result) {
-                    if (result.done) {
-                        sendButton.disabled = false; // Re-enable button after processing
-                        return;
-                    }
-                    let token = decoder.decode(result.value);
-                    console.log(token);
-                    //   data = JSON.parse(token);
-                    document.getElementById("result").innerHTML += token + "<br>";
+        reader.read().then(function processResult(result) {
+          if (result.done) {
+            sendButton.disabled = false; // Re-enable button after processing
+            return;
+          }
+          let token = decoder.decode(result.value);
+          console.log(token);
+          //   data = JSON.parse(token);
+          document.getElementById("result").innerHTML += token + "<br>";
 
-                    return reader.read().then(processResult);
-                });
-            }
-            async function sendVoice() {
-                var fileInput = document.getElementById("fileInput");
+          return reader.read().then(processResult);
+        });
+      }
+      async function sendVoice() {
+        var fileInput = document.getElementById("fileInput");
 
-                if (!fileInput.files.length) {
-                    alert("Please select a file before uploading.");
-                    return;
-                }
+        if (!fileInput.files.length) {
+          alert("Please select a file before uploading.");
+          return;
+        }
 
-                const file = fileInput.files[0];
-                const formData = new FormData();
+        const file = fileInput.files[0];
+        const formData = new FormData();
 
-                // Append the file to the FormData object
-                // chat_history = [
-                //   { content: "User chat history", role: "user" },
-                //   { content: "System chat history", role: "assistant" },
-                // ];
-                chat_history = [];
-                profile = JSON.stringify({
-                    profile_type: "Myself",
-                    user_age: 30,
-                    user_gender: "Female",
-                    user_condition: "Diabetes and hypertension"
-                });
-                formData.append("query", file);
-                formData.append("chat_history", JSON.stringify(chat_history));
-                formData.append("profile", profile);
+        // Append the file to the FormData object
+        // chat_history = [
+        //   { content: "User chat history", role: "user" },
+        //   { content: "System chat history", role: "assistant" },
+        // ];
+        chat_history = [];
+        profile = JSON.stringify({
+          profile_type: "Myself",
+          user_age: 30,
+          user_gender: "Female",
+          user_condition: "Diabetes and hypertension"
+        });
+        formData.append("query", file);
+        formData.append("chat_history", JSON.stringify(chat_history));
+        formData.append("profile", profile);
 
-                const response = await fetch("http://0.0.0.0:8000/voice", {
-                    method: "POST",
-                    body: formData
-                });
+        const response = await fetch("http://0.0.0.0:8000/voice", {
+          method: "POST",
+          body: formData
+        });
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
 
-                reader.read().then(function processResult(result) {
-                    if (result.done) {
-                        sendButton.disabled = false; // Re-enable button after processing
-                        return;
-                    }
-                    let token = decoder.decode(result.value);
-                    //   data = JSON.parse(token);
-                    console.log(token);
-                    document.getElementById("result").innerHTML += token + "<br>";
+        reader.read().then(function processResult(result) {
+          if (result.done) {
+            sendButton.disabled = false; // Re-enable button after processing
+            return;
+          }
+          let token = decoder.decode(result.value);
+          //   data = JSON.parse(token);
+          console.log(token);
+          document.getElementById("result").innerHTML += token + "<br>";
 
-                    return reader.read().then(processResult);
-                });
-            }
+          return reader.read().then(processResult);
+        });
+      }
 
-            async function sendTTS() {
-                var msg = document.getElementById("message").value;
-                var response = await fetch("http://0.0.0.0:8000/stream", {
-                    method: "GET"
-                });
+      async function sendTTS() {
+        var msg = document.getElementById("message").value;
+        var response = await fetch("http://0.0.0.0:8000/stream", {
+          method: "GET"
+        });
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                audio = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        audio = "";
 
-                reader.read().then(function processResult(result) {
-                    if (result.done) {
-                        blob = processAudio(data.audio);
-                        const audioUrl = URL.createObjectURL(blob);
-                        const audioPlayer = document.getElementById("audioPlayer");
-                        audioPlayer.src = audioUrl;
-                        audioPlayer.play();
-                        sendButton.disabled = false; // Re-enable button after processing
-                        return;
-                    }
+        reader.read().then(function processResult(result) {
+          if (result.done) {
+            blob = processAudio(data.audio);
+            const audioUrl = URL.createObjectURL(blob);
+            const audioPlayer = document.getElementById("audioPlayer");
+            audioPlayer.src = audioUrl;
+            audioPlayer.play();
+            sendButton.disabled = false; // Re-enable button after processing
+            return;
+          }
 
-                    let token = decoder.decode(result.value);
-                    console.log(token);
-                    data = JSON.parse(token);
+          let token = decoder.decode(result.value);
+          console.log(token);
+          data = JSON.parse(token);
 
-                    document.getElementById("result").innerHTML += data.message;
+          document.getElementById("result").innerHTML += data.message;
 
-                    audio += data.audio;
+          audio += data.audio;
 
-                    return reader.read().then(processResult);
-                });
-            }
+          return reader.read().then(processResult);
+        });
+      }
 
-            function processAudio(audio) {
-                byteCharacters = atob(audio);
+      function processAudio(audio) {
+        byteCharacters = atob(audio);
 
-                // Combine all chunks into a single Uint8Arra
+        // Combine all chunks into a single Uint8Arra
 
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
 
-                // Create a Blob from the ArrayBuffer
-                const blob = new Blob([byteArray], { type: "audio/wav" });
-                return blob;
-            }
-        </script>
-    </body>
+        // Create a Blob from the ArrayBuffer
+        const blob = new Blob([byteArray], { type: "audio/wav" });
+        return blob;
+      }
+    </script>
+  </body>
 </html>

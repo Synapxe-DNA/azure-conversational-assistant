@@ -16,52 +16,52 @@ import { ChatMode } from "../../../types/chat-mode.type";
 import { ConvoBrokerService } from "../../../services/convo-broker/convo-broker.service";
 
 @Component({
-    selector: "app-text-input",
-    standalone: true,
-    imports: [LucideAngularModule, FormsModule, CommonModule, InputTextModule, Button, ReactiveFormsModule],
-    templateUrl: "./text-input.component.html",
-    styleUrl: "./text-input.component.css"
+  selector: "app-text-input",
+  standalone: true,
+  imports: [LucideAngularModule, FormsModule, CommonModule, InputTextModule, Button, ReactiveFormsModule],
+  templateUrl: "./text-input.component.html",
+  styleUrl: "./text-input.component.css"
 })
 export class TextInputComponent implements OnInit {
-    profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
-    questionForm = new FormGroup({
-        question: new FormControl("")
-    });
+  questionForm = new FormGroup({
+    question: new FormControl("")
+  });
 
-    constructor(
-        private convoBroker: ConvoBrokerService,
-        private preferences: PreferenceService,
-        private profileService: ProfileService,
-        private route: ActivatedRoute
-    ) {}
+  constructor(
+    private convoBroker: ConvoBrokerService,
+    private preferences: PreferenceService,
+    private profileService: ProfileService,
+    private route: ActivatedRoute
+  ) {}
 
-    ngOnInit() {
-        this.route.paramMap
-            .pipe(
-                takeWhile(p => {
-                    return p.get("profileId") !== undefined;
-                }, true)
-            )
-            .subscribe(p => {
-                this.profile = this.profileService.getProfile(p.get("profileId")!);
-            });
+  ngOnInit() {
+    this.route.paramMap
+      .pipe(
+        takeWhile(p => {
+          return p.get("profileId") !== undefined;
+        }, true)
+      )
+      .subscribe(p => {
+        this.profile = this.profileService.getProfile(p.get("profileId")!);
+      });
+  }
+
+  setVoiceMode() {
+    this.preferences.setChatMode(ChatMode.Voice);
+  }
+
+  sendMessage() {
+    if (!this.questionForm.value.question) {
+      return;
     }
 
-    setVoiceMode() {
-        this.preferences.setChatMode(ChatMode.Voice);
-    }
-
-    sendMessage() {
-        if (!this.questionForm.value.question) {
-            return;
-        }
-
-        this.convoBroker
-            .sendChat(this.questionForm.value.question, this.profile.value || GeneralProfile)
-            .then(() => {
-                this.questionForm.reset();
-            })
-            .catch(console.error);
-    }
+    this.convoBroker
+      .sendChat(this.questionForm.value.question, this.profile.value || GeneralProfile)
+      .then(() => {
+        this.questionForm.reset();
+      })
+      .catch(console.error);
+  }
 }

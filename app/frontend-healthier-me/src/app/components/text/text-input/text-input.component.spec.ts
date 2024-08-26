@@ -11,25 +11,25 @@ import { PreferenceService } from "../../../services/preference/preference.servi
 import { ActivatedRoute } from "@angular/router";
 
 describe("TextInputComponent", () => {
-    let component: TextInputComponent;
-    let fixture: ComponentFixture<TextInputComponent>;
+  let component: TextInputComponent;
+  let fixture: ComponentFixture<TextInputComponent>;
 
-    beforeEach(async () => {
-        const activatedRouteMock = {
-            snapshot: { paramMap: { get: () => "1234" } }
-        };
+  beforeEach(async () => {
+    const activatedRouteMock = {
+      snapshot: { paramMap: { get: () => "1234" } }
+    };
 
-        await TestBed.configureTestingModule({
-            imports: [TextInputComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), LucideAngularModule.pick(icons), ReactiveFormsModule],
-            providers: [ChatMessageService, ProfileService, PreferenceService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
-        }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [TextInputComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), LucideAngularModule.pick(icons), ReactiveFormsModule],
+      providers: [ChatMessageService, ProfileService, PreferenceService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(TextInputComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(TextInputComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should create", () => {
-        expect(component).toBeTruthy();
-    });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 });

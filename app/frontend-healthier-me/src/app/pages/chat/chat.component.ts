@@ -6,20 +6,20 @@ import { TextComponent } from "../../components/text/text.component";
 import { Router } from "@angular/router";
 
 @Component({
-    selector: "app-chat",
-    standalone: true,
-    imports: [VoiceComponent, TextComponent],
-    templateUrl: "./chat.component.html",
-    styleUrl: "./chat.component.css"
+  selector: "app-chat",
+  standalone: true,
+  imports: [VoiceComponent, TextComponent],
+  templateUrl: "./chat.component.html",
+  styleUrl: "./chat.component.css"
 })
 export class ChatComponent {
-    chatMode?: ChatMode;
+  chatMode?: ChatMode;
 
-    constructor(private preference: PreferenceService) {
-        this.preference.$chatMode.subscribe(m => {
-            this.chatMode = m;
-        });
-    }
+  constructor(private preference: PreferenceService) {
+    this.preference.$chatMode.subscribe(m => {
+      this.chatMode = m;
+    });
+  }
 
-    protected readonly ChatMode = ChatMode;
+  protected readonly ChatMode = ChatMode;
 }

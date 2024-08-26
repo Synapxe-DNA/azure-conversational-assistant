@@ -6,17 +6,17 @@ import { TextClipboardComponent } from "../text-clipboard/text-clipboard.compone
 import { TextShowSourceComponent } from "../text-show-source/text-show-source.component";
 
 @Component({
-    selector: "app-text-system",
-    standalone: true,
-    imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent],
-    templateUrl: "./text-system.component.html",
-    styleUrl: "./text-system.component.css"
+  selector: "app-text-system",
+  standalone: true,
+  imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent],
+  templateUrl: "./text-system.component.html",
+  styleUrl: "./text-system.component.css"
 })
 export class TextSystemComponent {
-    @Input() message!: Message;
-    display: boolean = false;
+  @Input() message!: Message;
+  display: boolean = false;
 
-    toggleDisplay(display: boolean) {
-        this.display = display;
-    }
+  toggleDisplay(display: boolean) {
+    this.display = display;
+  }
 }

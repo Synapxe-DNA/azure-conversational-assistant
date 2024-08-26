@@ -11,26 +11,26 @@ import { ToastModule } from "primeng/toast";
 import { provideHttpClient, withFetch } from "@angular/common/http";
 
 export const appConfig: ApplicationConfig = {
-    providers: [
-        provideZoneChangeDetection({ eventCoalescing: true }),
-        provideRouter(routes),
-        importProvidersFrom(BrowserModule),
-        importProvidersFrom(BrowserAnimationsModule),
-        provideHttpClient(withFetch()),
-        importProvidersFrom(NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)),
-        importProvidersFrom(
-            LucideAngularModule.pick({
-                UserRoundPlus,
-                Mic,
-                MicOff,
-                MessageSquare,
-                User,
-                Settings,
-                Send,
-                StopCircle,
-                Copy
-            })
-        ),
-        importProvidersFrom(ToastModule)
-    ]
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    importProvidersFrom(BrowserModule),
+    importProvidersFrom(BrowserAnimationsModule),
+    provideHttpClient(withFetch()),
+    importProvidersFrom(NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)),
+    importProvidersFrom(
+      LucideAngularModule.pick({
+        UserRoundPlus,
+        Mic,
+        MicOff,
+        MessageSquare,
+        User,
+        Settings,
+        Send,
+        StopCircle,
+        Copy
+      })
+    ),
+    importProvidersFrom(ToastModule)
+  ]
 };

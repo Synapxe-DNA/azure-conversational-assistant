@@ -1,31 +1,31 @@
 name: Frontend linting
 
 on:
-    push:
-        branches:
-            - main
-            - staging
-            - frontend
-            - backend
-        paths:
-            - "app/frontend-healthier-me/**"
-    pull_request:
-        branches:
-            - main
-            - staging
-            - frontend
-            - backend
-        paths:
-            - "app/frontend-healthier-me/**"
+  push:
+    branches:
+      - main
+      - staging
+      - frontend
+      - backend
+    paths:
+      - "app/frontend-healthier-me/**"
+  pull_request:
+    branches:
+      - main
+      - staging
+      - frontend
+      - backend
+    paths:
+      - "app/frontend-healthier-me/**"
 
 jobs:
-    prettier:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: Run prettier on frontend
-              run: |
-                  cd ./app/frontend-healthier-me
-                  npm install
-                  npm install -g prettier
-                  npm run lint
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run prettier on frontend
+        run: |
+          cd ./app/frontend-healthier-me
+          npm install
+          npm install -g prettier
+          npm run lint

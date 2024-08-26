@@ -10,25 +10,25 @@ import { icons, LucideAngularModule } from "lucide-angular";
 import { ActivatedRoute } from "@angular/router";
 
 describe("MainLayoutComponent", () => {
-    let component: MainLayoutComponent;
-    let fixture: ComponentFixture<MainLayoutComponent>;
+  let component: MainLayoutComponent;
+  let fixture: ComponentFixture<MainLayoutComponent>;
 
-    beforeEach(async () => {
-        const activatedRouteMock = {
-            snapshot: { paramMap: { get: () => "1234" } }
-        };
+  beforeEach(async () => {
+    const activatedRouteMock = {
+      snapshot: { paramMap: { get: () => "1234" } }
+    };
 
-        await TestBed.configureTestingModule({
-            imports: [MainLayoutComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), ToastModule, LucideAngularModule.pick(icons)],
-            providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
-        }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [MainLayoutComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), ToastModule, LucideAngularModule.pick(icons)],
+      providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(MainLayoutComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(MainLayoutComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should create", () => {
-        expect(component).toBeTruthy();
-    });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 });

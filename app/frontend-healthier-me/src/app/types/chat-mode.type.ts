@@ -1,4 +1,4 @@
 export enum ChatMode {
-    Voice = "VOICE",
-    Text = "TEXT"
+  Voice = "VOICE",
+  Text = "TEXT"
 }

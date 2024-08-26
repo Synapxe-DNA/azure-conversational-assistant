@@ -6,21 +6,21 @@ import { ProfileService } from "../../../services/profile/profile.service";
 import { NgxIndexedDBService } from "ngx-indexed-db";
 
 describe("NavbarProfileCreateComponent", () => {
-    let component: NavbarProfileCreateComponent;
-    let fixture: ComponentFixture<NavbarProfileCreateComponent>;
+  let component: NavbarProfileCreateComponent;
+  let fixture: ComponentFixture<NavbarProfileCreateComponent>;
 
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            imports: [NavbarProfileCreateComponent, LucideAngularModule.pick(icons)],
-            providers: [NgxIndexedDBService, ProfileService]
-        }).compileComponents();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [NavbarProfileCreateComponent, LucideAngularModule.pick(icons)],
+      providers: [NgxIndexedDBService, ProfileService]
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(NavbarProfileCreateComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(NavbarProfileCreateComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should create", () => {
-        expect(component).toBeTruthy();
-    });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 });

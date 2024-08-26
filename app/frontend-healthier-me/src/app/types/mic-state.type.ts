@@ -1,5 +1,5 @@
 export enum MicState {
-    DISABLED = "disabled",
-    PENDING = "pending",
-    ACTIVE = "active"
+  DISABLED = "disabled",
+  PENDING = "pending",
+  ACTIVE = "active"
 }

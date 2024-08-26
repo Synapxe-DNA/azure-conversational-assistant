@@ -1,7 +1,7 @@
 <a
-    #profileLink
-    href="/app/chat/{{ profile.id }}"
-    class="
+  #profileLink
+  href="/app/chat/{{ profile.id }}"
+  class="
 tw-transition-none
 tw-rounded-lg
 tw-flex tw-flex-row tw-justify-start tw-items-center
@@ -12,11 +12,11 @@ tw-cursor-pointer
 {{ isActive ? 'tw-bg-gray-100' : 'tw-bg-white hover:bg-gray-50' }}
 "
 >
-    <img *ngIf="profile.id === 'general'" ngSrc="/app/profiles/general.svg" height="40" width="40" class="tw-rounded-full tw-w-[40px] tw-h-[40px]" alt="" />
-    <div *ngIf="profile.id !== 'general'" class="tw-w-[40px] tw-h-[40px] tw-rounded-full tw-bg-gray-300"></div>
-    <div class="tw-flex tw-flex-col tw-justify-start tw-items-stretch">
-        <span class="tw-capitalize">{{ profile.name }}</span>
-        <span class="tw-lowercase first-letter:tw-capitalize tw-text-sm tw-opacity-60">{{ getProfileDescription() }}</span>
-    </div>
+  <img *ngIf="profile.id === 'general'" ngSrc="/app/profiles/general.svg" height="40" width="40" class="tw-rounded-full tw-w-[40px] tw-h-[40px]" alt="" />
+  <div *ngIf="profile.id !== 'general'" class="tw-w-[40px] tw-h-[40px] tw-rounded-full tw-bg-gray-300"></div>
+  <div class="tw-flex tw-flex-col tw-justify-start tw-items-stretch">
+    <span class="tw-capitalize">{{ profile.name }}</span>
+    <span class="tw-lowercase first-letter:tw-capitalize tw-text-sm tw-opacity-60">{{ getProfileDescription() }}</span>
+  </div>
 </a>
 <p-contextMenu *ngIf="profile.id" [target]="profileLink" [model]="contextMenuItems" />

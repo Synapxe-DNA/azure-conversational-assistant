@@ -6,21 +6,21 @@ import { NgxIndexedDbConfig } from "../../configs/ngx-indexed-db/ngx-indexed-db.
 import { ActivatedRoute } from "@angular/router";
 
 describe("ProfileService", () => {
-    let service: ProfileService;
+  let service: ProfileService;
 
-    beforeEach(() => {
-        const activatedRouteMock = {
-            snapshot: { paramMap: { get: () => "1234" } }
-        };
+  beforeEach(() => {
+    const activatedRouteMock = {
+      snapshot: { paramMap: { get: () => "1234" } }
+    };
 
-        TestBed.configureTestingModule({
-            imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
-            providers: [ProfileService, NgxIndexedDBService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
-        });
-        service = TestBed.inject(ProfileService);
+    TestBed.configureTestingModule({
+      imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+      providers: [ProfileService, NgxIndexedDBService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     });
+    service = TestBed.inject(ProfileService);
+  });
 
-    it("should be created", () => {
-        expect(service).toBeTruthy();
-    });
+  it("should be created", () => {
+    expect(service).toBeTruthy();
+  });
 });

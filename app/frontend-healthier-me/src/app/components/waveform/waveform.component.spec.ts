@@ -3,20 +3,20 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { WaveformComponent } from "./waveform.component";
 
 describe("WaveformComponent", () => {
-    let component: WaveformComponent;
-    let fixture: ComponentFixture<WaveformComponent>;
+  let component: WaveformComponent;
+  let fixture: ComponentFixture<WaveformComponent>;
 
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            imports: [WaveformComponent]
-        }).compileComponents();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [WaveformComponent]
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(WaveformComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(WaveformComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should create", () => {
-        expect(component).toBeTruthy();
-    });
+  it("should create", () => {
+    expect(component).toBeTruthy();
+  });
 });
