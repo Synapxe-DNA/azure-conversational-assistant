@@ -13,35 +13,11 @@ transcription = Blueprint("transcription", __name__, url_prefix="/ws")
 async def ws_transcribe():
     asyncio.get_running_loop().slow_callback_duration = 1
 
-    # Set up queue for communication between threads
-    result_queue = queue.Queue()
-    all_result = ""
-
-    # create stt object and get recognizer and speech
+    # create stt object and get recognizer and stream
     stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
-    stt.resetStream()
     recognizer: speechsdk.SpeechRecognizer = stt.getSpeechRecognizer()
     stream = stt.getStream()
 
-    # Set up callbacks
-    def recognizing_cb(evt):
-        logging.info(f"Recognizing: {evt.result.text}")
-        result_queue.put({"text": all_result + evt.result.text, "is_final": False})
-
-    def recognized_cb(evt):
-        nonlocal all_result
-        all_result += evt.result.text + " "
-        logging.info(f"Recognized: {evt.result.text}")
-        result_queue.put({"text": all_result, "is_final": True})
-
-    def canceled_cb(evt):
-        logging.warning(f"Recognition canceled: {evt.result.reason}")
-        result_queue.put({"error": f"Recognition canceled: {evt.result.reason}"})
-
-    # Connect callbacks
-    recognizer.recognizing.connect(recognizing_cb)
-    recognizer.recognized.connect(recognized_cb)
-    recognizer.canceled.connect(canceled_cb)
     # Start continuous recognition
     recognizer.start_continuous_recognition_async()
 
@@ -49,7 +25,7 @@ async def ws_transcribe():
     async def send_results():
         while True:
             try:
-                result = result_queue.get(timeout=0.1)
+                result = stt.getQueue().get(timeout=0.1)
                 logging.info(f"Sending result: {result}")
                 await websocket.send_json(result)
             except queue.Empty:
@@ -75,4 +51,4 @@ async def ws_transcribe():
             await send_task  # Wait for the task to be cancelled
         except asyncio.CancelledError:
             pass  # Task was cancelled successfully
-        stream.close()
+        stt.reset()

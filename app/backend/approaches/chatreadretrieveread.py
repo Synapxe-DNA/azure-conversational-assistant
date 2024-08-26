@@ -305,7 +305,4 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             ],
         }
 
-        print(extra_info["thoughts"][3].title)
-        print(extra_info["thoughts"][3].description)
-
         return (extra_info, chat_coroutine)
