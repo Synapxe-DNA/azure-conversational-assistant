@@ -217,7 +217,7 @@ export class EndpointService {
     message: string,
     profile: Profile,
     history: Message[],
-    language: string
+    language: string,
   ): Promise<BehaviorSubject<VoiceResponse | null>> {
     const responseBS: BehaviorSubject<VoiceResponse | null> =
       new BehaviorSubject<VoiceResponse | null>(null);
@@ -231,8 +231,11 @@ export class EndpointService {
     const data: ApiVoiceRequest2 = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
-      query: message,
-      language: language.toLowerCase()
+      query: {
+        role: "user",
+        content: message,
+      },
+      language: language.toLowerCase(),
     };
 
     this.httpClient
@@ -311,7 +314,7 @@ export class EndpointService {
     message: Message,
     profile: Profile,
     history: Message[],
-    language: string
+    language: string,
   ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> =
       new BehaviorSubject<ChatResponse | null>(null);

@@ -261,6 +261,7 @@ class Approach(ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
@@ -270,6 +271,7 @@ class Approach(ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:

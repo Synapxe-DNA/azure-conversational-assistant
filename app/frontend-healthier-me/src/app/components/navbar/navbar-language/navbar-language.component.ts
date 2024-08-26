@@ -13,9 +13,8 @@ import { Language } from '../../../types/language.type';
   styleUrl: "./navbar-language.component.css",
 })
 export class NavbarLanguageComponent implements OnInit {
-  
-  languageOptions!: string[] 
-  chosenLanguage: string 
+  languageOptions!: string[];
+  chosenLanguage: string;
 
   constructor(
     private preference: PreferenceService,
@@ -24,7 +23,7 @@ export class NavbarLanguageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.languageOptions = Object.values(Language)
+    this.languageOptions = Object.values(Language);
   }
 
   setLanguage(chosenLanguage: string) {
@@ -52,5 +51,4 @@ export class NavbarLanguageComponent implements OnInit {
         break;
     }
   }
-
 }

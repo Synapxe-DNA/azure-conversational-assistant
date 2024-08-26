@@ -18,8 +18,11 @@ export class PreferenceService {
   );
 
   $language = new BehaviorSubject<Language>(
-    this.loadFromLocalStorage<Language>(PreferenceKey.Language, Language.Spoken),
-  )
+    this.loadFromLocalStorage<Language>(
+      PreferenceKey.Language,
+      Language.Spoken,
+    ),
+  );
 
   // BehaviorSubjects to manage voice detection states
   $voiceDetectInterrupt = new BehaviorSubject<boolean>(
@@ -102,7 +105,7 @@ export class PreferenceService {
           );
           break;
         }
-        
+
         case PreferenceKey.VoiceDetectInterrupt: {
           this.$voiceDetectInterrupt.next(
             this.loadFromLocalStorage(

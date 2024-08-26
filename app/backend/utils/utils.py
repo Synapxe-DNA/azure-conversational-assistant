@@ -3,14 +3,22 @@ import logging
 import re
 from typing import Any, AsyncGenerator, List
 
-from config import CONFIG_TEXT_TO_SPEECH_SERVICE
+from azure.search.documents.aio import SearchClient
+from config import CONFIG_SEARCH_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
+from lingua import Language, LanguageDetectorBuilder
 from models.chat import TextChatResponse
+from models.chat_history import ChatHistory
+from models.feedback import FeedbackRequest, FeedbackStore
+from models.language import LanguageSelected
+from models.profile import Profile
+from models.request import Request
 from models.request_type import RequestType
-from models.source import Source
+from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
+from werkzeug.datastructures import MultiDict
 
 
 class Utils:
@@ -59,7 +67,7 @@ class Utils:
                         if bool(
                             re.search(r"[.,!?。，！？]", text_response_chunk)
                         ):  # Transcribe text only when punctuation is detected
-                            audio_data = tts.readText(response_message)
+                            audio_data = tts.readText(response_message, True)  # remove * from markdown
                             response = VoiceChatResponse(
                                 response_message=response_message,
                                 sources=[],
@@ -70,6 +78,58 @@ class Utils:
 
         return generator()
 
+    @staticmethod
+    async def construct_feedback_for_storing(feedback_request: FeedbackRequest) -> FeedbackStore:
+        search_client: SearchClient = current_app.config[CONFIG_SEARCH_CLIENT]
+        sources: List[SourceWithChunk] = []
+        for source in feedback_request.retrieved_sources:
+            for id in source.ids:
+                result = await search_client.get_document(id)  # Retrieve text chunks via id
+                sources.append(
+                    SourceWithChunk(
+                        id=id,
+                        title=source.title,
+                        cover_image_url=source.cover_image_url,
+                        full_url=source.full_url,
+                        content_category=source.content_category,
+                        chunk=result["chunks"],
+                    )  # Attribute name may change based on data
+                )
+
+        feedback_store = FeedbackStore(
+            date_time=feedback_request.date_time,
+            feedback_type=feedback_request.feedback_type,
+            feedback_category=feedback_request.feedback_category,
+            feedback_remarks=feedback_request.feedback_remarks,
+            user_profile=feedback_request.user_profile,
+            chat_history=feedback_request.chat_history,
+            retrieved_sources=sources,
+        )
+
+        return feedback_store
+
+    @staticmethod
+    def form_message(chat_history_list: List[ChatHistory], query: dict[str, str]) -> list[dict[str, Any]]:
+        messages = [chat_history.model_dump() for chat_history in chat_history_list] + [query]
+        return messages
+
+    @staticmethod
+    def form_request(data: MultiDict) -> Request:
+
+        language = json.loads(data["language"])
+        print("CHOSEN LANGUAGE: ", language)
+        query = json.loads(data["query"])
+        language = get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else language
+        print("DETECTED LANGUAGE: ", language)
+
+        request = Request(
+            chat_history=json.loads(data.get("chat_history", "[]")),
+            profile=Profile(**json.loads(data.get("profile", "{}"))),
+            query=query,
+            language=language,
+        )
+        return request
+
 
 # Helper functions
 
@@ -79,7 +139,7 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
     sources = []
     for source in sources_desc:
         src_instance = Source(
-            id=[str(source.get("id"))],
+            ids=[str(source.get("id"))],
             title=str(source.get("title")),
             cover_image_url=str(source.get("cover_image_url")),
             full_url=str(source.get("full_url")),
@@ -89,7 +149,7 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
         if src_instance.full_url in [s.full_url for s in sources]:
             for s in sources:
                 if s.full_url == src_instance.full_url:
-                    s.id.extend(src_instance.id)
+                    s.ids.extend(src_instance.ids)
         else:
             sources.append(src_instance)
 
@@ -138,3 +198,15 @@ def construct_source_response(thoughts: List[dict[str, Any]], request_type: Requ
             audio_base64="",
         )
     return response.model_dump_json()
+
+
+def get_language(query_text: str):
+    languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
+    detector = LanguageDetectorBuilder.from_languages(*languages).build()
+    language = detector.detect_language_of(query_text)
+    if language is None:
+        language = "english"
+        print("Language not detected. Defaulting to English.")
+    else:
+        language = str(language).split(".")[1].lower()  # get language name from enum
+    return language

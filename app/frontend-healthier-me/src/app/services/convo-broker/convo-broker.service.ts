@@ -30,7 +30,7 @@ export class ConvoBrokerService {
 
   $language: BehaviorSubject<string> = new BehaviorSubject<string>(
     Language.Spoken,
-  )
+  );
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
     MicState.PENDING,

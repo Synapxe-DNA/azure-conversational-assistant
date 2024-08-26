@@ -79,6 +79,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
@@ -89,6 +90,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
@@ -98,6 +100,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,
@@ -119,9 +122,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
-        selected_language = (
-            config.SELECTED_LANGUAGE
-        )  # to be removed. variable to come from frontend user selection instead of config file
+        selected_language = language
+        print(f"Selected language: {selected_language}")
+        print(f"Profile Type: {profile.profile_type}")
 
         if profile.user_age < 1:
             age_group = "Infant"

@@ -2,6 +2,7 @@ import asyncio
 import logging
 import queue
 
+import azure.cognitiveservices.speech as speechsdk
 from config import CONFIG_SPEECH_TO_TEXT_SERVICE
 from quart import Blueprint, current_app, websocket
 
@@ -17,7 +18,7 @@ async def ws_transcribe():
 
     # create stt object and get recognizer and speech
     stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
-    recognizer = stt.getSpeechRecognizer()
+    recognizer: speechsdk.SpeechRecognizer = stt.getSpeechRecognizer()
     stream = stt.getStream()
 
     # Set up callbacks
@@ -39,7 +40,7 @@ async def ws_transcribe():
     recognizer.canceled.connect(canceled_cb)
 
     # Start continuous recognition
-    recognizer.start_continuous_recognition()
+    recognizer.start_continuous_recognition_async()
 
     # Function to handle sending results
     async def send_results():
@@ -64,10 +65,11 @@ async def ws_transcribe():
         # Handle WebSocket disconnection
         logging.info("WebSocket connection closed")
     finally:
-        recognizer.stop_continuous_recognition()
+        recognizer.stop_continuous_recognition_async()
         send_task.cancel()
         try:
             await send_task  # Wait for the task to be cancelled
         except asyncio.CancelledError:
             pass  # Task was cancelled successfully
         stream.close()
+        stt.resetStream()
