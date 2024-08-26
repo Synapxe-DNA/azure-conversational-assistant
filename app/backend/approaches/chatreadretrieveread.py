@@ -23,8 +23,6 @@ from openai.types.chat import (
 )
 from openai_messages_token_helper import build_messages, get_token_limit
 
-# from lingua import Language, LanguageDetectorBuilder
-
 
 class ChatReadRetrieveReadApproach(ChatApproach):
     """
@@ -122,7 +120,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
-        selected_language = language
+        selected_language = language.upper()
         print(f"Selected language: {selected_language}")
         print(f"Profile Type: {profile.profile_type}")
 
@@ -170,15 +168,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             }
         ]
 
-        # # identify language if selected_language is default
-        # languages = [Language.ENGLISH, Language.CHINESE, Language.MALAY, Language.TAMIL]
-        # if selected_language == "default":
-        #     detected_language = detector.detect_language_of(original_user_query)
-        #     selected_language = detected_language.name
-
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(selected_language=selected_language)
+            answer_generation_prompt = general_prompt.format(language=selected_language)
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
@@ -187,7 +179,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
-                selected_language=selected_language,
+                language=selected_language,
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -245,7 +237,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        # response_token_limit = 1024
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
@@ -313,5 +304,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 ),
             ],
         }
+
+        print(extra_info["thoughts"][3].title)
+        print(extra_info["thoughts"][3].description)
 
         return (extra_info, chat_coroutine)
