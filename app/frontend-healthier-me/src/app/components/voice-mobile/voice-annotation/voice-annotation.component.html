@@ -1,25 +1,54 @@
 <div class="tw-flex tw-justify-center tw-gap-4 tw-mt-5">
-  <p-button icon="pi pi-thumbs-up-fill" severity="secondary" (click)="showDialog(0)">
+  <p-button
+    icon="pi pi-thumbs-up-fill"
+    severity="secondary"
+    (click)="showDialog(0)"
+  >
   </p-button>
 
-  <p-button icon="pi pi-thumbs-down-fill" severity="secondary" (click)="showDialog(1)">
+  <p-button
+    icon="pi pi-thumbs-down-fill"
+    severity="secondary"
+    (click)="showDialog(1)"
+  >
   </p-button>
 </div>
 
-<p-dialog [(visible)]="displayModal" [modal]="true" [closable]="true" header="Feedback">
+<p-dialog
+  [(visible)]="displayModal"
+  [modal]="true"
+  [closable]="true"
+  header="Feedback"
+>
   <div class="field">
     <label for="feedback">Remarks:</label>
-    <textarea id="feedback" pInputTextarea [(ngModel)]="feedback" placeholder="Please leave your feedback here" rows="5"
-      cols="30" class="tw-w-full tw-p-2 tw-rounded-lg tw-border-2"></textarea>
+    <textarea
+      id="feedback"
+      pInputTextarea
+      [(ngModel)]="feedback"
+      placeholder="Please leave your feedback here"
+      rows="5"
+      cols="30"
+      class="tw-w-full tw-p-2 tw-rounded-lg tw-border-2"
+    ></textarea>
   </div>
   <div class="tw-mt-3">
-    <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
+    <button
+      pButton
+      label="Submit"
+      icon="pi pi-check"
+      (click)="submitFeedback()"
+    ></button>
   </div>
 </p-dialog>
 
 <!-- Confirmation Modal -->
-<p-dialog [(visible)]="confirmationModal" [modal]="true" [closable]="true" header="Thank You">
+<p-dialog
+  [(visible)]="confirmationModal"
+  [modal]="true"
+  [closable]="true"
+  header="Thank You"
+>
   <p>Your feedback has been submitted. Thank you!</p>
-  <div class="tw-mt-3">
-  </div>
+  <div class="tw-mt-3"></div>
 </p-dialog>

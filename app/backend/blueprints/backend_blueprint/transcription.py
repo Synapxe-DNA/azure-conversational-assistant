@@ -15,6 +15,7 @@ async def ws_transcribe():
 
     # Set up queue for communication between threads
     result_queue = queue.Queue()
+    all_result = ""
 
     # create stt object and get recognizer and speech
     stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
@@ -25,11 +26,13 @@ async def ws_transcribe():
     # Set up callbacks
     def recognizing_cb(evt):
         logging.info(f"Recognizing: {evt.result.text}")
-        result_queue.put({"text": evt.result.text, "is_final": False})
+        result_queue.put({"text": all_result + evt.result.text, "is_final": False})
 
     def recognized_cb(evt):
+        nonlocal all_result
+        all_result += evt.result.text + " "
         logging.info(f"Recognized: {evt.result.text}")
-        result_queue.put({"text": evt.result.text, "is_final": True})
+        result_queue.put({"text": all_result, "is_final": True})
 
     def canceled_cb(evt):
         logging.warning(f"Recognition canceled: {evt.result.reason}")
@@ -47,6 +50,7 @@ async def ws_transcribe():
         while True:
             try:
                 result = result_queue.get(timeout=0.1)
+                logging.info(f"Sending result: {result}")
                 await websocket.send_json(result)
             except queue.Empty:
                 await asyncio.sleep(0.1)

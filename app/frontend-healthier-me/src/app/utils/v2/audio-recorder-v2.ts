@@ -47,11 +47,7 @@ export class v2AudioRecorder {
       try {
         const data = JSON.parse(event.data);
         if (data.text) {
-          if (data.is_final) {
-            this.finalText = this.finalText + data.text + " " 
-            // upsert user message
-            this.upsert(this.finalText);
-          }
+          this.upsert(data.text);
         } else if (data.error) {
           console.error("Error:", data.error);
         }

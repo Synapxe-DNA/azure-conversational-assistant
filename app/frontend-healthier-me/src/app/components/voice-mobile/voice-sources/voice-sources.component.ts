@@ -18,7 +18,6 @@ export class VoiceSourcesComponent implements OnInit {
   imgUrl: string = "assets/healthhub-logo.png"; // Updated path
 
   ngOnInit(): void {
-
     this.responsiveOptions = [
       {
         breakpoint: "768px",

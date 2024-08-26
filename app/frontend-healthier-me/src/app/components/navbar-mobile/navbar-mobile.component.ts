@@ -27,7 +27,7 @@ import { LucideAngularModule } from "lucide-angular";
     CommonModule,
     SidebarModule,
     LucideAngularModule,
-    Button
+    Button,
   ],
   templateUrl: "./navbar-mobile.component.html",
   styleUrl: "./navbar-mobile.component.css",

@@ -1,26 +1,35 @@
 <div
-  class="tw-w-full tw-h-fit tw-flex tw-flex-row tw-justify-between tw-gap-5 tw-bg-gray-100 tw-fixed tw-top-0 tw-left-0 tw-z-10">
-  <p-button icon="pi pi-bars" severity="secondary" (onClick)="toggleSidebar()" />
+  class="tw-w-full tw-h-fit tw-flex tw-flex-row tw-justify-between tw-gap-5 tw-bg-gray-100 tw-fixed tw-top-0 tw-left-0 tw-z-10"
+>
+  <p-button
+    icon="pi pi-bars"
+    severity="secondary"
+    (onClick)="toggleSidebar()"
+  />
 
   <div class="tw-self-center tw-font-bold">
     <img src="" alt="" />
     <p>HealthierME</p>
   </div>
 
-  <p-button icon="pi pi-comment" severity="secondary" (onClick)="toggleChatMode()" />
-
+  <p-button
+    icon="pi pi-comment"
+    severity="secondary"
+    (onClick)="toggleChatMode()"
+  />
 </div>
 
 <p-sidebar [(visible)]="sidebar">
   <div
-    class="tw-border-gray-300 tw-bg-white tw-border-solid tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-5">
+    class="tw-border-gray-300 tw-bg-white tw-border-solid tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-5"
+  >
     <app-navbar-language />
     <app-navbar-line></app-navbar-line>
 
     <div class="tw-px-2">
       <app-navbar-profile-link [profile]="GeneralProfile" />
       @for (p of profiles; track p.id) {
-      <app-navbar-profile-link [profile]="p" />
+        <app-navbar-profile-link [profile]="p" />
       }
       <app-navbar-profile-create />
     </div>
