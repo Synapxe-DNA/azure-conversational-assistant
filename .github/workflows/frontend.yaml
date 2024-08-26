@@ -1,14 +1,6 @@
 name: Frontend linting
 
 on:
-  push:
-    branches:
-      - main
-      - staging
-      - frontend
-      - backend
-    paths:
-      - "app/frontend-healthier-me/**"
   pull_request:
     branches:
       - main
