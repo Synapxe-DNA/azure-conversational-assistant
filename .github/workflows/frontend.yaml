@@ -27,4 +27,5 @@ jobs:
         run: |
           cd ./app/frontend-healthier-me
           npm install
+          npm install -g prettier
           npm run lint
