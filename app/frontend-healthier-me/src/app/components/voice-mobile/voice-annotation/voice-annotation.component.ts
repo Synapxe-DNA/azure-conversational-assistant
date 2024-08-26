@@ -12,10 +12,19 @@ import { FormsModule } from "@angular/forms";
 })
 export class VoiceAnnotationComponent {
   displayModal: boolean = false;
-  feedback: string = "";
+  confirmationModal: boolean = false;
+  feedback: String = "";
+  rating: Number = -1;
 
-  submitFeedback(rating: number) {
-    console.log("Rating selected:", rating);
+  showDialog(rating: Number) {
     this.displayModal = true;
+    this.rating = rating;
+  }
+
+  submitFeedback() {
+    // Handle the feedback submission logic here
+    console.log("Feedback submitted:", this.feedback);
+    this.displayModal = false;
+    this.confirmationModal = true; // Show the confirmation modal
   }
 }
