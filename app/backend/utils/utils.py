@@ -6,10 +6,10 @@ import re
 from collections import Counter
 from typing import Any, AsyncGenerator, List
 
+from config import CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
 from models.voice import VoiceChatResponse
-from quart import stream_with_context
-from speech.text_to_speech import TextToSpeech
+from quart import current_app, stream_with_context
 
 
 class Utils:
@@ -37,7 +37,7 @@ class Utils:
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
             text_response = ""
-            tts = await TextToSpeech.create()
+            tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
 
             async for res in Utils.format_as_ndjson(result):
                 print("====================================")
