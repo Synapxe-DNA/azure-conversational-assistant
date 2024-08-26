@@ -4,17 +4,17 @@
     <app-voice-message [message]="message"></app-voice-message>
     <app-voice-annotation></app-voice-annotation>
     <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"></app-voice-microphone>
+    <div class="tw-self-center tw-text-center tw-text-xs tw-text-white">
+      <p>Synapxe Innovation for Good</p>
+      <p>Powered By AI</p>
+      <p>Synapxe 2024</p>
+    </div>
   </div>
   
   <div class="tw-absolute tw-bottom-6 tw-right-6">
     <button (click)="preferenceOverlayPanel.toggle($event)" class="tw-text-white tw-pt-3">
       <lucide-icon name="settings" class="tw-text-white"></lucide-icon>
     </button>
-  </div>
-  <div class="tw-fixed tw-bottom-0 tw-self-center tw-text-center tw-text-xs tw-text-white">
-    <p>Synapxe Innovation for Good</p>
-    <p>Powered By AI</p>
-    <p>Synapxe 2024</p>
   </div>
 </div>
 
