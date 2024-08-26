@@ -17,16 +17,18 @@ import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { WaveformComponent } from "../../waveform/waveform.component";
 
 @Component({
-  selector: 'app-voice-microphone',
+  selector: "app-voice-microphone",
   standalone: true,
   imports: [CommonModule, LucideAngularModule, WaveformComponent],
-  templateUrl: './voice-microphone.component.html',
-  styleUrl: './voice-microphone.component.css'
+  templateUrl: "./voice-microphone.component.html",
+  styleUrl: "./voice-microphone.component.css",
 })
 export class VoiceMicrophoneComponent {
   @Input() state!: MicState;
 
   @ViewChild("btn") btn!: ElementRef<HTMLButtonElement>;
+
+  @Output() audioLevelChange = new EventEmitter<number>();
 
   audioAnalyser: AudioAnalyser | undefined;
 
@@ -56,7 +58,7 @@ export class VoiceMicrophoneComponent {
     this.audioAnalyser = new AudioAnalyser(
       await this.audioService.getMicInput(),
       4,
-      0.001,
+      0.001
     );
   }
 
@@ -70,6 +72,10 @@ export class VoiceMicrophoneComponent {
       this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }
+  }
+
+  handleAudioLevelChange(level: number) {
+    this.audioLevelChange.emit(level);
   }
 
   buttonStateClasses() {
