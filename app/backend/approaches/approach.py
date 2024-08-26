@@ -242,6 +242,7 @@ class Approach(ABC):
             **dimensions_args,
         )
         query_vector = embedding.data[0].embedding
+        # See: https://github.com/Azure/azure-search-vector-samples/blob/main/demo-python/code/e2e-demos/azure-ai-search-e2e-build-demo.ipynb
         return VectorizedQuery(vector=query_vector, k_nearest_neighbors=50, fields="embedding")
 
     async def compute_image_embedding(self, q: str):
