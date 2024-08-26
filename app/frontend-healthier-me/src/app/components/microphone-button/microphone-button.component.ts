@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from "@angular/core";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { MicState } from "../../types/mic-state.type";
@@ -20,7 +10,7 @@ import { AudioAnalyser } from "../../utils/audio-analyser";
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: "./microphone-button.component.html",
-  styleUrls: ["./microphone-button.component.css"],
+  styleUrls: ["./microphone-button.component.css"]
 })
 export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
   @Input() state!: MicState;
@@ -52,20 +42,13 @@ export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
   }
 
   async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(
-      await this.audioService.getMicInput(),
-      4,
-      0.001,
-    );
+    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
   }
 
   mainLoop() {
     if (this.state === MicState.ACTIVE && this.audioAnalyser) {
       const raw_level = this.audioAnalyser.getAudioLevel();
-      const level = (
-        32 -
-        (raw_level * this.btn.nativeElement.clientHeight) / 3
-      ).toFixed(2);
+      const level = (32 - (raw_level * this.btn.nativeElement.clientHeight) / 3).toFixed(2);
       this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }

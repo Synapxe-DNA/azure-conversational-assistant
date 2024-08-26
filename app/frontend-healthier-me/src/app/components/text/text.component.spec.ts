@@ -14,21 +14,12 @@ describe("TextComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        TextComponent,
-        LucideAngularModule.pick(icons),
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-      ],
-      providers: [
-        ChatMessageService,
-        ProfileService,
-        NgxIndexedDBService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [TextComponent, LucideAngularModule.pick(icons), NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+      providers: [ChatMessageService, ProfileService, NgxIndexedDBService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextComponent);

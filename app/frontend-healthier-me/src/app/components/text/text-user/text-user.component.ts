@@ -6,7 +6,7 @@ import { Message } from "../../../types/message.type";
   standalone: true,
   imports: [],
   templateUrl: "./text-user.component.html",
-  styleUrl: "./text-user.component.css",
+  styleUrl: "./text-user.component.css"
 })
 export class TextUserComponent {
   @Input() message!: Message;

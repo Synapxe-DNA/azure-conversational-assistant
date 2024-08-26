@@ -10,16 +10,12 @@ describe("ProfileService", () => {
 
   beforeEach(() => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     TestBed.configureTestingModule({
       imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
-      providers: [
-        ProfileService,
-        NgxIndexedDBService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      providers: [ProfileService, NgxIndexedDBService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     });
     service = TestBed.inject(ProfileService);
   });

@@ -8,21 +8,21 @@ import { AudioPlayerService } from "../../../services/audio-player/audio-player.
   standalone: true,
   imports: [Button],
   templateUrl: "./text-tts.component.html",
-  styleUrl: "./text-tts.component.css",
+  styleUrl: "./text-tts.component.css"
 })
 export class TextTtsComponent {
   @Input() message!: string;
 
   constructor(
     private endpointService: EndpointService,
-    private audioPlayerService: AudioPlayerService,
+    private audioPlayerService: AudioPlayerService
   ) {}
 
   async textToSpeech() {
     try {
       const responseBS = await this.endpointService.textToSpeech(this.message);
       responseBS.subscribe({
-        next: (response) => {
+        next: response => {
           if (response) {
             console.log("text-tts.component: textToSpeech()");
             const audioBlob = this.base64ToBlob(response.audio);
@@ -30,17 +30,14 @@ export class TextTtsComponent {
             this.audioPlayerService.play(audioBlob);
           }
         },
-        error: (err) => console.error("TTS Error:", err),
+        error: err => console.error("TTS Error:", err)
       });
     } catch (err) {
       console.error("TTS Error:", err);
     }
   }
 
-  private base64ToBlob(
-    base64String: string,
-    contentType: string = "audio/wav",
-  ): Blob {
+  private base64ToBlob(base64String: string, contentType: string = "audio/wav"): Blob {
     try {
       const base64Data = base64String.replace(/^data:.+;base64,/, "");
       const binaryString = atob(base64Data);

@@ -8,14 +8,9 @@ import { TextShowSourceComponent } from "../text-show-source/text-show-source.co
 @Component({
   selector: "app-text-system",
   standalone: true,
-  imports: [
-    TextSourceComponent,
-    TextTtsComponent,
-    TextClipboardComponent,
-    TextShowSourceComponent,
-  ],
+  imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent],
   templateUrl: "./text-system.component.html",
-  styleUrl: "./text-system.component.css",
+  styleUrl: "./text-system.component.css"
 })
 export class TextSystemComponent {
   @Input() message!: Message;

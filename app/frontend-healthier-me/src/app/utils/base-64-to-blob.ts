@@ -1,10 +1,7 @@
 /**
  * Convert BASE64 to BLOB
  */
-export function convertBase64ToBlob(
-  base64: string,
-  contentType: string = "audio/*",
-): Blob {
+export function convertBase64ToBlob(base64: string, contentType: string = "audio/*"): Blob {
   try {
     const byteCharacters = atob(base64); // Decode base64 string
     const byteArrays = [];

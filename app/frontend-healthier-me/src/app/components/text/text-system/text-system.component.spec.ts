@@ -9,7 +9,7 @@ describe("TextSystemComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextSystemComponent],
+      imports: [TextSystemComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextSystemComponent);
@@ -25,9 +25,9 @@ describe("TextSystemComponent", () => {
           url: "some_url",
           title: "title",
           description: "description",
-          cover_image_url: "cover_image_url",
-        },
-      ],
+          cover_image_url: "cover_image_url"
+        }
+      ]
     };
     fixture.detectChanges();
   });

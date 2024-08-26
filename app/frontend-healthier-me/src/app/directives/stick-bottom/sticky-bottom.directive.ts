@@ -1,19 +1,10 @@
-import {
-  AfterContentInit,
-  AfterViewChecked,
-  AfterViewInit,
-  Directive,
-  ElementRef,
-  OnInit,
-} from "@angular/core";
+import { AfterContentInit, AfterViewChecked, AfterViewInit, Directive, ElementRef, OnInit } from "@angular/core";
 
 @Directive({
   selector: "[appStickyBottom]",
-  standalone: true,
+  standalone: true
 })
-export class StickyBottomDirective
-  implements AfterContentInit, AfterViewChecked
-{
+export class StickyBottomDirective implements AfterContentInit, AfterViewChecked {
   private supposedToBeStuck: boolean = false;
   private lastScrollPosition: number = 0;
   private userHasScrolled: boolean = false;
@@ -23,10 +14,7 @@ export class StickyBottomDirective
       this.userHasScrolled = true;
       this.supposedToBeStuck =
         this.lastScrollPosition < this.el.nativeElement.scrollTop &&
-        this.el.nativeElement.scrollHeight -
-          this.el.nativeElement.clientHeight -
-          this.el.nativeElement.scrollTop <=
-          2;
+        this.el.nativeElement.scrollHeight - this.el.nativeElement.clientHeight - this.el.nativeElement.scrollTop <= 2;
       this.lastScrollPosition = this.el.nativeElement.scrollTop;
     });
   }

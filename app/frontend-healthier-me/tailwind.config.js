@@ -2,8 +2,8 @@
 module.exports = {
   content: ["./src/**/*.{html,ts}"],
   theme: {
-    extend: {},
+    extend: {}
   },
   plugins: [],
-  prefix: "tw-",
+  prefix: "tw-"
 };

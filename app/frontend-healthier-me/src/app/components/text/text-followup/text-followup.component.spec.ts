@@ -8,7 +8,7 @@ describe("TextFollowupComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextFollowupComponent],
+      imports: [TextFollowupComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextFollowupComponent);

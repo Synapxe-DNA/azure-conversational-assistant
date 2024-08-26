@@ -33,15 +33,13 @@ import { TextComponent } from "../text/text.component";
     OverlayPanelModule,
     InputSwitchModule,
     FormsModule,
-    TextComponent,
+    TextComponent
   ],
   templateUrl: "./voice.component.html",
-  styleUrl: "./voice.component.css",
+  styleUrl: "./voice.component.css"
 })
 export class VoiceComponent implements OnInit, AfterViewInit {
-  private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    true,
-  );
+  private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   private recorder: AudioRecorder | undefined;
   private profile: Profile | undefined;
 
@@ -57,31 +55,23 @@ export class VoiceComponent implements OnInit, AfterViewInit {
     private audio: AudioService,
     private route: ActivatedRoute,
     private profileService: ProfileService,
-    private convoBroker: ConvoBrokerService,
+    private convoBroker: ConvoBrokerService
   ) {}
 
   ngOnInit() {
-    this.profileService.setProfileInUrl(
-      this.route.snapshot.paramMap.get("profileId")!,
-    );
+    this.profileService.setProfileInUrl(this.route.snapshot.paramMap.get("profileId")!);
 
-    this.preference.$voiceDetectInterrupt.subscribe((v) => {
+    this.preference.$voiceDetectInterrupt.subscribe(v => {
       this.voiceInterrupt = v;
     });
-    this.preference.$voiceDetectStart.subscribe(
-      (v) => (this.voiceDetectStart = v),
-    );
-    this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
-    this.preference.$showLiveTranscription.subscribe(
-      (v) => (this.showLiveTranscription = v),
-    );
-    this.convoBroker.$micState.subscribe((v) => (this.micState = v));
+    this.preference.$voiceDetectStart.subscribe(v => (this.voiceDetectStart = v));
+    this.preference.$voiceDetectEnd.subscribe(v => (this.voiceDetectEnd = v));
+    this.preference.$showLiveTranscription.subscribe(v => (this.showLiveTranscription = v));
+    this.convoBroker.$micState.subscribe(v => (this.micState = v));
   }
 
   ngAfterViewInit() {
-    this.profileService
-      .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
-      .subscribe((d) => (this.profile = d || GeneralProfile));
+    this.profileService.getProfile(this.route.snapshot.paramMap.get("profileId") as string).subscribe(d => (this.profile = d || GeneralProfile));
     this.initVoiceChat().catch(console.error);
   }
 
