@@ -42,7 +42,7 @@ class ChatApproach(Approach, ABC):
         pass
 
     @abstractmethod
-    async def run_until_final_call(self, messages, profile, overrides, auth_claims, should_stream) -> tuple:
+    async def run_until_final_call(self, messages, profile, language, overrides, auth_claims, should_stream) -> tuple:
         pass
 
     def get_system_prompt(self, override_prompt: Optional[str], follow_up_questions_prompt: str) -> str:
@@ -82,12 +82,13 @@ class ChatApproach(Approach, ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> dict[str, Any]:
         extra_info, chat_coroutine, citation_info = await self.run_until_final_call(
-            messages, profile, auth_claims, should_stream=False
+            messages, profile, language, auth_claims, should_stream=False
         )
         chat_completion_response: ChatCompletion = await chat_coroutine
         chat_resp = chat_completion_response.model_dump()  # Convert to dict to make it JSON serializable
@@ -103,11 +104,14 @@ class ChatApproach(Approach, ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> AsyncGenerator[dict, None]:
-        extra_info, chat_coroutine = await self.run_until_final_call(messages, profile, auth_claims, should_stream=True)
+        extra_info, chat_coroutine = await self.run_until_final_call(
+            messages, profile, language, auth_claims, should_stream=True
+        )
         yield {"delta": {"role": "assistant"}, "context": extra_info, "session_state": session_state}
 
         followup_questions_started = False
@@ -139,20 +143,22 @@ class ChatApproach(Approach, ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
         # overrides = context.get("overrides", {})
         auth_claims = context.get("auth_claims", {})
-        return await self.run_without_streaming(messages, profile, auth_claims, session_state)
+        return await self.run_without_streaming(messages, profile, language, auth_claims, session_state)
 
     async def run_stream(
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:
         # overrides = context.get("overrides", {})
         auth_claims = context.get("auth_claims", {})
-        return self.run_with_streaming(messages, profile, auth_claims, session_state)
+        return self.run_with_streaming(messages, profile, language, auth_claims, session_state)

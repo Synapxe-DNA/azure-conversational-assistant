@@ -4,10 +4,11 @@ export enum MessageRole {
 }
 
 export interface MessageSource {
+  id: string[];
   title: string;
-  description: string;
   cover_image_url: string;
-  url: string;
+  full_url: string;
+  content_category: string;
 }
 
 export interface Message {
@@ -16,5 +17,5 @@ export interface Message {
   role: MessageRole;
   message: string;
   timestamp: number;
-  sources?: MessageSource[];
+  sources: MessageSource[];
 }

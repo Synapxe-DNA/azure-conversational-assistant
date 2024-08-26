@@ -1,14 +1,10 @@
-import json
-from io import BytesIO
 from typing import cast
 
 from approaches.approach import Approach
-from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from config import CONFIG_CHAT_APPROACH
 from error import error_response
-from models.profile import Profile
+from models.request_type import RequestType
 from models.voice import VoiceChatRequest
-from openai import AsyncOpenAI
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
 
@@ -18,52 +14,21 @@ voice = Blueprint("voice", __name__, url_prefix="/voice")
 @voice.route("/", methods=["POST"])
 async def voice_endpoint():
 
-    # Receive data from the client
-    data = await request.form
-    audio = await request.files
-
-    # Extract data from the JSON message
-    context = data.get("context", {})
-
-    voiceChatRequest = VoiceChatRequest(
-        chat_history=json.loads(data.get("chat_history", "[]")),
-        profile=Profile(**json.loads(data.get("profile", "{}"))),
-        query=audio["query"].read(),
-    )
-
-    # Convert audio to text
-    config: ChatReadRetrieveReadApproach = current_app.config[CONFIG_CHAT_APPROACH]
-    client: AsyncOpenAI = config.openai_client_2
-    buffer = BytesIO(voiceChatRequest.query)
-    buffer.name = "file.webm"  # Required to indicate file type for whisper
-
-    query_text = await client.audio.transcriptions.create(
-        file=buffer, model=config.whisiper_deployment, response_format="text"
-    )
-
-    # Detect language if default
-    # if profile.language == "default":
-    #     languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
-    #     detector = LanguageDetectorBuilder.from_languages(*languages).build()
-    #     language = detector.detect_language_of(query_text)
-    #     language = str(language).split(".")[1].lower()  # get language name from enum
-    #     profile.language = language
-
-    # Form message
-    messages = [chat_history.model_dump() for chat_history in voiceChatRequest.chat_history] + [
-        {"content": query_text, "role": "user"}
-    ]
-
-    # Send transcribed text and data to LLM
     try:
+        # Receive data from the client
+        data = await request.form
+        # Extract data from the JSON message
+        voiceChatRequest = VoiceChatRequest(**Utils.form_request(data).model_dump())
+
+        # Send transcribed text and data to LLM
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
         result = await approach.run_stream(
-            messages=messages,
-            context=context,
+            messages=Utils.form_message(voiceChatRequest.chat_history, voiceChatRequest.query),
             profile=voiceChatRequest.profile,
+            language=voiceChatRequest.language,
         )
 
-        response = await Utils.construct_streaming_voice_response(result, query_text)
+        response = await Utils.construct_streaming_response(result, RequestType.VOICE)
         return response, 200
     except Exception as error:
         return error_response(error, "/voice")

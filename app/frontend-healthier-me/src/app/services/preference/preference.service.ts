@@ -2,6 +2,7 @@ import { Injectable, OnInit } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ChatMode } from "../../types/chat-mode.type";
 import { PreferenceKey } from "../../types/configs/preference-keys.type";
+import { Language } from "../../types/language.type";
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +15,13 @@ export class PreferenceService {
   // BehaviorSubject to manage chat mode state
   $chatMode = new BehaviorSubject<ChatMode>(
     this.loadFromLocalStorage<ChatMode>(PreferenceKey.ChatMode, ChatMode.Voice),
+  );
+
+  $language = new BehaviorSubject<Language>(
+    this.loadFromLocalStorage<Language>(
+      PreferenceKey.Language,
+      Language.Spoken,
+    ),
   );
 
   // BehaviorSubjects to manage voice detection states
@@ -49,6 +57,9 @@ export class PreferenceService {
   private initialisePreferences() {
     this.$chatMode.subscribe((v) => {
       this.setToLocalStorage<ChatMode>(PreferenceKey.ChatMode, v);
+    });
+    this.$language.subscribe((v) => {
+      this.setToLocalStorage<Language>(PreferenceKey.Language, v);
     });
     this.$voiceDetectInterrupt.subscribe((v) => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, v);
@@ -87,6 +98,14 @@ export class PreferenceService {
           );
           break;
         }
+
+        case PreferenceKey.Language: {
+          this.$language.next(
+            this.loadFromLocalStorage(PreferenceKey.Language, Language.Spoken),
+          );
+          break;
+        }
+
         case PreferenceKey.VoiceDetectInterrupt: {
           this.$voiceDetectInterrupt.next(
             this.loadFromLocalStorage(
@@ -158,6 +177,10 @@ export class PreferenceService {
    */
   setChatMode(mode: ChatMode): void {
     this.$chatMode.next(mode);
+  }
+
+  setLanguage(language: Language): void {
+    this.$language.next(language);
   }
 
   setShowLiveTranscription(value: boolean): void {
