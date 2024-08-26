@@ -18,7 +18,6 @@ export class VoiceSourcesComponent implements OnInit {
   imgUrl: string = "assets/healthhub-logo.png"; // Updated path
 
   ngOnInit(): void {
-    console.log("voice-sources input", this.sources);
 
     this.responsiveOptions = [
       {
@@ -32,7 +31,6 @@ export class VoiceSourcesComponent implements OnInit {
   // Method to get the image URL
   getImageUrl(coverImageUrl: string | null): string {
     // Check if coverImageUrl is 'None' or falsy and return the fallback image URL
-    console.log("coverImageUrl: ", coverImageUrl);
     return coverImageUrl && coverImageUrl !== "None"
       ? coverImageUrl
       : this.imgUrl;
@@ -41,7 +39,6 @@ export class VoiceSourcesComponent implements OnInit {
   // Method to log the image URL
   logImageUrl(url: string | null): void {
     if (url && url !== "None") {
-      console.log("Image URL:", url);
       this.hoveredImageUrl = url; // Set the hovered image URL
     }
   }

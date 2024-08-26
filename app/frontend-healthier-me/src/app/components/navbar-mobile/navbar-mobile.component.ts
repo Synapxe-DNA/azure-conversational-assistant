@@ -24,10 +24,10 @@ import { LucideAngularModule } from "lucide-angular";
     NavbarProfileCreateComponent,
     NavbarLanguageComponent,
     NavbarComponent,
-    Button,
     CommonModule,
     SidebarModule,
-    LucideAngularModule
+    LucideAngularModule,
+    Button
   ],
   templateUrl: "./navbar-mobile.component.html",
   styleUrl: "./navbar-mobile.component.css",
@@ -76,4 +76,5 @@ export class NavbarMobileComponent implements OnInit {
   }
 
   protected readonly GeneralProfile = GeneralProfile;
+  protected readonly ChatMode = ChatMode;
 }
