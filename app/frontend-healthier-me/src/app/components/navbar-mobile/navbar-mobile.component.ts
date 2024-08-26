@@ -12,6 +12,7 @@ import { PreferenceService } from "../../services/preference/preference.service"
 import { ChatMode } from "../../types/chat-mode.type";
 import { SidebarModule } from "primeng/sidebar";
 import { NavbarComponent } from "../navbar/navbar.component";
+import { LucideAngularModule } from "lucide-angular";
 
 @Component({
   selector: "app-navbar-mobile",
@@ -26,6 +27,7 @@ import { NavbarComponent } from "../navbar/navbar.component";
     Button,
     CommonModule,
     SidebarModule,
+    LucideAngularModule
   ],
   templateUrl: "./navbar-mobile.component.html",
   styleUrl: "./navbar-mobile.component.css",

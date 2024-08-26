@@ -235,8 +235,6 @@ export class EndpointService {
       language: language.toLowerCase()
     };
 
-    console.log("sendvoice", language)
-
     this.httpClient
       .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
@@ -255,8 +253,6 @@ export class EndpointService {
                   lastResponseLength,
                 ),
               ) as ApiVoiceResponse;
-
-              console.log("responseData", responseData);
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
@@ -334,8 +330,6 @@ export class EndpointService {
       },
       language: language.toLowerCase(),
     };
-
-    console.log("sendChat", language)
 
     this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {

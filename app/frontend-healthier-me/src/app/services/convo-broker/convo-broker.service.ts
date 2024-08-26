@@ -242,8 +242,6 @@ export class ConvoBrokerService {
 
     let audio_base64: string[] = [];
 
-    console.log("send Voice convo-broker", this.$language.value)
-
     const res = await this.endpointService.sendVoice2(
       message,
       this.activeProfile.value || GeneralProfile,
@@ -317,8 +315,6 @@ export class ConvoBrokerService {
     ).slice(-8);
 
     await this.chatMessageService.insert(newMessage);
-
-    console.log("sendChat convo-broker", this.$language.value)
 
     const res = await this.endpointService.sendChat(
       newMessage,

@@ -5,8 +5,6 @@ import { DropdownModule } from 'primeng/dropdown';
 import { PreferenceService } from '../../../services/preference/preference.service';
 import { Language } from '../../../types/language.type';
 
-
-
 @Component({
   selector: "app-navbar-language",
   standalone: true,
@@ -23,7 +21,6 @@ export class NavbarLanguageComponent implements OnInit {
     private preference: PreferenceService,
   ) {
     this.chosenLanguage = preference.$language.value.valueOf()
-    console.log("chosen language init " + this.chosenLanguage)
   }
 
   ngOnInit(): void {
@@ -31,25 +28,24 @@ export class NavbarLanguageComponent implements OnInit {
   }
 
   setLanguage(chosenLanguage: string) {
-    console.log("setLanguage", chosenLanguage)
     switch (chosenLanguage) {
-      case "ENGLISH":
+      case "English":
         this.preference.setLanguage(Language.English)
         break;
       
-        case "SPOKEN":
+        case "Spoken":
           this.preference.setLanguage(Language.Spoken)
           break;
 
-          case "CHINESE":
+          case "Chinese":
         this.preference.setLanguage(Language.Chinese)
         break;
 
-        case "MALAY":
+        case "Malay":
         this.preference.setLanguage(Language.Malay)
         break;
 
-        case "TAMIL":
+        case "Tamil":
         this.preference.setLanguage(Language.Tamil)
         break;
       default:
