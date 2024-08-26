@@ -44,7 +44,7 @@ The `system_message_chat_conversation` variable is currently tailored to the sam
 
 ##### Chat with vision
 
-If you followed the instructions in [docs/gpt4v.md](gpt4v.md) to enable a GPT Vision model and then select "Use GPT vision model", then the chat tab will use the `chatreadretrievereadvision.py` approach instead. This approach is similar to the `chatreadretrieveread.py` approach, with a few differences:
+If you followed the instructions in [docs/gpt4vision.md](gpt4vision.md) to enable a GPT Vision model and then select "Use GPT vision model", then the chat tab will use the `chatreadretrievereadvision.py` approach instead. This approach is similar to the `chatreadretrieveread.py` approach, with a few differences:
 
 1. Step 1 is the same as before, except it uses the GPT-4 Vision model instead of the default GPT-3.5 model.
 2. For this step, it also calculates a vector embedding for the user question using [the Computer Vision vectorize text API](https://learn.microsoft.com/azure/ai-services/computer-vision/how-to/image-retrieval#call-the-vectorize-text-api), and passes that to the Azure AI Search to compare against the `imageEmbeddings` fields in the indexed documents. For each matching document, it downloads the image blob and converts it to a base 64 encoding.
@@ -61,7 +61,7 @@ The `system_chat_template` variable is currently tailored to the sample data sin
 
 #### Read with vision
 
-If you followed the instructions in [docs/gpt4v.md](gpt4v.md) to enable the GPT-4 Vision model and then select "Use GPT vision model", then the ask tab will use the `retrievethenreadvision.py` approach instead. This approach is similar to the `retrievethenread.py` approach, with a few differences:
+If you followed the instructions in [docs/gpt4vision.md](gpt4vision.md) to enable the GPT-4 Vision model and then select "Use GPT vision model", then the ask tab will use the `retrievethenreadvision.py` approach instead. This approach is similar to the `retrievethenread.py` approach, with a few differences:
 
 1. For this step, it also calculates a vector embedding for the user question using [the Computer Vision vectorize text API](https://learn.microsoft.com/azure/ai-services/computer-vision/how-to/image-retrieval#call-the-vectorize-text-api), and passes that to the Azure AI Search to compare against the `imageEmbeddings` fields in the indexed documents. For each matching document, it downloads the image blob and converts it to a base 64 encoding.
 2. When it combines the search results and user question, it includes the base 64 encoded images, and sends along both the text and images to the GPT4 Vision model (similar to this [documentation example](https://platform.openai.com/docs/guides/vision/quick-start)). The model generates a response that includes citations to the images, and the UI renders the base64 encoded images when a citation is clicked.
@@ -77,13 +77,17 @@ However, if you find a setting that you do want to make permanent, there are two
 1. Change the defaults in the frontend. You'll find the defaults in `Chat.tsx` and `Ask.tsx`. For example, this line of code sets the default retrieval mode to Hybrid:
 
    ```typescript
-   const [retrievalMode, setRetrievalMode] = useState<RetrievalMode>(RetrievalMode.Hybrid);
+   const [retrievalMode, setRetrievalMode] = useState<RetrievalMode>(
+     RetrievalMode.Hybrid
+   );
    ```
 
    You can change the default to Text by changing the code to:
 
    ```typescript
-   const [retrievalMode, setRetrievalMode] = useState<RetrievalMode>(RetrievalMode.Text);
+   const [retrievalMode, setRetrievalMode] = useState<RetrievalMode>(
+     RetrievalMode.Text
+   );
    ```
 
 2. Change the overrides in the backend. Each of the approaches has a `run` method that takes a `context` parameter, and the first line of code extracts the overrides from that `context`. That's where you can override any of the settings. For example, to change the retrieval mode to text:
