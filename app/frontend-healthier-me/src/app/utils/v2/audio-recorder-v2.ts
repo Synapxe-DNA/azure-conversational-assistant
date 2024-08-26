@@ -47,11 +47,11 @@ export class v2AudioRecorder {
       try {
         const data = JSON.parse(event.data);
         if (data.text) {
-          
-          this.finalText += data.text
-          // upsert user message
-          console.log("onMessage final text", this.finalText)
-          this.upsert(this.finalText);
+          if (data.is_final) {
+            this.finalText = this.finalText + data.text + " " 
+            // upsert user message
+            this.upsert(this.finalText);
+          }
         } else if (data.error) {
           console.error("Error:", data.error);
         }
@@ -122,19 +122,13 @@ export class v2AudioRecorder {
 
   resetFields() {
     this.userMessageId = createId();
-    console.log("reset fields userid",this.userMessageId)
     this.finalText = "";
     this.requestTime = new Date().getTime();
   }
 
-  getUserId (): string {
-    return this.userMessageId
-  }
-
   async upsert(finalText: string) {
-    console.log("upsert userid",this.getUserId())
     await this.chatMessageService.upsert({
-      id: this.getUserId(),
+      id: this.userMessageId,
       profile_id: this.activeProfile.getValue()?.id || GeneralProfile.id,
       role: MessageRole.User,
       message: finalText,
