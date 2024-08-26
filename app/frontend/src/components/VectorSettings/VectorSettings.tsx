@@ -46,9 +46,24 @@ export const VectorSettings = ({ updateRetrievalMode, updateVectorFields, showIm
                 label="Retrieval mode"
                 selectedKey={defaultRetrievalMode.toString()}
                 options={[
-                    { key: "hybrid", text: "Vectors + Text (Hybrid)", selected: retrievalMode == RetrievalMode.Hybrid, data: RetrievalMode.Hybrid },
-                    { key: "vectors", text: "Vectors", selected: retrievalMode == RetrievalMode.Vectors, data: RetrievalMode.Vectors },
-                    { key: "text", text: "Text", selected: retrievalMode == RetrievalMode.Text, data: RetrievalMode.Text }
+                    {
+                        key: "hybrid",
+                        text: "Vectors + Text (Hybrid)",
+                        selected: retrievalMode == RetrievalMode.Hybrid,
+                        data: RetrievalMode.Hybrid
+                    },
+                    {
+                        key: "vectors",
+                        text: "Vectors",
+                        selected: retrievalMode == RetrievalMode.Vectors,
+                        data: RetrievalMode.Vectors
+                    },
+                    {
+                        key: "text",
+                        text: "Text",
+                        selected: retrievalMode == RetrievalMode.Text,
+                        data: RetrievalMode.Text
+                    }
                 ]}
                 required
                 onChange={onRetrievalModeChange}
@@ -63,9 +78,21 @@ export const VectorSettings = ({ updateRetrievalMode, updateVectorFields, showIm
                     id={vectorFieldsFieldId}
                     label="Vector fields (Multi-query vector search)"
                     options={[
-                        { key: VectorFieldOptions.Embedding, text: "Text Embeddings", selected: vectorFieldOption === VectorFieldOptions.Embedding },
-                        { key: VectorFieldOptions.ImageEmbedding, text: "Image Embeddings", selected: vectorFieldOption === VectorFieldOptions.ImageEmbedding },
-                        { key: VectorFieldOptions.Both, text: "Text and Image embeddings", selected: vectorFieldOption === VectorFieldOptions.Both }
+                        {
+                            key: VectorFieldOptions.Embedding,
+                            text: "Text Embeddings",
+                            selected: vectorFieldOption === VectorFieldOptions.Embedding
+                        },
+                        {
+                            key: VectorFieldOptions.ImageEmbedding,
+                            text: "Image Embeddings",
+                            selected: vectorFieldOption === VectorFieldOptions.ImageEmbedding
+                        },
+                        {
+                            key: VectorFieldOptions.Both,
+                            text: "Text and Image embeddings",
+                            selected: vectorFieldOption === VectorFieldOptions.Both
+                        }
                     ]}
                     onChange={onVectorFieldsChange}
                     aria-labelledby={vectorFieldsId}

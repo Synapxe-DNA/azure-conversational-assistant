@@ -1,20 +1,20 @@
 export enum MessageRole {
-  User = "USER",
-  Assistant = "ASSISTANT",
+    User = "USER",
+    Assistant = "ASSISTANT"
 }
 
 export interface MessageSource {
-  title: string;
-  description: string;
-  cover_image_url: string;
-  url: string;
+    title: string;
+    description: string;
+    cover_image_url: string;
+    url: string;
 }
 
 export interface Message {
-  id: string;
-  profile_id: string;
-  role: MessageRole;
-  message: string;
-  timestamp: number;
-  sources?: MessageSource[];
+    id: string;
+    profile_id: string;
+    role: MessageRole;
+    message: string;
+    timestamp: number;
+    sources?: MessageSource[];
 }

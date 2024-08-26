@@ -19,82 +19,80 @@ import { FollowUp } from "../../types/follow-up.type";
 import { ChatFollowupService } from "../../services/chat-followup/chat-followup.service";
 
 @Component({
-  selector: "app-text",
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LucideAngularModule,
-    TextInputComponent,
-    TextSystemComponent,
-    TextUserComponent,
-    TextClipboardComponent,
-    TextFollowupComponent,
-    StickyBottomDirective,
-  ],
-  templateUrl: "./text.component.html",
-  styleUrls: ["./text.component.css"],
+    selector: "app-text",
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        LucideAngularModule,
+        TextInputComponent,
+        TextSystemComponent,
+        TextUserComponent,
+        TextClipboardComponent,
+        TextFollowupComponent,
+        StickyBottomDirective
+    ],
+    templateUrl: "./text.component.html",
+    styleUrls: ["./text.component.css"]
 })
 export class TextComponent implements OnInit {
-  @Input() showTextInput?: boolean = true;
+    @Input() showTextInput?: boolean = true;
 
-  user: string = MessageRole.User;
-  system: string = MessageRole.Assistant;
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+    user: string = MessageRole.User;
+    system: string = MessageRole.Assistant;
+    profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
-  messages: Message[] = [];
-  followUps: FollowUp[] = [];
+    messages: Message[] = [];
+    followUps: FollowUp[] = [];
 
-  constructor(
-    private chatMessageService: ChatMessageService,
-    private followUpService: ChatFollowupService,
-    private profileService: ProfileService,
-    private route: ActivatedRoute,
-  ) {}
+    constructor(
+        private chatMessageService: ChatMessageService,
+        private followUpService: ChatFollowupService,
+        private profileService: ProfileService,
+        private route: ActivatedRoute
+    ) {}
 
-  ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        takeWhile((p) => {
-          return p.get("profileId") !== undefined;
-        }, true),
-      )
-      .subscribe((p) => {
-        this.profile = this.profileService.getProfile(p.get("profileId")!);
-      });
+    ngOnInit(): void {
+        this.route.paramMap
+            .pipe(
+                takeWhile(p => {
+                    return p.get("profileId") !== undefined;
+                }, true)
+            )
+            .subscribe(p => {
+                this.profile = this.profileService.getProfile(p.get("profileId")!);
+            });
 
-    this.profile.subscribe((p) => {
-      if (!p) {
-        return;
-      }
-      this.chatMessageService.load(p.id).then((m) => {
-        m.subscribe((messages) => {
-          this.messages = messages;
+        this.profile.subscribe(p => {
+            if (!p) {
+                return;
+            }
+            this.chatMessageService.load(p.id).then(m => {
+                m.subscribe(messages => {
+                    this.messages = messages;
+                });
+            });
         });
-      });
-    });
 
-    this.route.paramMap
-      .pipe(
-        takeWhile((p) => {
-          return p.get("profileId") !== undefined;
-        }, true),
-      )
-      .subscribe((p) => {
-        this.profile = this.profileService.getProfile(p.get("profileId")!);
-      });
+        this.route.paramMap
+            .pipe(
+                takeWhile(p => {
+                    return p.get("profileId") !== undefined;
+                }, true)
+            )
+            .subscribe(p => {
+                this.profile = this.profileService.getProfile(p.get("profileId")!);
+            });
 
-    this.profile.subscribe((p) => {
-      if (!p) {
-        return;
-      }
-      this.followUpService.load(p.id).then((m) => {
-        m.subscribe((followUps) => {
-          this.followUps = followUps;
+        this.profile.subscribe(p => {
+            if (!p) {
+                return;
+            }
+            this.followUpService.load(p.id).then(m => {
+                m.subscribe(followUps => {
+                    this.followUps = followUps;
+                });
+            });
         });
-      });
-    });
-  }
+    }
 }

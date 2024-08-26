@@ -8,22 +8,17 @@ import { AudioPlayerService } from "../audio-player/audio-player.service";
 import { EndpointService } from "../endpoint/endpoint.service";
 
 describe("ConvoBrokerService", () => {
-  let service: ConvoBrokerService;
+    let service: ConvoBrokerService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
-      providers: [
-        ChatMessageService,
-        AudioPlayerService,
-        EndpointService,
-        NgxIndexedDBService,
-      ],
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+            providers: [ChatMessageService, AudioPlayerService, EndpointService, NgxIndexedDBService]
+        });
+        service = TestBed.inject(ConvoBrokerService);
     });
-    service = TestBed.inject(ConvoBrokerService);
-  });
 
-  it("should be created", () => {
-    expect(service).toBeTruthy();
-  });
+    it("should be created", () => {
+        expect(service).toBeTruthy();
+    });
 });

@@ -18,7 +18,9 @@ export const UploadFile: React.FC<Props> = ({ className, disabled }: Props) => {
     const [isCalloutVisible, setIsCalloutVisible] = useState<boolean>(false);
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [deletionStatus, setDeletionStatus] = useState<{ [filename: string]: "pending" | "error" | "success" }>({});
+    const [deletionStatus, setDeletionStatus] = useState<{
+        [filename: string]: "pending" | "error" | "success";
+    }>({});
     const [uploadedFile, setUploadedFile] = useState<SimpleAPIResponse>();
     const [uploadedFileError, setUploadedFileError] = useState<string>();
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);

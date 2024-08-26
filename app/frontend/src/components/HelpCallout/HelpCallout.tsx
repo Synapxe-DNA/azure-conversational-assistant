@@ -6,7 +6,9 @@ const stackTokens: IStackTokens = {
     maxWidth: 300
 };
 
-const labelCalloutStackStyles: Partial<IStackStyles> = { root: { padding: 20 } };
+const labelCalloutStackStyles: Partial<IStackStyles> = {
+    root: { padding: 20 }
+};
 const iconButtonStyles: Partial<IButtonStyles> = { root: { marginBottom: -3 } };
 const iconProps = { iconName: "Info" };
 

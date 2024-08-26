@@ -1,4 +1,4 @@
 export enum VoiceActivity {
-  Start = "START",
-  End = "END",
+    Start = "START",
+    End = "END"
 }

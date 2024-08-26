@@ -104,7 +104,10 @@ const Chat = () => {
                     answer += newContent;
                     const latestResponse: ChatAppResponse = {
                         ...askResponse,
-                        message: { content: answer, role: askResponse.message.role }
+                        message: {
+                            content: answer,
+                            role: askResponse.message.role
+                        }
                     };
                     setStreamedAnswers([...answers, [question, latestResponse]]);
                     resolve(null);
@@ -122,7 +125,10 @@ const Chat = () => {
                     await updateState(event["delta"]["content"]);
                 } else if (event["context"]) {
                     // Update context with new keys from latest event
-                    askResponse.context = { ...askResponse.context, ...event["context"] };
+                    askResponse.context = {
+                        ...askResponse.context,
+                        ...event["context"]
+                    };
                 } else if (event["error"]) {
                     throw Error(event["error"]);
                 }
@@ -214,7 +220,13 @@ const Chat = () => {
         setIsStreaming(false);
     };
 
-    useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
+    useEffect(
+        () =>
+            chatMessageStreamEnd.current?.scrollIntoView({
+                behavior: "smooth"
+            }),
+        [isLoading]
+    );
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "auto" }), [streamedAnswers]);
     useEffect(() => {
         getConfig();

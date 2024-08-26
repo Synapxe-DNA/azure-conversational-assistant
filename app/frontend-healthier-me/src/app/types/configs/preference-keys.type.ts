@@ -1,7 +1,7 @@
 export enum PreferenceKey {
-  ChatMode = "chatMode",
-  VoiceDetectInterrupt = "voiceDetectInterrupt",
-  VoiceDetectStart = "voiceDetectStart",
-  VoiceDetectEnd = "voiceDetectEnd",
-  VoiceLiveTranscription = "voiceLiveTranscription",
+    ChatMode = "chatMode",
+    VoiceDetectInterrupt = "voiceDetectInterrupt",
+    VoiceDetectStart = "voiceDetectStart",
+    VoiceDetectEnd = "voiceDetectEnd",
+    VoiceLiveTranscription = "voiceLiveTranscription"
 }

@@ -3,14 +3,14 @@ import { TestBed } from "@angular/core/testing";
 import { EndpointService } from "./endpoint.service";
 
 describe("EndpointService", () => {
-  let service: EndpointService;
+    let service: EndpointService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(EndpointService);
-  });
+    beforeEach(() => {
+        TestBed.configureTestingModule({});
+        service = TestBed.inject(EndpointService);
+    });
 
-  it("should be created", () => {
-    expect(service).toBeTruthy();
-  });
+    it("should be created", () => {
+        expect(service).toBeTruthy();
+    });
 });

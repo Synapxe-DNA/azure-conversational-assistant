@@ -9,34 +9,26 @@ import { GeneralProfile } from "../../../types/profile.type";
 import { ActivatedRoute } from "@angular/router";
 
 describe("NavbarProfileLinksComponent", () => {
-  let component: NavbarProfileLinkComponent;
-  let fixture: ComponentFixture<NavbarProfileLinkComponent>;
+    let component: NavbarProfileLinkComponent;
+    let fixture: ComponentFixture<NavbarProfileLinkComponent>;
 
-  beforeEach(async () => {
-    const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
-    };
+    beforeEach(async () => {
+        const activatedRouteMock = {
+            snapshot: { paramMap: { get: () => "1234" } }
+        };
 
-    await TestBed.configureTestingModule({
-      imports: [
-        NavbarProfileLinkComponent,
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-      ],
-      providers: [
-        ProfileService,
-        NgxIndexedDBService,
-        MessageService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
-    }).compileComponents();
+        await TestBed.configureTestingModule({
+            imports: [NavbarProfileLinkComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+            providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(NavbarProfileLinkComponent);
-    component = fixture.componentInstance;
-    component.profile = GeneralProfile;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(NavbarProfileLinkComponent);
+        component = fixture.componentInstance;
+        component.profile = GeneralProfile;
+        fixture.detectChanges();
+    });
 
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 });

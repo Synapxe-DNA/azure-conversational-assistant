@@ -4,31 +4,31 @@ import { CreateProfileComponent } from "./pages/create-profile/create-profile.co
 import { ChatComponent } from "./pages/chat/chat.component";
 
 export const routes: Routes = [
-  {
-    path: "",
-    component: MainLayoutComponent,
-    children: [
-      { path: "", pathMatch: "full", redirectTo: "/chat/general" },
-      {
-        path: "create",
-        component: CreateProfileComponent,
-      },
-
-      {
-        path: "chat",
+    {
+        path: "",
+        component: MainLayoutComponent,
         children: [
-          { path: "", pathMatch: "full", redirectTo: "/chat/general" },
-          { path: "*", redirectTo: "/chat/general" },
-          {
-            path: ":profileId",
-            component: ChatComponent,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: "**",
-    redirectTo: "/chat/general",
-  },
+            { path: "", pathMatch: "full", redirectTo: "/chat/general" },
+            {
+                path: "create",
+                component: CreateProfileComponent
+            },
+
+            {
+                path: "chat",
+                children: [
+                    { path: "", pathMatch: "full", redirectTo: "/chat/general" },
+                    { path: "*", redirectTo: "/chat/general" },
+                    {
+                        path: ":profileId",
+                        component: ChatComponent
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        path: "**",
+        redirectTo: "/chat/general"
+    }
 ];

@@ -1,12 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ProfileService } from "../../services/profile/profile.service";
 import { createId } from "@paralleldrive/cuid2";
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-} from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { ProfileGender, ProfileType } from "../../types/profile.type";
 import { CardModule } from "primeng/card";
 import { InputTextModule } from "primeng/inputtext";
@@ -19,74 +14,64 @@ import { MessageService } from "primeng/api";
 import { MultiSelectModule } from "primeng/multiselect";
 
 @Component({
-  selector: "app-create-profile",
-  standalone: true,
-  imports: [
-    CardModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    DropdownModule,
-    SelectButtonModule,
-    InputNumberModule,
-    InputTextareaModule,
-    Button,
-    MultiSelectModule,
-  ],
-  templateUrl: "./create-profile.component.html",
-  styleUrl: "./create-profile.component.css",
+    selector: "app-create-profile",
+    standalone: true,
+    imports: [
+        CardModule,
+        ReactiveFormsModule,
+        InputTextModule,
+        DropdownModule,
+        SelectButtonModule,
+        InputNumberModule,
+        InputTextareaModule,
+        Button,
+        MultiSelectModule
+    ],
+    templateUrl: "./create-profile.component.html",
+    styleUrl: "./create-profile.component.css"
 })
 export class CreateProfileComponent {
-  profileForm: FormGroup = new FormGroup({
-    name: new FormControl<string>(""),
-    profile_type: new FormControl<ProfileType>(ProfileType.Myself),
-    age: new FormControl<number | null>(null),
-    gender: new FormControl<ProfileGender>(ProfileGender.Undefined),
-    existing_condition: new FormControl<{ name: string; label: string }[]>([]),
-  });
+    profileForm: FormGroup = new FormGroup({
+        name: new FormControl<string>(""),
+        profile_type: new FormControl<ProfileType>(ProfileType.Myself),
+        age: new FormControl<number | null>(null),
+        gender: new FormControl<ProfileGender>(ProfileGender.Undefined),
+        existing_condition: new FormControl<{ name: string; label: string }[]>([])
+    });
 
-  profileTypeOptions: { label: string; value: ProfileType }[] = [
-    { label: "Myself", value: ProfileType.Myself },
-    { label: "Someone else", value: ProfileType.Others },
-  ];
+    profileTypeOptions: { label: string; value: ProfileType }[] = [
+        { label: "Myself", value: ProfileType.Myself },
+        { label: "Someone else", value: ProfileType.Others }
+    ];
 
-  profileGenderOptions: ProfileGender[] = [
-    ProfileGender.Male,
-    ProfileGender.Female,
-  ];
+    profileGenderOptions: ProfileGender[] = [ProfileGender.Male, ProfileGender.Female];
 
-  profileConditionOptions: { name: string; label: string }[] = [
-    { name: "Diabetes", label: "Diabetes" },
-    { name: "Hypertension", label: "Hypertension" },
-    { name: "High Cholesterol", label: "High Cholesterol" },
-  ];
+    profileConditionOptions: { name: string; label: string }[] = [
+        { name: "Diabetes", label: "Diabetes" },
+        { name: "Hypertension", label: "Hypertension" },
+        { name: "High Cholesterol", label: "High Cholesterol" }
+    ];
 
-  constructor(
-    private profileService: ProfileService,
-    private toastService: MessageService,
-  ) {}
+    constructor(
+        private profileService: ProfileService,
+        private toastService: MessageService
+    ) {}
 
-  createProfile() {
-    if (
-      this.profileForm.value.name &&
-      this.profileForm.value.profile_type &&
-      this.profileForm.value.age &&
-      this.profileForm.value.gender
-    ) {
-      this.profileService.createProfile({
-        id: createId(),
-        name: this.profileForm.value.name,
-        profile_type: this.profileForm.value.profile_type,
-        gender: this.profileForm.value.gender,
-        age: this.profileForm.value.age as number,
-        existing_conditions: this.profileForm.value.existing_condition
-          .map((v: Record<string, string>) => v["label"])
-          .join(", "),
-      });
-      this.toastService.add({
-        severity: "success",
-        summary: "Profile created!",
-        detail: `Profile ${this.profileForm.value.name} has been created!`,
-      });
+    createProfile() {
+        if (this.profileForm.value.name && this.profileForm.value.profile_type && this.profileForm.value.age && this.profileForm.value.gender) {
+            this.profileService.createProfile({
+                id: createId(),
+                name: this.profileForm.value.name,
+                profile_type: this.profileForm.value.profile_type,
+                gender: this.profileForm.value.gender,
+                age: this.profileForm.value.age as number,
+                existing_conditions: this.profileForm.value.existing_condition.map((v: Record<string, string>) => v["label"]).join(", ")
+            });
+            this.toastService.add({
+                severity: "success",
+                summary: "Profile created!",
+                detail: `Profile ${this.profileForm.value.name} has been created!`
+            });
+        }
     }
-  }
 }
