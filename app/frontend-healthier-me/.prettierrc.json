@@ -2,5 +2,15 @@
     "tabWidth": 4,
     "printWidth": 160,
     "arrowParens": "avoid",
-    "trailingComma": "none"
+    "trailingComma": "none",
+    "overrides": [
+        {
+            "files": "*.md",
+            "options": {
+                "tabWidth": 2,
+                "useTabs": false,
+                "parser": "markdown"
+            }
+        }
+    ]
 }
