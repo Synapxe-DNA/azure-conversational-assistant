@@ -28,6 +28,7 @@ import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { CommonModule } from "@angular/common";
+import { AudioPlayerService } from "../../services/audio-player/audio-player.service";
 
 @Component({
   selector: "app-voice-mobile",
@@ -78,7 +79,8 @@ export class VoiceMobileComponent {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService
+    private chatMessageService: ChatMessageService,
+    private audioPlayerService: AudioPlayerService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -106,6 +108,12 @@ export class VoiceMobileComponent {
       (v) => (this.showLiveTranscription = v)
     );
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
+
+    this.audioPlayerService.$playing.subscribe((isPlaying) => {
+      if (!isPlaying) {
+        this.currentBackgroundColor = "rgba(16, 185, 129, 1)";
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -162,6 +170,6 @@ export class VoiceMobileComponent {
     }
     const clampedLevel = Math.max(6, Math.min(level, 15));
     const intensity = (clampedLevel - 6) / (15 - 6);
-    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`; // Adjust the background opacity
+    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
   }
 }

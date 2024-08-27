@@ -15,6 +15,8 @@ import { MicState } from "../../../types/mic-state.type";
 import { AudioService } from "../../../services/audio/audio.service";
 import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { WaveformComponent } from "../../waveform/waveform.component";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { AudioPlayerService } from "../../../services/audio-player/audio-player.service";
 
 @Component({
   selector: "app-voice-microphone",
@@ -31,11 +33,20 @@ export class VoiceMicrophoneComponent {
   @Output() audioLevelChange = new EventEmitter<number>();
 
   audioAnalyser: AudioAnalyser | undefined;
+  isPlaying$: BehaviorSubject<boolean> = this.audioPlayer.$playing;
+  isPlaying: boolean = false;
 
-  constructor(private audioService: AudioService) {}
+  constructor(
+    private audioService: AudioService,
+    private audioPlayer: AudioPlayerService
+  ) {}
 
   ngAfterViewInit() {
     this.startAnalyser().catch(console.error);
+    this.isPlaying$.subscribe((playing) => {
+      this.isPlaying = playing;
+      console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {

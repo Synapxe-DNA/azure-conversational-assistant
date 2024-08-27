@@ -13,7 +13,7 @@ tw-transform-gpu
 "
   >
     <lucide-icon
-      *ngIf="state !== MicState.DISABLED"
+      *ngIf="state !== MicState.DISABLED && !(isPlaying$ | async)"
       name="mic"
       size="36"
     ></lucide-icon>
@@ -28,7 +28,7 @@ tw-transform-gpu
       [heightScalingFactor]="0.3"
       [containerHeight]="'5rem'"
       [containerGap]="'0.5rem'"
-      *ngIf="state === MicState.DISABLED"
+      *ngIf="state === MicState.DISABLED || isPlaying$ | async"
       (audioLevelChange)="handleAudioLevelChange($event)"
     >
     </app-waveform>
