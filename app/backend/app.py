@@ -12,6 +12,7 @@ from approaches.chatreadretrievereadvision import ChatReadRetrieveReadVisionAppr
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.retrievethenreadvision import RetrieveThenReadVisionApproach
 from azure.core.exceptions import ResourceNotFoundError
+from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.monitor.opentelemetry import configure_azure_monitor
 from azure.search.documents.aio import SearchClient
@@ -32,10 +33,10 @@ from config import (
     CONFIG_ASK_VISION_APPROACH,
     CONFIG_AUTH_CLIENT,
     CONFIG_BLOB_CONTAINER_CLIENT,
-    CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_CHAT_APPROACH,
     CONFIG_CHAT_VISION_APPROACH,
     CONFIG_CREDENTIAL,
+    CONFIG_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_GPT4V_DEPLOYED,
     CONFIG_INGESTER,
     CONFIG_OPENAI_CLIENT,
@@ -91,6 +92,7 @@ mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 
 
+# region Not used functions
 @bp.route("/")
 async def serve_app():
     return redirect("/app")
@@ -200,12 +202,17 @@ def config():
     )
 
 
+# endregion
+
+
 @bp.before_app_serving
 async def setup_clients():
     # Replace these with your own values, either in environment variables or directly here
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
-    AZURE_FEEDBACK_STORAGE_CONTAINER = os.environ["AZURE_FEEDBACK_STORAGE_CONTAINER"]
+    AZURE_COSMOS_URL = os.environ["AZURE_COSMOS_URL"]
+    AZURE_FEEDBACK_DATABASE_ID = os.environ["AZURE_FEEDBACK_DATABASE_ID"]
+    AZURE_FEEDBACK_CONTAINER_ID = os.environ["AZURE_FEEDBACK_CONTAINER_ID"]
     AZURE_USERSTORAGE_ACCOUNT = os.environ.get("AZURE_USERSTORAGE_ACCOUNT")
     AZURE_USERSTORAGE_CONTAINER = os.environ.get("AZURE_USERSTORAGE_CONTAINER")
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
@@ -217,8 +224,6 @@ async def setup_clients():
     OPENAI_EMB_DIMENSIONS = int(os.getenv("AZURE_OPENAI_EMB_DIMENSIONS", 1536))
     # Used with Azure OpenAI deployments
     AZURE_OPENAI_SERVICE = os.getenv("AZURE_OPENAI_SERVICE")
-    AZURE_OPENAI_SERVICE_2 = os.getenv("AZURE_OPENAI_SERVICE_2")
-    AZURE_OPENAI_WHISPER_DEPLOYMENT = os.getenv("AZURE_OPENAI_WHISPER_DEPLOYMENT")
     AZURE_OPENAI_GPT4V_DEPLOYMENT = os.environ.get("AZURE_OPENAI_GPT4V_DEPLOYMENT")
     AZURE_OPENAI_GPT4V_MODEL = os.environ.get("AZURE_OPENAI_GPT4V_MODEL")
     AZURE_OPENAI_CHATGPT_DEPLOYMENT = (
@@ -278,14 +283,10 @@ async def setup_clients():
     blob_container_client = ContainerClient(
         f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", AZURE_STORAGE_CONTAINER, credential=azure_credential
     )
-
-    blob_feedback_service = ContainerClient(
-        f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net",
-        AZURE_FEEDBACK_STORAGE_CONTAINER,
-        credential=azure_credential,
-    )
-
-    current_app.config[CONFIG_BLOB_FEEDBACK_CONTAINER_CLIENT] = blob_feedback_service
+    cosmos_client = CosmosClient(url=AZURE_COSMOS_URL, credential=azure_credential)
+    feedback_database_client = cosmos_client.get_database_client(AZURE_FEEDBACK_DATABASE_ID)
+    feedback_container_client = feedback_database_client.get_container_client(AZURE_FEEDBACK_CONTAINER_ID)
+    current_app.config[CONFIG_FEEDBACK_CONTAINER_CLIENT] = feedback_container_client
 
     # Set up authentication helper
     search_index = None
@@ -378,9 +379,7 @@ async def setup_clients():
             if not AZURE_OPENAI_SERVICE:
                 raise ValueError("AZURE_OPENAI_SERVICE must be set when OPENAI_HOST is azure")
             endpoint = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
-            if not AZURE_OPENAI_SERVICE_2:
-                raise ValueError("AZURE_OPENAI_WHISPER_SERVICE must be set when OPENAI_HOST is azure")
-            endpoint_2 = f"https://{AZURE_OPENAI_SERVICE_2}.openai.azure.com"
+
         if api_key := os.getenv("AZURE_OPENAI_API_KEY"):
             openai_client = AsyncAzureOpenAI(api_version=api_version, azure_endpoint=endpoint, api_key=api_key)
         else:
@@ -390,11 +389,7 @@ async def setup_clients():
                 azure_endpoint=endpoint,
                 azure_ad_token_provider=token_provider,
             )
-            openai_client_2 = AsyncAzureOpenAI(
-                api_version=api_version,
-                azure_endpoint=endpoint_2,
-                azure_ad_token_provider=token_provider,
-            )
+
     elif OPENAI_HOST == "local":
         openai_client = AsyncOpenAI(
             base_url=os.environ["OPENAI_BASE_URL"],
@@ -439,7 +434,6 @@ async def setup_clients():
     current_app.config[CONFIG_CHAT_APPROACH] = ChatReadRetrieveReadApproach(
         search_client=search_client,
         openai_client=openai_client,
-        openai_client_2=openai_client_2,
         auth_helper=auth_helper,
         chatgpt_model=OPENAI_CHATGPT_MODEL,
         chatgpt_deployment=AZURE_OPENAI_CHATGPT_DEPLOYMENT,
@@ -450,7 +444,6 @@ async def setup_clients():
         content_field=KB_FIELDS_CONTENT,
         query_language=AZURE_SEARCH_QUERY_LANGUAGE,
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
-        whisper_deployment=AZURE_OPENAI_WHISPER_DEPLOYMENT,
     )
 
     tts = await TextToSpeech.create()

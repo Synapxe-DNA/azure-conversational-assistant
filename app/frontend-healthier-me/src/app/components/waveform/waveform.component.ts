@@ -41,7 +41,7 @@ export class WaveformComponent implements AfterViewInit {
 
   constructor(
     private audioService: AudioService,
-    private audioPlayerService: AudioPlayerService
+    private audioPlayerService: AudioPlayerService,
   ) {}
 
   ngAfterViewInit() {
@@ -60,7 +60,7 @@ export class WaveformComponent implements AfterViewInit {
         this.audioAnalyser = new AudioAnalyser(
           v as MediaStream,
           this.bars + 1,
-          0.3
+          0.3,
         );
       }
     });

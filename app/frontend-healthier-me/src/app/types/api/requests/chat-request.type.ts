@@ -8,4 +8,5 @@ export interface ApiChatRequest {
     role: "user";
     content: string;
   };
+  language: string;
 }

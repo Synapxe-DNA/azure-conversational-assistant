@@ -1,69 +1,33 @@
-<div
-  class="tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-flex tw-flex-col tw-justify-center"
-  [ngStyle]="{ backgroundColor: currentBackgroundColor }"
->
-  <app-voice-sources [sources]="message!.sources"></app-voice-sources>
-  <!-- create display/hide function -->
-  <app-voice-message [message]="message"></app-voice-message>
-  <!-- animate this -->
-  <app-voice-annotation></app-voice-annotation>
-  <!-- create modal -->
-  <app-voice-microphone
-    [state]="micState"
-    (click)="handleMicButtonClick()"
-    (audioLevelChange)="handleMicAudioLevelChange($event)"
-  ></app-voice-microphone>
-  <!-- create new state-->
+<div class="tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-bg-emerald-600 tw-flex tw-flex-col">
+  <div class="tw-flex-1 tw-overflow-auto">
+    <app-voice-sources [sources]="message!.sources"></app-voice-sources>
+    <app-voice-message [message]="message"></app-voice-message>
+    <app-voice-annotation></app-voice-annotation>
+    <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"></app-voice-microphone>
+    <div class="tw-self-center tw-text-center tw-text-xs tw-text-white">
+      <p>Synapxe Innovation for Good</p>
+      <p>Powered By AI</p>
+      <p>Synapxe 2024</p>
+    </div>
+  </div>
+
   <div class="tw-absolute tw-bottom-6 tw-right-6">
-    <button
-      (click)="preferenceOverlayPanel.toggle($event)"
-      class="tw-text-white tw-pt-3"
-    >
+    <button (click)="preferenceOverlayPanel.toggle($event)" class="tw-text-white tw-pt-3">
       <lucide-icon name="settings" class="tw-text-white"></lucide-icon>
     </button>
-  </div>
-  <div
-    class="tw-fixed tw-bottom-0 tw-self-center tw-text-center tw-text-xs tw-text-white"
-  >
-    <p>Synapxe Innovation for Good</p>
-    <p>Powered By AI</p>
-    <p>Synapxe 2024</p>
   </div>
 </div>
 
 <p-overlayPanel #preferenceOverlayPanel>
   <div class="tw-grid tw-grid-cols-6 tw-justify-items-end">
-    <!-- <label class="tw-w-full tw-col-span-5" id="transcription"
-      >Show live transcription</label
-    >
-    <p-inputSwitch
-      (onChange)="prefShowLiveTranscription($event)"
-      [(ngModel)]="showLiveTranscription"
-      ariaLabelledBy="interrupt"
-    ></p-inputSwitch> -->
-    <label class="tw-w-full tw-col-span-5" id="interrupt"
-      >Interrupt with my voice</label
-    >
-    <p-inputSwitch
-      (onChange)="prefVoiceInterrupt($event)"
-      [(ngModel)]="voiceInterrupt"
-      ariaLabelledBy="interrupt"
-    ></p-inputSwitch>
-    <label class="tw-w-full tw-col-span-5" id="detect-start"
-      >Detect voice start</label
-    >
-    <p-inputSwitch
-      (onChange)="prefVoiceStart($event)"
-      [(ngModel)]="voiceDetectStart"
-      ariaLabelledBy="detect-start"
-    ></p-inputSwitch>
-    <label class="tw-w-full tw-col-span-5" id="detect-end"
-      >Detect voice end</label
-    >
-    <p-inputSwitch
-      (onChange)="prefVoiceEnd($event)"
-      [(ngModel)]="voiceDetectEnd"
-      ariaLabelledBy="detect-end"
-    ></p-inputSwitch>
+    <label class="tw-w-full tw-col-span-5" id="interrupt">Interrupt with my voice</label>
+    <p-inputSwitch (onChange)="prefVoiceInterrupt($event)" [(ngModel)]="voiceInterrupt"
+      ariaLabelledBy="interrupt"></p-inputSwitch>
+    <label class="tw-w-full tw-col-span-5" id="detect-start">Detect voice start</label>
+    <p-inputSwitch (onChange)="prefVoiceStart($event)" [(ngModel)]="voiceDetectStart"
+      ariaLabelledBy="detect-start"></p-inputSwitch>
+    <label class="tw-w-full tw-col-span-5" id="detect-end">Detect voice end</label>
+    <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd"
+      ariaLabelledBy="detect-end"></p-inputSwitch>
   </div>
 </p-overlayPanel>

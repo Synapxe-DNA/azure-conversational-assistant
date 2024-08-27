@@ -4,12 +4,11 @@ export enum MessageRole {
 }
 
 export interface MessageSource {
-  id: string;
+  id: string[];
   title: string;
   cover_image_url: string;
   full_url: string;
   content_category: string;
-  chunks: string;
 }
 
 export interface Message {

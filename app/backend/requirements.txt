@@ -41,6 +41,7 @@ azure-core==1.30.2
     #   microsoft-kiota-authentication-azure
     #   msrest
 azure-core-tracing-opentelemetry==1.0.0b11
+azure-cosmos==4.7.0
     # via azure-monitor-opentelemetry
 azure-identity==1.17.1
     # via

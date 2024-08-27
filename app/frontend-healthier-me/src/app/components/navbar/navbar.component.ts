@@ -3,7 +3,6 @@ import {
   Component,
   OnInit,
   HostListener,
-
 } from "@angular/core";
 import { NavbarLogoGroupComponent } from "./navbar-logo-group/navbar-logo-group.component";
 import { NavbarLineComponent } from "./navbar-line/navbar-line.component";
@@ -12,8 +11,6 @@ import { NavbarProfileCreateComponent } from "./navbar-profile-create/navbar-pro
 import { GeneralProfile, Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { NavbarLanguageComponent } from "./navbar-language/navbar-language.component";
-
-
 
 @Component({
   selector: "app-navbar",
@@ -46,7 +43,7 @@ export class NavbarComponent implements OnInit {
     });
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener("window:resize", ["$event"])
   onResize(event: any) {
     this.checkViewport();
   }

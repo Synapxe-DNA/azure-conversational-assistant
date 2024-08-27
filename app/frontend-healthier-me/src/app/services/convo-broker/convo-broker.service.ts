@@ -17,6 +17,7 @@ import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
 import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
+import { Language } from "../../types/language.type";
 
 @Injectable({
   providedIn: "root",
@@ -26,6 +27,10 @@ export class ConvoBrokerService {
   private recorder2!: v2AudioRecorder;
   private activeProfile: BehaviorSubject<Profile | undefined> =
     new BehaviorSubject<Profile | undefined>(undefined);
+
+  $language: BehaviorSubject<string> = new BehaviorSubject<string>(
+    Language.Spoken,
+  );
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
     MicState.PENDING,
@@ -47,6 +52,9 @@ export class ConvoBrokerService {
     this.profileService.$currentProfileInUrl.subscribe((p) => {
       this.activeProfile = this.profileService.getProfile(p);
     });
+    this.preferenceService.$language.subscribe((l) => {
+      this.$language.next(l);
+    });
   }
 
   /**
@@ -55,7 +63,10 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService)
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService,
+    );
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe((v) => {
@@ -109,7 +120,7 @@ export class ConvoBrokerService {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
-    this.recorder2.setupWebSocket()
+    this.recorder2.setupWebSocket();
   }
 
   /**
@@ -126,7 +137,7 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then((r) => {
-      this.recorder2.socket?.close()
+      this.recorder2.socket?.close();
       this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(
         console.error,
       );
@@ -181,7 +192,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
-          sources: []
+          sources: [],
         });
 
         // upsert assistant message
@@ -235,6 +246,7 @@ export class ConvoBrokerService {
       message,
       this.activeProfile.value || GeneralProfile,
       history.slice(-8),
+      this.$language.value || Language.Spoken,
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
@@ -294,7 +306,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
-      sources: []
+      sources: [],
     };
     const responseMessageId = createId();
 
@@ -308,6 +320,7 @@ export class ConvoBrokerService {
       newMessage,
       profile,
       history,
+      this.$language.value || Language.Spoken,
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {

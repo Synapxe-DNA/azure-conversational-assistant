@@ -15,13 +15,13 @@ export class TextTtsComponent {
 
   constructor(
     private endpointService: EndpointService,
-    private audioPlayerService: AudioPlayerService
+    private audioPlayerService: AudioPlayerService,
   ) {}
 
   async textToSpeech() {
     try {
       const audioSubject = await this.endpointService.textToSpeech(
-        this.message
+        this.message,
       );
 
       audioSubject.subscribe({

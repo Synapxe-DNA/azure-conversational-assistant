@@ -48,7 +48,7 @@ export const appConfig: ApplicationConfig = {
         Send,
         StopCircle,
         Copy,
-      })
+      }),
     ),
     importProvidersFrom(ToastModule),
     provideServiceWorker("ngsw-worker.js", {
