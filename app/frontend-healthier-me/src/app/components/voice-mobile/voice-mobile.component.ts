@@ -131,7 +131,6 @@ export class VoiceMobileComponent {
         });
       });
     });
-    console.log("voice-mobile afterviewinit", this.message);
     this.initVoiceChat().catch(console.error);
   }
 

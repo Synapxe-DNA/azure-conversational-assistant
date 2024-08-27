@@ -33,7 +33,6 @@ export class VoiceMicrophoneComponent {
   @Output() audioLevelChange = new EventEmitter<number>();
 
   audioAnalyser: AudioAnalyser | undefined;
-  isPlaying$: BehaviorSubject<boolean> = this.audioPlayer.$playing;
   isPlaying: boolean = false;
 
   constructor(
@@ -43,7 +42,7 @@ export class VoiceMicrophoneComponent {
 
   ngAfterViewInit() {
     this.startAnalyser().catch(console.error);
-    this.isPlaying$.subscribe((playing) => {
+    this.audioPlayer.$playing.subscribe((playing) => {
       this.isPlaying = playing;
       console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
     });
@@ -85,22 +84,22 @@ export class VoiceMicrophoneComponent {
     }
   }
 
-  handleAudioLevelChange(level: number) {
-    this.audioLevelChange.emit(level);
-  }
-
   buttonStateClasses() {
     switch (this.state) {
       case MicState.PENDING:
-        return "tw-ring-0 tw-bg-white tw-ring-emerald-300 tw-text-emerald-900";
+        return "tw-ring-[24px] tw-bg-emerald-300 tw-ring-white tw-text-emerald-900";
       case MicState.ACTIVE:
-        return "tw-bg-white tw-ring-emerald-300 tw-text-emerald-700";
+        return "tw-bg-emerald-300 tw-ring-white tw-text-emerald-700";
       case MicState.DISABLED:
         return "tw-ring-[24px] tw-bg-emerald-700 tw-ring-emerald-900 tw-text-emerald-900";
       default:
         console.warn("Mic state not set for mic button!");
         return "tw-transition tw-duration-75 tw-ring-0 tw-bg-white tw-ring-emerald-300 tw-text-emerald-900";
     }
+  }
+
+  handleAudioLevelChange(level: number) {
+    this.audioLevelChange.emit(level);
   }
 
   protected readonly MicState = MicState;
