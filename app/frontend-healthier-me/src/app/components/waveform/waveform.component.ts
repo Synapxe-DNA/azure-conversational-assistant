@@ -2,8 +2,10 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnInit,
+  Output,
   QueryList,
   ViewChild,
   ViewChildren,
@@ -30,6 +32,8 @@ export class WaveformComponent implements AfterViewInit {
 
   @ViewChild("container") container!: ElementRef;
   @ViewChildren("bar") levelBars!: QueryList<ElementRef>;
+
+  @Output() audioLevelChange = new EventEmitter<number>();
 
   barHeights: number[] = [];
 
@@ -66,14 +70,22 @@ export class WaveformComponent implements AfterViewInit {
     try {
       if (this.audioAnalyser) {
         const barHeights = this.audioAnalyser.getFrequency();
+        let averageHeight = 0;
+
         this.levelBars.forEach((b, index) => {
-          // Scale height of bar based on audio levels.
-          // Scaled for higher mid-tones
           const heightMultiplier =
             this.heightScalingFactor *
             (1 + Math.sin((index / barHeights.length) * Math.PI));
-          b.nativeElement.style.height = `${barHeights[index] * heightMultiplier * this.container.nativeElement.clientHeight}px`;
+          const barHeight =
+            barHeights[index] *
+            heightMultiplier *
+            this.container.nativeElement.clientHeight;
+          b.nativeElement.style.height = `${barHeight}px`;
+          averageHeight += barHeight;
         });
+
+        averageHeight /= this.bars;
+        this.audioLevelChange.emit(averageHeight);
       }
     } catch (e) {
       console.error(e);

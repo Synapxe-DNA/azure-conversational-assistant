@@ -21,3 +21,7 @@
 .footer-text {
   @apply tw-text-center tw-text-xs tw-text-white tw-pb-[2vh];
 }
+
+.tw-relative {
+  transition: background-color 0.1s ease-in-out;
+}

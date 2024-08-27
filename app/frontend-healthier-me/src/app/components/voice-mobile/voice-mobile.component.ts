@@ -27,6 +27,8 @@ import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.co
 import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
+import { CommonModule } from "@angular/common";
+import { AudioPlayerService } from "../../services/audio-player/audio-player.service";
 
 @Component({
   selector: "app-voice-mobile",
@@ -41,6 +43,7 @@ import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
     InputSwitchModule,
     FormsModule,
     TextComponent,
+    CommonModule,
 
     VoiceSourcesComponent,
     VoiceMessageComponent,
@@ -52,7 +55,7 @@ import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 })
 export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    true,
+    true
   );
   // private recorder: AudioRecorder | undefined;
   private recorder2: v2AudioRecorder | undefined;
@@ -68,6 +71,8 @@ export class VoiceMobileComponent {
   voiceDetectEnd: boolean = false;
   showLiveTranscription: boolean = false;
 
+  currentBackgroundColor: string = "rgba(16, 185, 129, 1)";
+
   constructor(
     private preference: PreferenceService,
     private audio: AudioService,
@@ -75,6 +80,7 @@ export class VoiceMobileComponent {
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
     private chatMessageService: ChatMessageService,
+    private audioPlayerService: AudioPlayerService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -88,25 +94,31 @@ export class VoiceMobileComponent {
 
   ngOnInit() {
     this.profileService.setProfileInUrl(
-      this.route.snapshot.paramMap.get("profileId")!,
+      this.route.snapshot.paramMap.get("profileId")!
     );
 
     this.preference.$voiceDetectInterrupt.subscribe((v) => {
       this.voiceInterrupt = v;
     });
     this.preference.$voiceDetectStart.subscribe(
-      (v) => (this.voiceDetectStart = v),
+      (v) => (this.voiceDetectStart = v)
     );
     this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
     this.preference.$showLiveTranscription.subscribe(
-      (v) => (this.showLiveTranscription = v),
+      (v) => (this.showLiveTranscription = v)
     );
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
+
+    this.audioPlayerService.$playing.subscribe((isPlaying) => {
+      if (!isPlaying) {
+        this.currentBackgroundColor = "rgba(16, 185, 129, 1)";
+      }
+    });
   }
 
   ngAfterViewInit() {
     this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string,
+      this.route.snapshot.paramMap.get("profileId") as string
     );
 
     this.profile.subscribe((p) => {
@@ -119,7 +131,6 @@ export class VoiceMobileComponent {
         });
       });
     });
-    console.log("voice-mobile afterviewinit", this.message);
     this.initVoiceChat().catch(console.error);
   }
 
@@ -127,7 +138,7 @@ export class VoiceMobileComponent {
     // this.recorder = new AudioRecorder(await this.audio.getMicInput());
     this.recorder2 = new v2AudioRecorder(
       this.chatMessageService,
-      this.profileService,
+      this.profileService
     );
   }
 
@@ -149,5 +160,15 @@ export class VoiceMobileComponent {
 
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
+  }
+
+  handleMicAudioLevelChange(level: number) {
+    if (level === 0) {
+      this.currentBackgroundColor = `rgba(16, 185, 129, 1)`;
+      return;
+    }
+    const clampedLevel = Math.max(6, Math.min(level, 15));
+    const intensity = (clampedLevel - 6) / (15 - 6);
+    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
   }
 }

@@ -15,6 +15,8 @@ import { MicState } from "../../../types/mic-state.type";
 import { AudioService } from "../../../services/audio/audio.service";
 import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { WaveformComponent } from "../../waveform/waveform.component";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { AudioPlayerService } from "../../../services/audio-player/audio-player.service";
 
 @Component({
   selector: "app-voice-microphone",
@@ -28,12 +30,22 @@ export class VoiceMicrophoneComponent {
 
   @ViewChild("btn") btn!: ElementRef<HTMLButtonElement>;
 
-  audioAnalyser: AudioAnalyser | undefined;
+  @Output() audioLevelChange = new EventEmitter<number>();
 
-  constructor(private audioService: AudioService) {}
+  audioAnalyser: AudioAnalyser | undefined;
+  isPlaying: boolean = false;
+
+  constructor(
+    private audioService: AudioService,
+    private audioPlayer: AudioPlayerService
+  ) {}
 
   ngAfterViewInit() {
     this.startAnalyser().catch(console.error);
+    this.audioPlayer.$playing.subscribe((playing) => {
+      this.isPlaying = playing;
+      console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -56,7 +68,7 @@ export class VoiceMicrophoneComponent {
     this.audioAnalyser = new AudioAnalyser(
       await this.audioService.getMicInput(),
       4,
-      0.001,
+      0.001
     );
   }
 
@@ -75,15 +87,19 @@ export class VoiceMicrophoneComponent {
   buttonStateClasses() {
     switch (this.state) {
       case MicState.PENDING:
-        return "tw-ring-0 tw-bg-white tw-ring-emerald-300 tw-text-emerald-900";
+        return "tw-ring-[24px] tw-bg-emerald-300 tw-ring-white tw-text-emerald-900";
       case MicState.ACTIVE:
-        return "tw-bg-white tw-ring-emerald-300 tw-text-emerald-700";
+        return "tw-bg-emerald-300 tw-ring-white tw-text-emerald-700";
       case MicState.DISABLED:
         return "tw-ring-[24px] tw-bg-emerald-700 tw-ring-emerald-900 tw-text-emerald-900";
       default:
         console.warn("Mic state not set for mic button!");
         return "tw-transition tw-duration-75 tw-ring-0 tw-bg-white tw-ring-emerald-300 tw-text-emerald-900";
     }
+  }
+
+  handleAudioLevelChange(level: number) {
+    this.audioLevelChange.emit(level);
   }
 
   protected readonly MicState = MicState;
