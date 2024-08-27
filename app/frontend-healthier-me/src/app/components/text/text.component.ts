@@ -30,19 +30,17 @@ import { ChatFollowupService } from "../../services/chat-followup/chat-followup.
     TextUserComponent,
     TextClipboardComponent,
     TextFollowupComponent,
-    StickyBottomDirective,
+    StickyBottomDirective
   ],
   templateUrl: "./text.component.html",
-  styleUrls: ["./text.component.css"],
+  styleUrls: ["./text.component.css"]
 })
 export class TextComponent implements OnInit {
   @Input() showTextInput?: boolean = true;
 
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   messages: Message[] = [];
   followUps: FollowUp[] = [];
@@ -51,37 +49,37 @@ export class TextComponent implements OnInit {
     private chatMessageService: ChatMessageService,
     private followUpService: ChatFollowupService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        takeWhile((p) => {
+        takeWhile(p => {
           return p.get("profileId") !== undefined;
-        }, true),
+        }, true)
       )
-      .subscribe((p) => {
+      .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
 
-    this.profile.subscribe((p) => {
+    this.profile.subscribe(p => {
       if (!p) {
         return;
       }
-      this.chatMessageService.load(p.id).then((m) => {
-        m.subscribe((messages) => {
+      this.chatMessageService.load(p.id).then(m => {
+        m.subscribe(messages => {
           this.messages = messages;
         });
       });
     });
 
-    this.profile.subscribe((p) => {
+    this.profile.subscribe(p => {
       if (!p) {
         return;
       }
-      this.followUpService.load(p.id).then((m) => {
-        m.subscribe((followUps) => {
+      this.followUpService.load(p.id).then(m => {
+        m.subscribe(followUps => {
           this.followUps = followUps;
         });
       });

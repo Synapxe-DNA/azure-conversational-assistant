@@ -8,7 +8,7 @@ import { NavbarMobileComponent } from "../../components/navbar-mobile/navbar-mob
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, NavbarMobileComponent],
   templateUrl: "./main-layout.component.html",
-  styleUrl: "./main-layout.component.css",
+  styleUrl: "./main-layout.component.css"
 })
 export class MainLayoutComponent implements OnInit {
   isMobile?: boolean;

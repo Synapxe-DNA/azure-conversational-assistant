@@ -1,14 +1,14 @@
 name: Frontend linting
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "app/frontend/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - staging
+      - frontend
+      - backend
     paths:
-      - "app/frontend/**"
+      - "app/frontend-healthier-me/**"
 
 jobs:
   prettier:
@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run prettier on frontend
         run: |
-          cd ./app/frontend
+          cd ./app/frontend-healthier-me
           npm install
-          npx prettier --check .
+          npm install -g prettier
+          npm run lint

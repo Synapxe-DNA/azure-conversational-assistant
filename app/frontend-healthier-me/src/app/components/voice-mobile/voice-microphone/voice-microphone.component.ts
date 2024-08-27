@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from "@angular/core";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LucideAngularModule } from "lucide-angular";
 import { MicState } from "../../../types/mic-state.type";
@@ -23,7 +13,7 @@ import { AudioPlayerService } from "../../../services/audio-player/audio-player.
   standalone: true,
   imports: [CommonModule, LucideAngularModule, WaveformComponent],
   templateUrl: "./voice-microphone.component.html",
-  styleUrl: "./voice-microphone.component.css",
+  styleUrl: "./voice-microphone.component.css"
 })
 export class VoiceMicrophoneComponent {
   @Input() state!: MicState;
@@ -42,7 +32,7 @@ export class VoiceMicrophoneComponent {
 
   ngAfterViewInit() {
     this.startAnalyser().catch(console.error);
-    this.audioPlayer.$playing.subscribe((playing) => {
+    this.audioPlayer.$playing.subscribe(playing => {
       this.isPlaying = playing;
       console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
     });
@@ -65,20 +55,13 @@ export class VoiceMicrophoneComponent {
   }
 
   async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(
-      await this.audioService.getMicInput(),
-      4,
-      0.001
-    );
+    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
   }
 
   mainLoop() {
     if (this.state === MicState.ACTIVE && this.audioAnalyser) {
       const raw_level = this.audioAnalyser.getAudioLevel();
-      const level = (
-        32 -
-        (raw_level * this.btn.nativeElement.clientHeight) / 3
-      ).toFixed(2);
+      const level = (32 - (raw_level * this.btn.nativeElement.clientHeight) / 3).toFixed(2);
       this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }

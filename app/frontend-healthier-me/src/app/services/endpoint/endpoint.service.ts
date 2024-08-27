@@ -5,22 +5,11 @@ import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
 import { Message, MessageRole } from "../../types/message.type";
 import { ChatResponse } from "../../types/responses/chat-response.type";
-import {
-  HttpClient,
-  HttpDownloadProgressEvent,
-  HttpEventType,
-} from "@angular/common/http";
+import { HttpClient, HttpDownloadProgressEvent, HttpEventType } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
-import {
-  ApiVoiceRequest,
-  ApiVoiceRequest2,
-} from "../../types/api/requests/voice-request.type";
+import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
 import { ApiChatHistory } from "../../types/api/api-chat-history.type";
-import {
-  ApiProfile,
-  ApiProfileGender,
-  ApiProfileType,
-} from "../../types/api/api-profile.type";
+import { ApiProfile, ApiProfileGender, ApiProfileType } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ApiSource } from "../../types/api/api-source.type";
 import { ResponseStatus } from "../../types/responses/response-status.type";
@@ -29,7 +18,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
@@ -42,9 +31,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient
-        .post("/speech", { text }, { responseType: "blob" })
-        .toPromise();
+      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -66,7 +53,7 @@ export class EndpointService {
    * @private
    */
   private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
-    return messages.map((m) => {
+    return messages.map(m => {
       const role = () => {
         switch (m.role) {
           case MessageRole.User:
@@ -78,7 +65,7 @@ export class EndpointService {
 
       return {
         role: role(),
-        content: m.message,
+        content: m.message
       };
     });
   }
@@ -116,7 +103,7 @@ export class EndpointService {
       profile_type: profileType(),
       user_age: profile.age || -1,
       user_condition: profile.existing_conditions,
-      user_gender: profileGender(),
+      user_gender: profileGender()
     };
   }
 
@@ -126,13 +113,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of chat to be used for LLM context
    */
-  async sendVoice(
-    recording: Blob,
-    profile: Profile,
-    history: Message[],
-  ): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> =
-      new BehaviorSubject<VoiceResponse | null>(null);
+  async sendVoice(recording: Blob, profile: Profile, history: Message[]): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
@@ -142,40 +124,34 @@ export class EndpointService {
     const data: ApiVoiceRequest = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
-      query: recording,
+      query: recording
     };
 
     this.httpClient
       .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiVoiceResponse;
+              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
               }
 
               if (responseData.response_message) {
-                currentAssistantMessage =
-                  currentAssistantMessage + responseData.response_message;
+                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
               }
 
               if (responseData.query_message) {
-                currentQueryMessage =
-                  currentQueryMessage + responseData.query_message;
+                currentQueryMessage = currentQueryMessage + responseData.query_message;
               }
 
               responseBS.next({
@@ -183,14 +159,10 @@ export class EndpointService {
                 user_transcript: currentQueryMessage,
                 assistant_response: currentAssistantMessage,
                 assistant_response_audio: existingAudio,
-                additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
-                ],
-                sources: responseData.sources,
+                additional_questions: [responseData.additional_question_1, responseData.additional_question_2],
+                sources: responseData.sources
               });
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               return;
             }
             case HttpEventType.Response: {
@@ -201,7 +173,7 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;
@@ -213,14 +185,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of chat to be used for LLM context
    */
-  async sendVoice2(
-    message: string,
-    profile: Profile,
-    history: Message[],
-    language: string,
-  ): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> =
-      new BehaviorSubject<VoiceResponse | null>(null);
+  async sendVoice2(message: string, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
@@ -233,42 +199,36 @@ export class EndpointService {
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        content: message,
+        content: message
       },
-      language: language.toLowerCase(),
+      language: language.toLowerCase()
     };
 
     this.httpClient
       .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiVoiceResponse;
+              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
               }
 
               if (responseData.response_message) {
-                currentAssistantMessage =
-                  currentAssistantMessage + responseData.response_message;
+                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
               }
 
               if (responseData.query_message) {
-                currentQueryMessage =
-                  currentQueryMessage + responseData.query_message;
+                currentQueryMessage = currentQueryMessage + responseData.query_message;
               }
 
               if (responseData.sources) {
@@ -280,14 +240,10 @@ export class EndpointService {
                 user_transcript: currentQueryMessage,
                 assistant_response: currentAssistantMessage,
                 assistant_response_audio: existingAudio,
-                additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
-                ],
-                sources: currentSources,
+                additional_questions: [responseData.additional_question_1, responseData.additional_question_2],
+                sources: currentSources
               });
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               return;
             }
             case HttpEventType.Response: {
@@ -298,7 +254,7 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;
@@ -310,14 +266,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of conversation for LLM context
    */
-  async sendChat(
-    message: Message,
-    profile: Profile,
-    history: Message[],
-    language: string,
-  ): Promise<BehaviorSubject<ChatResponse | null>> {
-    const responseBS: BehaviorSubject<ChatResponse | null> =
-      new BehaviorSubject<ChatResponse | null>(null);
+  async sendChat(message: Message, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<ChatResponse | null>> {
+    const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
     const responseId = createId();
 
     let lastResponseLength: number = 0;
@@ -329,28 +279,26 @@ export class EndpointService {
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        content: message.message,
+        content: message.message
       },
-      language: language.toLowerCase(),
+      language: language.toLowerCase()
     };
 
     this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
 
-              const currentResponseData = (
-                e as HttpDownloadProgressEvent
-              ).partialText!.slice(lastResponseLength); //splits response into chunks
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength); //splits response into chunks
 
               // console.log(currentResponseData)
 
@@ -369,11 +317,10 @@ export class EndpointService {
                   // responseData.additional_question_1,
                   // responseData.additional_question_2,
                 ],
-                sources: currentSources,
+                sources: currentSources
               });
 
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               break;
             }
 
@@ -385,7 +332,7 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;

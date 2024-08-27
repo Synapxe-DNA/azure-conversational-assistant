@@ -13,20 +13,12 @@ describe("CreateProfileComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        CreateProfileComponent,
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-      ],
-      providers: [
-        ProfileService,
-        NgxIndexedDBService,
-        MessageService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [CreateProfileComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+      providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateProfileComponent);

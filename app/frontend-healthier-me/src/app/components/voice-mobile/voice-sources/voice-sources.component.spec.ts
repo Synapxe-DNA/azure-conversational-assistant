@@ -8,7 +8,7 @@ describe("VoiceSourcesComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VoiceSourcesComponent],
+      imports: [VoiceSourcesComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceSourcesComponent);

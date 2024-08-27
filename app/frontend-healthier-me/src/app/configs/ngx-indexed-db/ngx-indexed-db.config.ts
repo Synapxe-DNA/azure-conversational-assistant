@@ -6,7 +6,7 @@ export const NgxIndexedDbConfig: DBConfig = {
   name: "HealthierME",
   version: 1,
   objectStoresMeta: NgxIndexedDbSchema["version_1"],
-  migrationFactory,
+  migrationFactory
 };
 
 export function migrationFactory() {
@@ -15,6 +15,6 @@ export function migrationFactory() {
       const messagesStore = transaction.objectStore("messages");
       messagesStore.createIndex("role", "role", { unique: false });
       messagesStore.createIndex("timestamp", "timestamp", { unique: false });
-    },
+    }
   };
 }

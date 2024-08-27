@@ -8,7 +8,7 @@ describe("VoiceMicrophoneComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VoiceMicrophoneComponent],
+      imports: [VoiceMicrophoneComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceMicrophoneComponent);

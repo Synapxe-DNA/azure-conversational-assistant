@@ -48,20 +48,16 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
     VoiceSourcesComponent,
     VoiceMessageComponent,
     VoiceAnnotationComponent,
-    VoiceMicrophoneComponent,
+    VoiceMicrophoneComponent
   ],
   templateUrl: "./voice-mobile.component.html",
-  styleUrl: "./voice-mobile.component.css",
+  styleUrl: "./voice-mobile.component.css"
 })
 export class VoiceMobileComponent {
-  private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    true
-  );
+  private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   // private recorder: AudioRecorder | undefined;
   private recorder2: v2AudioRecorder | undefined;
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   micState: MicState = MicState.PENDING;
   message?: Message;
@@ -88,28 +84,22 @@ export class VoiceMobileComponent {
       timestamp: 0,
       id: "",
       profile_id: "",
-      message: "",
+      message: ""
     };
   }
 
   ngOnInit() {
-    this.profileService.setProfileInUrl(
-      this.route.snapshot.paramMap.get("profileId")!
-    );
+    this.profileService.setProfileInUrl(this.route.snapshot.paramMap.get("profileId")!);
 
-    this.preference.$voiceDetectInterrupt.subscribe((v) => {
+    this.preference.$voiceDetectInterrupt.subscribe(v => {
       this.voiceInterrupt = v;
     });
-    this.preference.$voiceDetectStart.subscribe(
-      (v) => (this.voiceDetectStart = v)
-    );
-    this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
-    this.preference.$showLiveTranscription.subscribe(
-      (v) => (this.showLiveTranscription = v)
-    );
-    this.convoBroker.$micState.subscribe((v) => (this.micState = v));
+    this.preference.$voiceDetectStart.subscribe(v => (this.voiceDetectStart = v));
+    this.preference.$voiceDetectEnd.subscribe(v => (this.voiceDetectEnd = v));
+    this.preference.$showLiveTranscription.subscribe(v => (this.showLiveTranscription = v));
+    this.convoBroker.$micState.subscribe(v => (this.micState = v));
 
-    this.audioPlayerService.$playing.subscribe((isPlaying) => {
+    this.audioPlayerService.$playing.subscribe(isPlaying => {
       if (!isPlaying) {
         this.currentBackgroundColor = "rgba(16, 185, 129, 1)";
       }
@@ -117,16 +107,14 @@ export class VoiceMobileComponent {
   }
 
   ngAfterViewInit() {
-    this.profile = this.profileService.getProfile(
-      this.route.snapshot.paramMap.get("profileId") as string
-    );
+    this.profile = this.profileService.getProfile(this.route.snapshot.paramMap.get("profileId") as string);
 
-    this.profile.subscribe((p) => {
+    this.profile.subscribe(p => {
       if (!p) {
         return;
       }
-      this.chatMessageService.load(p.id).then((m) => {
-        m.subscribe((messages) => {
+      this.chatMessageService.load(p.id).then(m => {
+        m.subscribe(messages => {
           this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
         });
       });
@@ -136,10 +124,7 @@ export class VoiceMobileComponent {
 
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(
-      this.chatMessageService,
-      this.profileService
-    );
+    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {

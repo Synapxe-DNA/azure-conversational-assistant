@@ -1,9 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  HostListener,
-} from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit, HostListener } from "@angular/core";
 import { NavbarLogoGroupComponent } from "./navbar-logo-group/navbar-logo-group.component";
 import { NavbarLineComponent } from "./navbar-line/navbar-line.component";
 import { NavbarProfileLinkComponent } from "./navbar-profile-links/navbar-profile-link.component";
@@ -15,15 +10,9 @@ import { NavbarLanguageComponent } from "./navbar-language/navbar-language.compo
 @Component({
   selector: "app-navbar",
   standalone: true,
-  imports: [
-    NavbarLogoGroupComponent,
-    NavbarLineComponent,
-    NavbarProfileLinkComponent,
-    NavbarProfileCreateComponent,
-    NavbarLanguageComponent,
-  ],
+  imports: [NavbarLogoGroupComponent, NavbarLineComponent, NavbarProfileLinkComponent, NavbarProfileCreateComponent, NavbarLanguageComponent],
   templateUrl: "./navbar.component.html",
-  styleUrl: "./navbar.component.css",
+  styleUrl: "./navbar.component.css"
 })
 export class NavbarComponent implements OnInit {
   profiles: Profile[] = [];
@@ -32,12 +21,12 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     private profileService: ProfileService,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.checkViewport();
-    this.profileService.getProfiles().subscribe((v) => {
+    this.profileService.getProfiles().subscribe(v => {
       this.profiles = v;
       this.cdr.markForCheck();
     });

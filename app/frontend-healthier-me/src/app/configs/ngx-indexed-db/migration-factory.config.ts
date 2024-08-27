@@ -6,6 +6,6 @@ export function NgxIndexedDbMigrationFactory(): MigrationFactory {
       const messagesStore = transaction.objectStore("messages");
       messagesStore.createIndex("role", "role", { unique: false });
       messagesStore.createIndex("timestamp", "timestamp", { unique: false });
-    },
+    }
   };
 }

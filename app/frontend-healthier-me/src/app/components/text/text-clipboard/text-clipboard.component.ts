@@ -7,7 +7,7 @@ import { Button } from "primeng/button";
   standalone: true,
   imports: [Button],
   templateUrl: "./text-clipboard.component.html",
-  styleUrl: "./text-clipboard.component.css",
+  styleUrl: "./text-clipboard.component.css"
 })
 export class TextClipboardComponent {
   @Input() message!: string;

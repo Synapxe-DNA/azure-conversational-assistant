@@ -1,12 +1,12 @@
 export enum ApiProfileType {
   General = "general",
   Myself = "myself",
-  Others = "others",
+  Others = "others"
 }
 
 export enum ApiProfileGender {
   Male = "male",
-  Female = "female",
+  Female = "female"
 }
 
 export interface ApiProfile {

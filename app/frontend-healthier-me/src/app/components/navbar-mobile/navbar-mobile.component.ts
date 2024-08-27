@@ -27,10 +27,10 @@ import { LucideAngularModule } from "lucide-angular";
     CommonModule,
     SidebarModule,
     LucideAngularModule,
-    Button,
+    Button
   ],
   templateUrl: "./navbar-mobile.component.html",
-  styleUrl: "./navbar-mobile.component.css",
+  styleUrl: "./navbar-mobile.component.css"
 })
 export class NavbarMobileComponent implements OnInit {
   chatMode?: ChatMode;
@@ -41,15 +41,15 @@ export class NavbarMobileComponent implements OnInit {
   constructor(
     private profileService: ProfileService,
     private cdr: ChangeDetectorRef,
-    private preferences: PreferenceService,
+    private preferences: PreferenceService
   ) {
-    this.preferences.$chatMode.subscribe((m) => {
+    this.preferences.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
   }
 
   ngOnInit() {
-    this.profileService.getProfiles().subscribe((v) => {
+    this.profileService.getProfiles().subscribe(v => {
       this.profiles = v;
       this.cdr.markForCheck();
     });

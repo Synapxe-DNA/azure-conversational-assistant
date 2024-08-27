@@ -7,7 +7,7 @@ import { MessageSource } from "../../../types/message.type";
   standalone: true,
   imports: [Button],
   templateUrl: "./text-show-source.component.html",
-  styleUrl: "./text-show-source.component.css",
+  styleUrl: "./text-show-source.component.css"
 })
 export class TextShowSourceComponent {
   @Input() sources?: MessageSource[];

@@ -9,7 +9,7 @@ describe("MicrophoneButtonComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MicrophoneButtonComponent, LucideAngularModule.pick(icons)],
+      imports: [MicrophoneButtonComponent, LucideAngularModule.pick(icons)]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MicrophoneButtonComponent);

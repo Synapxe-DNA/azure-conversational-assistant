@@ -8,7 +8,7 @@ describe("VoiceAnnotationComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VoiceAnnotationComponent],
+      imports: [VoiceAnnotationComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceAnnotationComponent);

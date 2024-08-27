@@ -1,5 +1,8 @@
 <div class="tw-flex tw-justify-center tw-mt-5">
-  <button #btn [disabled]="state === MicState.DISABLED" class="
+  <button
+    #btn
+    [disabled]="state === MicState.DISABLED"
+    class="
 tw-transition tw-duration-75
 tw-w-[100px] tw-h-[100px]
 tw-rounded-full
@@ -7,15 +10,23 @@ tw-flex tw-items-center tw-justify-center
 tw-ring-solid tw-ring-inset
 tw-transform-gpu
 {{ buttonStateClasses() }}
-">
-    <lucide-icon *ngIf="(state !== MicState.DISABLED) && (!isPlaying)" name="mic" size="36"></lucide-icon>
+"
+  >
+    <lucide-icon *ngIf="state !== MicState.DISABLED && !isPlaying" name="mic" size="36"></lucide-icon>
     <!-- PENDING -->
 
-    <lucide-icon *ngIf="(state === MicState.DISABLED) && (!isPlaying)" name="mic-off" size="36"></lucide-icon>
+    <lucide-icon *ngIf="state === MicState.DISABLED && !isPlaying" name="mic-off" size="36"></lucide-icon>
     <!-- DISABLED -->
 
-    <app-waveform [bars]="4" [heightScalingFactor]="0.3" [containerHeight]="'5rem'" [containerGap]="'0.5rem'"
-      *ngIf="isPlaying" (audioLevelChange)="handleAudioLevelChange($event)"> <!-- PLAYING AUDIO -->
+    <app-waveform
+      [bars]="4"
+      [heightScalingFactor]="0.3"
+      [containerHeight]="'5rem'"
+      [containerGap]="'0.5rem'"
+      *ngIf="isPlaying"
+      (audioLevelChange)="handleAudioLevelChange($event)"
+    >
+      <!-- PLAYING AUDIO -->
     </app-waveform>
   </button>
 </div>

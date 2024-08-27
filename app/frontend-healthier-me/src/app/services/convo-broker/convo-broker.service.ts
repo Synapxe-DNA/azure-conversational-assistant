@@ -20,23 +20,17 @@ import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { Language } from "../../types/language.type";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class ConvoBrokerService {
   private recorder!: AudioRecorder;
   private recorder2!: v2AudioRecorder;
-  private activeProfile: BehaviorSubject<Profile | undefined> =
-    new BehaviorSubject<Profile | undefined>(undefined);
+  private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
-  $language: BehaviorSubject<string> = new BehaviorSubject<string>(
-    Language.Spoken,
-  );
+  $language: BehaviorSubject<string> = new BehaviorSubject<string>(Language.Spoken);
 
-  $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
-    MicState.PENDING,
-  );
-  $isWaitingForVoiceApi: BehaviorSubject<boolean> =
-    new BehaviorSubject<boolean>(false);
+  $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(MicState.PENDING);
+  $isWaitingForVoiceApi: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -46,13 +40,13 @@ export class ConvoBrokerService {
     private profileService: ProfileService,
     private vadService: VadService,
     private audioService: AudioService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {
     this.initVoiceChat().catch(console.error);
-    this.profileService.$currentProfileInUrl.subscribe((p) => {
+    this.profileService.$currentProfileInUrl.subscribe(p => {
       this.activeProfile = this.profileService.getProfile(p);
     });
-    this.preferenceService.$language.subscribe((l) => {
+    this.preferenceService.$language.subscribe(l => {
       this.$language.next(l);
     });
   }
@@ -63,13 +57,10 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder2 = new v2AudioRecorder(
-      this.chatMessageService,
-      this.profileService,
-    );
+    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
 
     // Subscriber to "open" the mic for user once API call has been completed
-    this.$isWaitingForVoiceApi.subscribe((v) => {
+    this.$isWaitingForVoiceApi.subscribe(v => {
       if (!v) {
         this.$micState.next(MicState.PENDING);
       }
@@ -77,7 +68,7 @@ export class ConvoBrokerService {
 
     // Monitor VAD activity
     this.vadService.start().subscribe({
-      next: (s) => {
+      next: s => {
         // DO NOT DO ANYTHING if chat mode is not voice
         if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
           return;
@@ -89,9 +80,7 @@ export class ConvoBrokerService {
               this.preferenceService.$voiceDetectStart.value &&
               this.$micState.value === MicState.PENDING &&
               !this.$isWaitingForVoiceApi.value &&
-              ((this.audioPlayer.$playing.value &&
-                this.preferenceService.$voiceDetectInterrupt.value) ||
-                !this.audioPlayer.$playing.value)
+              ((this.audioPlayer.$playing.value && this.preferenceService.$voiceDetectInterrupt.value) || !this.audioPlayer.$playing.value)
             ) {
               this.handleStartRecording();
             }
@@ -99,16 +88,13 @@ export class ConvoBrokerService {
           }
 
           case VoiceActivity.End: {
-            if (
-              this.preferenceService.$voiceDetectEnd.value &&
-              this.$micState.value === MicState.ACTIVE
-            ) {
+            if (this.preferenceService.$voiceDetectEnd.value && this.$micState.value === MicState.ACTIVE) {
               this.handleStopRecording();
             }
             break;
           }
         }
-      },
+      }
     });
   }
 
@@ -136,11 +122,9 @@ export class ConvoBrokerService {
     //   );
     // });
 
-    this.recorder2.stopAudioCapture().then((r) => {
+    this.recorder2.stopAudioCapture().then(r => {
       this.recorder2.socket?.close();
-      this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(
-        console.error,
-      );
+      this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
   }
 
@@ -168,19 +152,13 @@ export class ConvoBrokerService {
     const userMessageId = createId();
     const assistantMessageId: string = createId();
 
-    const history: Message[] = await this.chatMessageService.staticLoad(
-      profile.id,
-    );
+    const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
 
     let audio_base64: string[] = [];
 
-    const res = await this.endpointService.sendVoice(
-      audio,
-      this.activeProfile.value || GeneralProfile,
-      history.slice(-8),
-    );
-    res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
-      next: async (d) => {
+    const res = await this.endpointService.sendVoice(audio, this.activeProfile.value || GeneralProfile, history.slice(-8));
+    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+      next: async d => {
         if (!d) {
           return;
         }
@@ -192,7 +170,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
-          sources: [],
+          sources: []
         });
 
         // upsert assistant message
@@ -202,23 +180,21 @@ export class ConvoBrokerService {
           role: MessageRole.Assistant,
           message: d.assistant_response,
           timestamp: new Date().getTime(),
-          sources: d.sources,
+          sources: d.sources
         });
 
-        const nonNullAudio = d.assistant_response_audio.map((v) => v);
+        const nonNullAudio = d.assistant_response_audio.map(v => v);
         if (nonNullAudio.length > audio_base64.length) {
-          const newAudioStr = nonNullAudio.filter(
-            (a) => !audio_base64.includes(a),
-          );
+          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
           audio_base64 = nonNullAudio;
-          newAudioStr.forEach((a) => {
+          newAudioStr.forEach(a => {
             this.playAudioBase64(a);
           });
         }
       },
       complete: () => {
         this.$isWaitingForVoiceApi.next(false);
-      },
+      }
     });
   }
 
@@ -236,9 +212,7 @@ export class ConvoBrokerService {
     const userMessageId = createId();
     const assistantMessageId: string = createId();
 
-    const history: Message[] = await this.chatMessageService.staticLoad(
-      profile.id,
-    );
+    const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
 
     let audio_base64: string[] = [];
 
@@ -246,10 +220,10 @@ export class ConvoBrokerService {
       message,
       this.activeProfile.value || GeneralProfile,
       history.slice(-8),
-      this.$language.value || Language.Spoken,
+      this.$language.value || Language.Spoken
     );
-    res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
-      next: async (d) => {
+    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+      next: async d => {
         if (!d) {
           return;
         }
@@ -260,23 +234,21 @@ export class ConvoBrokerService {
           role: MessageRole.Assistant,
           message: d.assistant_response,
           timestamp: new Date().getTime(),
-          sources: d.sources,
+          sources: d.sources
         });
 
-        const nonNullAudio = d.assistant_response_audio.map((v) => v);
+        const nonNullAudio = d.assistant_response_audio.map(v => v);
         if (nonNullAudio.length > audio_base64.length) {
-          const newAudioStr = nonNullAudio.filter(
-            (a) => !audio_base64.includes(a),
-          );
+          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
           audio_base64 = nonNullAudio;
-          newAudioStr.forEach((a) => {
+          newAudioStr.forEach(a => {
             this.playAudioBase64(a);
           });
         }
       },
       complete: () => {
         this.$isWaitingForVoiceApi.next(false);
-      },
+      }
     });
   }
 
@@ -306,24 +278,17 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
-      sources: [],
+      sources: []
     };
     const responseMessageId = createId();
 
-    const history: Message[] = (
-      await this.chatMessageService.staticLoad(profile.id)
-    ).slice(-8);
+    const history: Message[] = (await this.chatMessageService.staticLoad(profile.id)).slice(-8);
 
     await this.chatMessageService.insert(newMessage);
 
-    const res = await this.endpointService.sendChat(
-      newMessage,
-      profile,
-      history,
-      this.$language.value || Language.Spoken,
-    );
-    res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
-      next: async (d) => {
+    const res = await this.endpointService.sendChat(newMessage, profile, history, this.$language.value || Language.Spoken);
+    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+      next: async d => {
         if (!d || !d.response) {
           return;
         }
@@ -333,12 +298,12 @@ export class ConvoBrokerService {
           message: d.response,
           timestamp: new Date().getTime(),
           role: MessageRole.Assistant,
-          sources: d.sources,
+          sources: d.sources
         });
 
         // Plan to create follow_up indexDB here
       },
-      error: console.error,
+      error: console.error
     });
   }
 }

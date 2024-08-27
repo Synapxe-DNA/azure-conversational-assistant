@@ -16,22 +16,12 @@ describe("TextInputComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        TextInputComponent,
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-        LucideAngularModule.pick(icons),
-        ReactiveFormsModule,
-      ],
-      providers: [
-        ChatMessageService,
-        ProfileService,
-        PreferenceService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [TextInputComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), LucideAngularModule.pick(icons), ReactiveFormsModule],
+      providers: [ChatMessageService, ProfileService, PreferenceService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextInputComponent);
