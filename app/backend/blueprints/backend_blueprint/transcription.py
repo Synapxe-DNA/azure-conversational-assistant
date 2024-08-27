@@ -26,7 +26,6 @@ async def ws_transcribe():
         while True:
             try:
                 result = stt.getQueue().get(timeout=0.1)
-                logging.info(f"Sending result: {result}")
                 await websocket.send_json(result)
             except queue.Empty:
                 await asyncio.sleep(0.1)

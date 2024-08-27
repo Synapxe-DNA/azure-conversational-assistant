@@ -14,9 +14,10 @@ from config import (
     CONFIG_SPEECH_SERVICE_ID,
     CONFIG_SPEECH_SERVICE_LOCATION,
     CONFIG_SPEECH_SERVICE_TOKEN,
-    CONFIG_SPEECH_SERVICE_VOICE,
 )
+from models.language import LanguageBCP47
 from quart import current_app
+from utils.utils import Utils
 
 
 class TextToSpeech:
@@ -26,10 +27,9 @@ class TextToSpeech:
         self.region = current_app.config[CONFIG_SPEECH_SERVICE_LOCATION]
         self.speech_token = speech_token
         self.auth_token = self.getAuthToken()
-        speech_config = SpeechConfig(auth_token=self.auth_token, region=self.region)
-        speech_config.speech_synthesis_voice_name = current_app.config[CONFIG_SPEECH_SERVICE_VOICE]
-        speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Webm16Khz16BitMonoOpus
-        self.speech_synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=None)
+        self.speech_config = SpeechConfig(auth_token=self.auth_token, region=self.region)
+        self.speech_config.speech_synthesis_output_format = SpeechSynthesisOutputFormat.Webm16Khz16BitMonoOpus
+        self.speech_synthesizer = SpeechSynthesizer(speech_config=self.speech_config, audio_config=None)
 
     @classmethod
     async def create(cls):
@@ -49,7 +49,14 @@ class TextToSpeech:
     def getAuthToken(self):
         return "aad#" + self.resource_id + "#" + self.speech_token.token
 
-    def readText(self, text, encode: bool):
+    def readText(self, text, encode: bool, language=None):
+        if language is None:
+            language = Utils.get_language(text)
+
+        # Force output language for /voice endpoint
+        self.speech_config.speech_synthesis_voice_name = LanguageBCP47.voice_mapping[language]
+        self.speech_synthesizer = SpeechSynthesizer(speech_config=self.speech_config, audio_config=None)
+
         text = re.sub(r"\*", "", text)  # remove * from markdown
         result: SpeechSynthesisResult = self.speech_synthesizer.speak_text_async(text).get()
         if result.reason == ResultReason.SynthesizingAudioCompleted:

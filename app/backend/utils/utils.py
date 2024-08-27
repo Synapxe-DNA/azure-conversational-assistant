@@ -27,6 +27,7 @@ class Utils:
     async def construct_streaming_response(
         result: AsyncGenerator[dict[str, Any], None],
         request_type: RequestType,
+        language: str = None,
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
@@ -45,7 +46,7 @@ class Utils:
                 text_response_chunk = ""
 
                 if error_msg is not None:
-                    yield construct_error_response(error_msg, request_type)
+                    yield construct_error_response(error_msg, request_type, language)
                 elif not thoughts == []:
                     yield construct_source_response(thoughts, request_type)
                 else:
@@ -53,6 +54,15 @@ class Utils:
                     text_response_chunk = res.get("delta", {}).get("content", "")
 
                     if text_response_chunk is None:
+                        if not response_message == "":
+                            audio_data = tts.readText(response_message, True, language)
+                            response = VoiceChatResponse(
+                                response_message=response_message,
+                                sources=[],
+                                audio_base64=audio_data,
+                            )
+                            yield response.model_dump_json()
+                            response_message = ""
                         break
 
                     if request_type == RequestType.CHAT:
@@ -65,9 +75,9 @@ class Utils:
                     else:
                         response_message += text_response_chunk
                         if bool(
-                            re.search(r"[.,!?。，！？]", text_response_chunk)
+                            re.search(r"[.,!?。，！？]\s", text_response_chunk)
                         ):  # Transcribe text only when punctuation is detected
-                            audio_data = tts.readText(response_message, True)  # remove * from markdown
+                            audio_data = tts.readText(response_message, True, language)
                             response = VoiceChatResponse(
                                 response_message=response_message,
                                 sources=[],
@@ -119,7 +129,7 @@ class Utils:
         language = json.loads(data["language"])
         print("CHOSEN LANGUAGE: ", language)
         query = json.loads(data["query"])
-        language = get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else language
+        language = Utils.get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else language
         print("DETECTED LANGUAGE: ", language)
 
         request = Request(
@@ -129,6 +139,18 @@ class Utils:
             language=language,
         )
         return request
+
+    @staticmethod
+    def get_language(query_text: str):
+        languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
+        detector = LanguageDetectorBuilder.from_languages(*languages).build()
+        language = detector.detect_language_of(query_text)
+        if language is None:
+            language = "english"
+            print("Language not detected. Defaulting to English.")
+        else:
+            language = str(language).split(".")[1].lower()  # get language name from enum
+        return language
 
 
 # Helper functions
@@ -165,7 +187,7 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
         yield json.dumps(error_dict(error))
 
 
-def construct_error_response(error_msg: str, request_type: RequestType) -> str:
+def construct_error_response(error_msg: str, request_type: RequestType, language: str) -> str:
     tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
 
     if request_type == RequestType.CHAT:
@@ -174,7 +196,7 @@ def construct_error_response(error_msg: str, request_type: RequestType) -> str:
             sources=[],
         )
     else:
-        audio_data = tts.readText(error_msg, True)
+        audio_data = tts.readText(error_msg, True, language)
         response = VoiceChatResponse(
             response_message=error_msg,
             sources=[],
@@ -198,15 +220,3 @@ def construct_source_response(thoughts: List[dict[str, Any]], request_type: Requ
             audio_base64="",
         )
     return response.model_dump_json()
-
-
-def get_language(query_text: str):
-    languages = [Language.ENGLISH, Language.CHINESE, Language.TAMIL, Language.MALAY]
-    detector = LanguageDetectorBuilder.from_languages(*languages).build()
-    language = detector.detect_language_of(query_text)
-    if language is None:
-        language = "english"
-        print("Language not detected. Defaulting to English.")
-    else:
-        language = str(language).split(".")[1].lower()  # get language name from enum
-    return language
