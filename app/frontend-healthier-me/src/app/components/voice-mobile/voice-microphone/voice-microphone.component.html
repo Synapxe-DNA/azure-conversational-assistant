@@ -15,7 +15,7 @@ tw-transform-gpu
     <!-- DISABLED -->
 
     <app-waveform [bars]="4" [heightScalingFactor]="0.3" [containerHeight]="'5rem'" [containerGap]="'0.5rem'"
-      *ngIf="isPlaying"> <!-- PLAYING AUDIO -->
+      *ngIf="isPlaying" (audioLevelChange)="handleAudioLevelChange($event)"> <!-- PLAYING AUDIO -->
     </app-waveform>
   </button>
 </div>

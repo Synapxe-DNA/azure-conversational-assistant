@@ -1,12 +1,12 @@
-<div class="tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-flex tw-flex-col tw-justify-center"
+<div class="tw-relative tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-flex tw-flex-col"
   [ngStyle]="{ backgroundColor: currentBackgroundColor }">
-  <div class="tw-flex-1 tw-overflow-y-hidden no-scrollbar">
+  <div class="tw-flex-1 tw-overflow-auto">
     <app-voice-sources [sources]="message!.sources"></app-voice-sources>
     <app-voice-message [message]="message"></app-voice-message>
     <app-voice-annotation></app-voice-annotation>
     <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"
-      (audioLevelChange)=" handleMicAudioLevelChange($event)"></app-voice-microphone>
-    <div class="tw-self-center tw-text-center tw-text-xs tw-text-white tw-mt-[100px]">
+      (audioLevelChange)="handleMicAudioLevelChange($event)"></app-voice-microphone>
+    <div class="tw-self-center tw-text-center tw-text-xs tw-text-white">
       <p>Synapxe Innovation for Good</p>
       <p>Powered By AI</p>
       <p>Synapxe 2024</p>
