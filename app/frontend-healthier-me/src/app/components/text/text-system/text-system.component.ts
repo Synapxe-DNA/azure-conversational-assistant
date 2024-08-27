@@ -4,11 +4,12 @@ import { TextSourceComponent } from "../text-source/text-source.component";
 import { TextTtsComponent } from "../text-tts/text-tts.component";
 import { TextClipboardComponent } from "../text-clipboard/text-clipboard.component";
 import { TextShowSourceComponent } from "../text-show-source/text-show-source.component";
+import { MarkdownComponent } from "../../markdown/markdown.component";
 
 @Component({
   selector: "app-text-system",
   standalone: true,
-  imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent],
+  imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent, MarkdownComponent],
   templateUrl: "./text-system.component.html",
   styleUrl: "./text-system.component.css"
 })

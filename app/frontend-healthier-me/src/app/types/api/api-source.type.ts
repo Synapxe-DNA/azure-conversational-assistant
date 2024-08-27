@@ -1,6 +1,7 @@
 export interface ApiSource {
+  id: string[];
   title: string;
-  url: string;
-  meta_description: string;
-  image_url: string;
+  cover_image_url: string;
+  full_url: string;
+  content_category: string;
 }

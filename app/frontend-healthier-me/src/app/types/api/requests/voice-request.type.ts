@@ -6,3 +6,13 @@ export interface ApiVoiceRequest {
   profile: ApiProfile;
   query: Blob;
 }
+
+export interface ApiVoiceRequest2 {
+  chat_history: ApiChatHistory[];
+  profile: ApiProfile;
+  query: {
+    role: "user";
+    content: string;
+  };
+  language: string;
+}

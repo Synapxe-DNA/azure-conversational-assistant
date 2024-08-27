@@ -76,7 +76,6 @@ export class ChatMessageService {
         });
       });
     }
-
     return this.insert(message);
   }
 }

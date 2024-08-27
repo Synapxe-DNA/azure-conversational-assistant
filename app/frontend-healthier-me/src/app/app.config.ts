@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from "@angular/core";
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, isDevMode } from "@angular/core";
 import { provideRouter } from "@angular/router";
 
 import { routes } from "./app.routes";
@@ -9,9 +9,12 @@ import { NgxIndexedDbConfig } from "./configs/ngx-indexed-db/ngx-indexed-db.conf
 import { LucideAngularModule, MessageSquare, Mic, MicOff, Settings, User, UserRoundPlus, Send, StopCircle, Copy } from "lucide-angular";
 import { ToastModule } from "primeng/toast";
 import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideServiceWorker } from "@angular/service-worker";
+import { provideMarkdown } from "ngx-markdown";
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideMarkdown(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     importProvidersFrom(BrowserModule),
@@ -31,6 +34,14 @@ export const appConfig: ApplicationConfig = {
         Copy
       })
     ),
-    importProvidersFrom(ToastModule)
+    importProvidersFrom(ToastModule),
+    provideServiceWorker("ngsw-worker.js", {
+      enabled: !isDevMode(),
+      registrationStrategy: "registerWhenStable:30000"
+    }),
+    provideServiceWorker("ngsw-worker.js", {
+      enabled: !isDevMode(),
+      registrationStrategy: "registerWhenStable:30000"
+    })
   ]
 };

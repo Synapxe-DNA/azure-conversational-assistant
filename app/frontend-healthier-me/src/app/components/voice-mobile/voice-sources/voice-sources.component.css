@@ -1,0 +1,32 @@
+.source-header {
+  width: 100%;
+}
+
+.hover-info {
+  position: absolute; /* Position it where needed */
+  top: 10px; /* Adjust positioning */
+  left: 10px; /* Adjust positioning */
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  color: white;
+  padding: 5px;
+  border-radius: 3px;
+  z-index: 1000;
+  font-size: 12px; /* Adjust font size if needed */
+}
+
+/* Ensure the container div for images maintains the fixed height */
+.image-container {
+  height: 50px; /* Set this to the desired fixed height */
+  overflow: hidden; /* Hide any overflow to maintain a clean look */
+}
+
+/* Style the images to fit within the container and maintain aspect ratio */
+.image-container img {
+  width: 100%; /* Make sure the image covers the full width */
+  height: 100%; /* Use the height of the container */
+  object-fit: contain; /* Ensure the entire image is visible without cropping */
+}
+
+.component-container {
+  margin-bottom: 100px;
+}

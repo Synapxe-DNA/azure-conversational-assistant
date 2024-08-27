@@ -1,0 +1,4 @@
+<div class="tw-flex tw-flex-col tw-px-4 tw-mx-2 tw-gap-2">
+  <label for="language">Default Language</label>
+  <p-dropdown styleClass="tw-w-[240px]" id="language" [(ngModel)]="chosenLanguage" [options]="languageOptions" (onChange)="setLanguage(chosenLanguage)" />
+</div>
