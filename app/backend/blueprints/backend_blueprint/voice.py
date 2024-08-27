@@ -25,10 +25,12 @@ async def voice_endpoint():
         result = await approach.run_stream(
             messages=Utils.form_message(voiceChatRequest.chat_history, voiceChatRequest.query),
             profile=voiceChatRequest.profile,
-            language=voiceChatRequest.language,
+            language=voiceChatRequest.language.lower(),
         )
 
-        response = await Utils.construct_streaming_response(result, RequestType.VOICE)
+        response = await Utils.construct_streaming_response(
+            result, RequestType.VOICE, voiceChatRequest.language.lower()
+        )
         return response, 200
     except Exception as error:
         return error_response(error, "/voice")
