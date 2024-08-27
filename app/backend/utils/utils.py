@@ -174,7 +174,7 @@ def construct_error_response(error_msg: str, request_type: RequestType) -> str:
             sources=[],
         )
     else:
-        audio_data = tts.readText(error_msg)
+        audio_data = tts.readText(error_msg, True)
         response = VoiceChatResponse(
             response_message=error_msg,
             sources=[],
