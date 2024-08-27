@@ -8,7 +8,7 @@ describe("WaveformComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WaveformComponent],
+      imports: [WaveformComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(WaveformComponent);

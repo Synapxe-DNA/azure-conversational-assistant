@@ -8,7 +8,7 @@ describe("NavbarLogoGroupComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarLogoGroupComponent],
+      imports: [NavbarLogoGroupComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarLogoGroupComponent);

@@ -14,21 +14,12 @@ describe("NavbarComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        NavbarComponent,
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-        LucideAngularModule.pick(icons),
-      ],
-      providers: [
-        ProfileService,
-        NgxIndexedDBService,
-        MessageService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [NavbarComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), LucideAngularModule.pick(icons)],
+      providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarComponent);

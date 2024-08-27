@@ -5,19 +5,11 @@ import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
 import { Message, MessageRole } from "../../types/message.type";
 import { ChatResponse } from "../../types/responses/chat-response.type";
-import {
-  HttpClient,
-  HttpDownloadProgressEvent,
-  HttpEventType,
-} from "@angular/common/http";
+import { HttpClient, HttpDownloadProgressEvent, HttpEventType } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
 import { ApiVoiceRequest } from "../../types/api/requests/voice-request.type";
 import { ApiChatHistory } from "../../types/api/api-chat-history.type";
-import {
-  ApiProfile,
-  ApiProfileGender,
-  ApiProfileType,
-} from "../../types/api/api-profile.type";
+import { ApiProfile, ApiProfileGender, ApiProfileType } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ResponseStatus } from "../../types/responses/response-status.type";
 import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
@@ -25,7 +17,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
@@ -34,27 +26,25 @@ export class EndpointService {
    * Method to send previous system messages to backend for audio playback
    * @param text {string}
    */
-  async textToSpeech(
-    text: string,
-  ): Promise<BehaviorSubject<{ audio: string } | null>> {
+  async textToSpeech(text: string): Promise<BehaviorSubject<{ audio: string } | null>> {
     const responseBS = new BehaviorSubject<{ audio: string } | null>(null);
 
     this.httpClient
       .post<{ audio: string }>("/speech", { text: text })
       .pipe(
-        map((response) => {
+        map(response => {
           return { audio: response.audio };
-        }),
+        })
       )
       .subscribe({
-        next: (audioData) => {
+        next: audioData => {
           responseBS.next(audioData);
           responseBS.complete();
         },
-        error: (error) => {
+        error: error => {
           console.error(error);
           responseBS.error(error);
-        },
+        }
       });
 
     return responseBS;
@@ -67,7 +57,7 @@ export class EndpointService {
    * @private
    */
   private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
-    return messages.map((m) => {
+    return messages.map(m => {
       const role = () => {
         switch (m.role) {
           case MessageRole.User:
@@ -79,7 +69,7 @@ export class EndpointService {
 
       return {
         role: role(),
-        content: m.message,
+        content: m.message
       };
     });
   }
@@ -117,7 +107,7 @@ export class EndpointService {
       profile_type: profileType(),
       user_age: profile.age || -1,
       user_condition: profile.existing_conditions,
-      user_gender: profileGender(),
+      user_gender: profileGender()
     };
   }
 
@@ -127,13 +117,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of chat to be used for LLM context
    */
-  async sendVoice(
-    recording: Blob,
-    profile: Profile,
-    history: Message[],
-  ): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> =
-      new BehaviorSubject<VoiceResponse | null>(null);
+  async sendVoice(recording: Blob, profile: Profile, history: Message[]): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
@@ -143,40 +128,34 @@ export class EndpointService {
     const data: ApiVoiceRequest = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
-      query: recording,
+      query: recording
     };
 
     this.httpClient
       .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiVoiceResponse;
+              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
               }
 
               if (responseData.response_message) {
-                currentAssistantMessage =
-                  currentAssistantMessage + responseData.response_message;
+                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
               }
 
               if (responseData.query_message) {
-                currentQueryMessage =
-                  currentQueryMessage + responseData.query_message;
+                currentQueryMessage = currentQueryMessage + responseData.query_message;
               }
 
               responseBS.next({
@@ -184,13 +163,9 @@ export class EndpointService {
                 user_transcript: currentQueryMessage,
                 assistant_response: currentAssistantMessage,
                 assistant_response_audio: existingAudio,
-                additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
-                ],
+                additional_questions: [responseData.additional_question_1, responseData.additional_question_2]
               });
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               return;
             }
             case HttpEventType.Response: {
@@ -201,7 +176,7 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;
@@ -213,13 +188,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of conversation for LLM context
    */
-  async sendChat(
-    message: Message,
-    profile: Profile,
-    history: Message[],
-  ): Promise<BehaviorSubject<ChatResponse | null>> {
-    const responseBS: BehaviorSubject<ChatResponse | null> =
-      new BehaviorSubject<ChatResponse | null>(null);
+  async sendChat(message: Message, profile: Profile, history: Message[]): Promise<BehaviorSubject<ChatResponse | null>> {
+    const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
     const responseId = createId();
 
     let lastResponseLength: number = 0;
@@ -230,27 +200,25 @@ export class EndpointService {
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        content: message.message,
-      },
+        content: message.message
+      }
     };
 
     this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
 
-              const currentResponseData = (
-                e as HttpDownloadProgressEvent
-              ).partialText!.slice(lastResponseLength);
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
               // console.log(currentResponseData)
               currentResponseMessage += currentResponseData;
               // const responseData = JSON.parse(currentResponseData) as ApiChatResponse
@@ -269,11 +237,10 @@ export class EndpointService {
                 additional_questions: [
                   // responseData.additional_question_1,
                   // responseData.additional_question_2,
-                ],
+                ]
               });
 
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               break;
             }
 
@@ -285,7 +252,7 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;

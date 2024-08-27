@@ -3,5 +3,5 @@ export enum PreferenceKey {
   VoiceDetectInterrupt = "voiceDetectInterrupt",
   VoiceDetectStart = "voiceDetectStart",
   VoiceDetectEnd = "voiceDetectEnd",
-  VoiceLiveTranscription = "voiceLiveTranscription",
+  VoiceLiveTranscription = "voiceLiveTranscription"
 }

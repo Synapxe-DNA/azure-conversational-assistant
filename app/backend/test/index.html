@@ -66,9 +66,7 @@
       <button onclick="setProfile()">Set Profile</button>
       <button onclick="sendTTS()">TTS</button>
 
-      <audio controls id="audioPlayer">
-        Your browser does not support the audio element.
-      </audio>
+      <audio controls id="audioPlayer">Your browser does not support the audio element.</audio>
     </div>
     <div></div>
 
@@ -79,15 +77,15 @@
         var response = await fetch("http://0.0.0.0:8000/profile/set", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             type: "Myself",
             age: 30,
             gender: "Male",
             existing_conditions: null,
-            name: "Bob",
-          }),
+            name: "Bob"
+          })
         });
         var text = await response.text();
         document.getElementById("result").innerHTML += text + "<br>";
@@ -109,7 +107,7 @@
           profile_type: "Myself",
           user_age: 30,
           user_gender: "Female",
-          user_condition: "Diabetes and hypertension",
+          user_condition: "Diabetes and hypertension"
         });
 
         query = { content: msg, role: "user" };
@@ -120,7 +118,7 @@
 
         const response = await fetch("http://0.0.0.0:8000/chat/stream", {
           method: "POST",
-          body: formData,
+          body: formData
         });
 
         const reader = response.body.getReader();
@@ -160,7 +158,7 @@
           profile_type: "Myself",
           user_age: 30,
           user_gender: "Female",
-          user_condition: "Diabetes and hypertension",
+          user_condition: "Diabetes and hypertension"
         });
         formData.append("query", file);
         formData.append("chat_history", JSON.stringify(chat_history));
@@ -168,7 +166,7 @@
 
         const response = await fetch("http://0.0.0.0:8000/voice", {
           method: "POST",
-          body: formData,
+          body: formData
         });
 
         const reader = response.body.getReader();
@@ -191,7 +189,7 @@
       async function sendTTS() {
         var msg = document.getElementById("message").value;
         var response = await fetch("http://0.0.0.0:8000/stream", {
-          method: "GET",
+          method: "GET"
         });
 
         const reader = response.body.getReader();

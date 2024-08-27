@@ -8,7 +8,7 @@ describe("TextShowSourceComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextShowSourceComponent],
+      imports: [TextShowSourceComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextShowSourceComponent);

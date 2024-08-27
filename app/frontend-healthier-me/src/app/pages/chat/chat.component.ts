@@ -10,13 +10,13 @@ import { Router } from "@angular/router";
   standalone: true,
   imports: [VoiceComponent, TextComponent],
   templateUrl: "./chat.component.html",
-  styleUrl: "./chat.component.css",
+  styleUrl: "./chat.component.css"
 })
 export class ChatComponent {
   chatMode?: ChatMode;
 
   constructor(private preference: PreferenceService) {
-    this.preference.$chatMode.subscribe((m) => {
+    this.preference.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
   }

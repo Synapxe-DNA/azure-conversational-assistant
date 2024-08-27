@@ -5,6 +5,6 @@ import { Component } from "@angular/core";
   standalone: true,
   imports: [],
   templateUrl: "./navbar-logo-group.component.html",
-  styleUrl: "./navbar-logo-group.component.css",
+  styleUrl: "./navbar-logo-group.component.css"
 })
 export class NavbarLogoGroupComponent {}

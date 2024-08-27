@@ -30,7 +30,7 @@ export class AudioRecorder {
     // Determine the supported MIME type and set it
     const options: { mimeType: string; extension: string }[] = [
       { mimeType: "audio/webm", extension: "webm" },
-      { mimeType: "audio/mp4", extension: "m4a" }, // typically used by Safari
+      { mimeType: "audio/mp4", extension: "m4a" } // typically used by Safari
     ];
 
     // Iterate over all available options until a suitable option is found
@@ -43,9 +43,7 @@ export class AudioRecorder {
     }
 
     if (!this.mimeType || !this.fileExtension) {
-      throw new Error(
-        "Unable to set recording option. MimeType not supported!",
-      );
+      throw new Error("Unable to set recording option. MimeType not supported!");
     }
 
     this.initializeRecorder();
@@ -59,7 +57,7 @@ export class AudioRecorder {
     this.trailingChunk = undefined;
     this.flagStartRecording = false;
     this.recorder = new MediaRecorder(this.stream, { mimeType: this.mimeType });
-    this.recorder.ondataavailable = (e) => {
+    this.recorder.ondataavailable = e => {
       this.handleChunk(e);
     };
     this.recorder.onerror = console.error;
@@ -117,14 +115,14 @@ export class AudioRecorder {
     // Reset the recorder to prepare for the next recording session
 
     this.recorder!.requestData();
-    return new Promise<{ data: Blob; extension: string }>((resolve) => {
+    return new Promise<{ data: Blob; extension: string }>(resolve => {
       // Handle stop event triggered by AudioRecorder.handleChunk
       this.flagChunkRecorded.pipe(first()).subscribe(() => {
         console.log(this.mimeType);
         const finalBlob = new Blob(this.chunks, { type: this.mimeType });
         resolve({
           data: finalBlob,
-          extension: this.fileExtension,
+          extension: this.fileExtension
         });
         this.initializeRecorder();
       });

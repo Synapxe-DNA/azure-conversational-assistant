@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-} from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { AudioService } from "../../services/audio/audio.service";
 import { AudioAnalyser } from "../../utils/audio-analyser";
 import { AudioPlayerService } from "../../services/audio-player/audio-player.service";
@@ -17,7 +8,7 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
   standalone: true,
   imports: [],
   templateUrl: "./waveform.component.html",
-  styleUrl: "./waveform.component.css",
+  styleUrl: "./waveform.component.css"
 })
 export class WaveformComponent implements AfterViewInit {
   @Input() bars!: number;
@@ -31,7 +22,7 @@ export class WaveformComponent implements AfterViewInit {
 
   constructor(
     private audioService: AudioService,
-    private audioPlayerService: AudioPlayerService,
+    private audioPlayerService: AudioPlayerService
   ) {}
 
   ngAfterViewInit() {
@@ -44,14 +35,10 @@ export class WaveformComponent implements AfterViewInit {
   }
 
   async startAnalyser() {
-    this.audioPlayerService.getAudioStream().subscribe((v) => {
+    this.audioPlayerService.getAudioStream().subscribe(v => {
       if (v) {
         // One more bar is added so that the "highest" frequency bar is attainable with regular voice
-        this.audioAnalyser = new AudioAnalyser(
-          v as MediaStream,
-          this.bars + 1,
-          0.3,
-        );
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, this.bars + 1, 0.3);
       }
     });
   }

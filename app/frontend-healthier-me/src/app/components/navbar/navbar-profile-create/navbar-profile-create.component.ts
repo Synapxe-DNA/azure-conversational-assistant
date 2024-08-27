@@ -6,6 +6,6 @@ import { LucideAngularModule } from "lucide-angular";
   standalone: true,
   imports: [LucideAngularModule],
   templateUrl: "./navbar-profile-create.component.html",
-  styleUrl: "./navbar-profile-create.component.css",
+  styleUrl: "./navbar-profile-create.component.css"
 })
 export class NavbarProfileCreateComponent {}
