@@ -1,12 +1,11 @@
-import { ApiChatHistory } from "../api-chat-history.type";
+import { ApiChatHistorywithSources } from "../api-chat-history.type";
 import { ApiProfile } from "../api-profile.type";
 
 export interface ApiFeedbackRequest {
-  chatHistory: ApiChatHistory[];
-  label: string;
-  category: string;
-  remarks: string;
-  userProfile: ApiProfile;
-  retrievedSources: string;
-  userId: string;
+  date_time: string;
+  feedback_type: string;
+  feedback_category: string;
+  feedback_remarks: string;
+  user_profile: ApiProfile;
+  chat_history: ApiChatHistorywithSources[];
 }

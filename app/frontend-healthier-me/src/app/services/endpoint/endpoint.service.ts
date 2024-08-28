@@ -11,8 +11,14 @@ import {
   HttpEventType,
 } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
-import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
-import { ApiChatHistory } from "../../types/api/api-chat-history.type";
+import {
+  ApiVoiceRequest,
+  ApiVoiceRequest2,
+} from "../../types/api/requests/voice-request.type";
+import {
+  ApiChatHistory,
+  ApiChatHistorywithSources,
+} from "../../types/api/api-chat-history.type";
 import {
   ApiProfile,
   ApiProfileGender,
@@ -24,6 +30,8 @@ import { ResponseStatus } from "../../types/responses/response-status.type";
 import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
+import { Feedback } from "../../types/feedback.type";
+import { ApiFeedbackRequest } from "../../types/api/requests/feedback-request.type";
 
 @Injectable({
   providedIn: "root",
@@ -79,7 +87,26 @@ export class EndpointService {
       };
     });
   }
+  private messageToApiChatHistoryWithSources(
+    messages: Message[]
+  ): ApiChatHistorywithSources[] {
+    return messages.map((m) => {
+      const role = () => {
+        switch (m.role) {
+          case MessageRole.User:
+            return "user";
+          case MessageRole.Assistant:
+            return "assistant";
+        }
+      };
 
+      return {
+        role: role(),
+        content: m.message,
+        sources: m.sources,
+      };
+    });
+  }
   /**
    * Method to convert profile (frontend format) to format suitable for backend consumption
    * @param profile {Profile}
@@ -249,7 +276,7 @@ export class EndpointService {
                 )
               ) as ApiVoiceResponse;
 
-              console.log('responseData', responseData)
+              console.log("responseData", responseData);
 
               if (responseData.audio_base64) {
                 existingAudio.push(responseData.audio_base64);
@@ -266,7 +293,7 @@ export class EndpointService {
               }
 
               if (responseData.sources) {
-                currentSources.push(...responseData.sources)
+                currentSources.push(...responseData.sources);
               }
 
               responseBS.next({
@@ -278,7 +305,7 @@ export class EndpointService {
                   responseData.additional_question_1,
                   responseData.additional_question_2,
                 ],
-                sources: currentSources
+                sources: currentSources,
               });
               lastResponseLength =
                 (e as HttpDownloadProgressEvent).partialText?.length || 0;
@@ -307,7 +334,7 @@ export class EndpointService {
   async sendChat(
     message: Message,
     profile: Profile,
-    history: Message[],
+    history: Message[]
   ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> =
       new BehaviorSubject<ChatResponse | null>(null);
@@ -348,13 +375,12 @@ export class EndpointService {
 
               // parse chunks into multiple json objects
 
-              const jsonParsed = this.parseSendChat(currentResponseData)
+              const jsonParsed = this.parseSendChat(currentResponseData);
 
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
-              currentSources.push(...jsonParsed[1])
-              
-            
+              currentSources.push(...jsonParsed[1]);
+
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
@@ -384,47 +410,60 @@ export class EndpointService {
     return responseBS;
   }
 
+  async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
+    const data: ApiFeedbackRequest = {
+      date_time: feedback.datetime,
+      feedback_type: feedback.label,
+      feedback_category: feedback.category,
+      feedback_remarks: feedback.remarks,
+      user_profile: this.profileToApiProfile(profile),
+      chat_history: this.messageToApiChatHistoryWithSources(
+        feedback.chat_history
+      ),
+    };
+
+    this.httpClient.post("/feedback", data);
+  }
+
   // Function to extract individual JSON objects from a concatenated raw JSON string
-private extractJsonObjects(rawString: string): string[] {
-  // Regular expression to match JSON objects
-  const jsonObjects: string[] = [];
-  const jsonRegex = /\{.*?\}(?=\{|\s*$)/g;  // Regex to capture non-nested JSON objects
-  let match;
+  private extractJsonObjects(rawString: string): string[] {
+    // Regular expression to match JSON objects
+    const jsonObjects: string[] = [];
+    const jsonRegex = /\{.*?\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
+    let match;
 
-  // Find all matches
-  while ((match = jsonRegex.exec(rawString)) !== null) {
+    // Find all matches
+    while ((match = jsonRegex.exec(rawString)) !== null) {
       jsonObjects.push(match[0]);
+    }
+    // console.log(jsonObjects)
+
+    return jsonObjects;
   }
-  // console.log(jsonObjects)
 
-  return jsonObjects;
-}
+  // Function to aggregate response messages from concatenated JSON objects
+  private parseSendChat(rawJsonString: string): any[] {
+    let aggregatedResponseMessage: string = "";
+    let aggregatedSources: [] = [];
 
-// Function to aggregate response messages from concatenated JSON objects
- private parseSendChat(rawJsonString: string): any[] {
-  let aggregatedResponseMessage: string = '';
-  let aggregatedSources: [] = []; 
+    // Extract individual JSON objects
+    const jsonObjects = this.extractJsonObjects(rawJsonString);
 
-  // Extract individual JSON objects
-  const jsonObjects = this.extractJsonObjects(rawJsonString);
-
-  // Process each JSON object
-  for (const jsonObject of jsonObjects) {
+    // Process each JSON object
+    for (const jsonObject of jsonObjects) {
       try {
-          // Parse the JSON object
-          const data = JSON.parse(jsonObject);
+        // Parse the JSON object
+        const data = JSON.parse(jsonObject);
 
-          // Extract and append the response message
-          const responseMessage: string = data.response_message || '';
-          const sources: [] = data.sources || [];
-          aggregatedResponseMessage += responseMessage;
-          aggregatedSources.push(...sources)
-
-
+        // Extract and append the response message
+        const responseMessage: string = data.response_message || "";
+        const sources: [] = data.sources || [];
+        aggregatedResponseMessage += responseMessage;
+        aggregatedSources.push(...sources);
       } catch (error) {
-          console.error('Error decoding JSON:', error);
+        console.error("Error decoding JSON:", error);
       }
+    }
+    return [aggregatedResponseMessage, aggregatedSources];
   }
-  return [aggregatedResponseMessage, aggregatedSources];
-}
 }

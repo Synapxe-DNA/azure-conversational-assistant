@@ -29,7 +29,7 @@ import { ChatMessageService } from "../../services/chat-message/chat-message.ser
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 
 @Component({
-  selector: 'app-voice-mobile',
+  selector: "app-voice-mobile",
   standalone: true,
   imports: [
     WaveformComponent,
@@ -47,21 +47,21 @@ import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
     VoiceAnnotationComponent,
     VoiceMicrophoneComponent,
   ],
-  templateUrl: './voice-mobile.component.html',
-  styleUrl: './voice-mobile.component.css'
+  templateUrl: "./voice-mobile.component.html",
+  styleUrl: "./voice-mobile.component.css",
 })
-export class VoiceMobileComponent{
+export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    true,
+    true
   );
   // private recorder: AudioRecorder | undefined;
-  private recorder2: v2AudioRecorder | undefined
+  private recorder2: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
     Profile | undefined
   >(undefined);
 
   micState: MicState = MicState.PENDING;
-  message?: Message
+  message?: Message;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -74,39 +74,40 @@ export class VoiceMobileComponent{
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService,
+    private chatMessageService: ChatMessageService
   ) {
     this.message = {
       role: MessageRole.Assistant,
       sources: [],
       timestamp: 0,
       id: "",
-      profile_id:'',
-      message: '',
-    }
+      profile_id: "",
+      message: "",
+    };
   }
 
   ngOnInit() {
     this.profileService.setProfileInUrl(
-      this.route.snapshot.paramMap.get("profileId")!,
+      this.route.snapshot.paramMap.get("profileId")!
     );
 
     this.preference.$voiceDetectInterrupt.subscribe((v) => {
       this.voiceInterrupt = v;
     });
     this.preference.$voiceDetectStart.subscribe(
-      (v) => (this.voiceDetectStart = v),
+      (v) => (this.voiceDetectStart = v)
     );
     this.preference.$voiceDetectEnd.subscribe((v) => (this.voiceDetectEnd = v));
     this.preference.$showLiveTranscription.subscribe(
-      (v) => (this.showLiveTranscription = v),
+      (v) => (this.showLiveTranscription = v)
     );
     this.convoBroker.$micState.subscribe((v) => (this.micState = v));
   }
 
-  ngAfterViewInit() {    
-    this.profile = this.profileService
-      .getProfile(this.route.snapshot.paramMap.get("profileId") as string)
+  ngAfterViewInit() {
+    this.profile = this.profileService.getProfile(
+      this.route.snapshot.paramMap.get("profileId") as string
+    );
 
     this.profile.subscribe((p) => {
       if (!p) {
@@ -115,6 +116,10 @@ export class VoiceMobileComponent{
       this.chatMessageService.load(p.id).then((m) => {
         m.subscribe((messages) => {
           this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
+
+          if (this.message === undefined) {
+            this.upsertIntroMessage(p.id);
+          }
         });
       });
     });
@@ -124,7 +129,10 @@ export class VoiceMobileComponent{
 
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService
+    );
   }
 
   handleMicButtonClick() {
@@ -147,4 +155,23 @@ export class VoiceMobileComponent{
     this.preference.setVoiceDetectEnd(e.checked);
   }
 
+  private async upsertIntroMessage(profileId: string): Promise<void> {
+    const introMessage: Message = {
+      id: "intro-message", // Assign a unique ID for the intro message
+      profile_id: profileId,
+      role: MessageRole.Assistant,
+      message: "Welcome! How can I assist you today?",
+      timestamp: Date.now(),
+      sources: [],
+    };
+
+    await this.chatMessageService.upsert(introMessage);
+
+    // After upserting, refresh the message list to ensure it's reflected
+    this.message = await this.chatMessageService
+      .staticLoad(profileId)
+      .then(
+        (messages) => messages.sort((b, a) => a.timestamp - b.timestamp)[0]
+      );
+  }
 }
