@@ -91,32 +91,26 @@ class Utils:
     @staticmethod
     async def construct_feedback_for_storing(feedback_request: FeedbackRequest) -> FeedbackStore:
         search_client: SearchClient = current_app.config[CONFIG_SEARCH_CLIENT]
-        sources: List[SourceWithChunk] = []
-        for source in feedback_request.retrieved_sources:
-            for id in source.ids:
-                result = await search_client.get_document(id)  # Retrieve text chunks via id
-                sources.append(
-                    SourceWithChunk(
+        for chatHistory in feedback_request.chat_history:
+            sources: List[SourceWithChunk] = []
+            for source in chatHistory.sources:
+                print("SOURCE ID MAN")
+                print(source.ids)
+                print(type(source.ids))
+                for id in source.ids:
+                    result = await search_client.get_document(id)  # Retrieve text chunks via id
+                    src = SourceWithChunk(
                         id=id,
                         title=source.title,
                         cover_image_url=source.cover_image_url,
                         full_url=source.full_url,
                         content_category=source.content_category,
                         chunk=result["chunks"],
-                    )  # Attribute name may change based on data
-                )
+                    )
+                    sources.append(src)
+            chatHistory.sources = sources
 
-        feedback_store = FeedbackStore(
-            date_time=feedback_request.date_time,
-            feedback_type=feedback_request.feedback_type,
-            feedback_category=feedback_request.feedback_category,
-            feedback_remarks=feedback_request.feedback_remarks,
-            user_profile=feedback_request.user_profile,
-            chat_history=feedback_request.chat_history,
-            retrieved_sources=sources,
-        )
-
-        return feedback_store
+        return feedback_request
 
     @staticmethod
     def form_message(chat_history_list: List[ChatHistory], query: dict[str, str]) -> list[dict[str, Any]]:
