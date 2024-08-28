@@ -32,7 +32,6 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
 
 @Component({
   selector: "app-voice-mobile",
-  selector: "app-voice-mobile",
   standalone: true,
   imports: [
     WaveformComponent,
@@ -53,21 +52,15 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
   ],
   templateUrl: "./voice-mobile.component.html",
   styleUrl: "./voice-mobile.component.css"
-  templateUrl: "./voice-mobile.component.html",
-  styleUrl: "./voice-mobile.component.css",
 })
 export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-export class VoiceMobileComponent {
-  private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-    true
-  );
   // private recorder: AudioRecorder | undefined;
-  private recorder2: v2AudioRecorder | undefined;;
+  private recorder2: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   micState: MicState = MicState.PENDING;
-  message?: Message;;
+  message?: Message;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -82,7 +75,7 @@ export class VoiceMobileComponent {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService
+    private chatMessageService: ChatMessageService,
     private audioPlayerService: AudioPlayerService
   ) {
     this.message = {
@@ -135,10 +128,7 @@ export class VoiceMobileComponent {
 
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(
-      this.chatMessageService,
-      this.profileService
-    );
+    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {
@@ -177,16 +167,12 @@ export class VoiceMobileComponent {
       role: MessageRole.Assistant,
       message: "Welcome! How can I assist you today?",
       timestamp: Date.now(),
-      sources: [],
+      sources: []
     };
 
     await this.chatMessageService.upsert(introMessage);
 
     // After upserting, refresh the message list to ensure it's reflected
-    this.message = await this.chatMessageService
-      .staticLoad(profileId)
-      .then(
-        (messages) => messages.sort((b, a) => a.timestamp - b.timestamp)[0]
-      );
+    this.message = await this.chatMessageService.staticLoad(profileId).then(messages => messages.sort((b, a) => a.timestamp - b.timestamp)[0]);
   }
 }

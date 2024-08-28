@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { MessageRole } from "../../types/message.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
 import { Profile } from "../../types/profile.type";

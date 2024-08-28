@@ -8,7 +8,7 @@ import { ChatResponse } from "../../types/responses/chat-response.type";
 import { HttpClient, HttpDownloadProgressEvent, HttpEventType } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
 import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
-import { ApiChatHistory } from "../../types/api/api-chat-history.type";
+import { ApiChatHistory, ApiChatHistorywithSources } from "../../types/api/api-chat-history.type";
 import { ApiProfile, ApiProfileGender, ApiProfileType } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ApiSource } from "../../types/api/api-source.type";
@@ -68,6 +68,25 @@ export class EndpointService {
       return {
         role: role(),
         content: m.message
+      };
+    });
+  }
+
+  private messageToApiChatHistoryWithSources(messages: Message[]): ApiChatHistorywithSources[] {
+    return messages.map(m => {
+      const role = () => {
+        switch (m.role) {
+          case MessageRole.User:
+            return "user";
+          case MessageRole.Assistant:
+            return "assistant";
+        }
+      };
+
+      return {
+        role: role(),
+        content: m.message,
+        sources: m.sources
       };
     });
   }
