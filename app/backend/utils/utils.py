@@ -94,9 +94,6 @@ class Utils:
         for chatHistory in feedback_request.chat_history:
             sources: List[SourceWithChunk] = []
             for source in chatHistory.sources:
-                print("SOURCE ID MAN")
-                print(source.ids)
-                print(type(source.ids))
                 for id in source.ids:
                     result = await search_client.get_document(id)  # Retrieve text chunks via id
                     src = SourceWithChunk(
