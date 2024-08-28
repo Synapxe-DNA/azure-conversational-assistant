@@ -32,22 +32,21 @@ export class VoiceSourcesComponent implements OnInit {
   // Method to get the image URL
   getImageUrl(coverImageUrl: string | null): string {
     // Check if coverImageUrl is 'None' or falsy and return the fallback image URL
-    console.log("coverImageUrl: ", coverImageUrl);
     return coverImageUrl && coverImageUrl !== "None"
       ? coverImageUrl
       : this.imgUrl;
   }
 
-  // Method to log the image URL
-  logImageUrl(url: string | null): void {
-    if (url && url !== "None") {
-      console.log("Image URL:", url);
-      this.hoveredImageUrl = url; // Set the hovered image URL
-    }
-  }
+  // // Method to log the image URL
+  // logImageUrl(url: string | null): void {
+  //   if (url && url !== "None") {
+  //     console.log("Image URL:", url);
+  //     this.hoveredImageUrl = url; // Set the hovered image URL
+  //   }
+  // }
 
-  // Method to clear the log
-  clearLog(): void {
-    this.hoveredImageUrl = null; // Clear the hovered image URL
-  }
+  // // Method to clear the log
+  // clearLog(): void {
+  //   this.hoveredImageUrl = null; // Clear the hovered image URL
+  // }
 }

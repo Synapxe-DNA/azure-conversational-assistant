@@ -12,7 +12,33 @@
     </p-button>
 </div>
 
+<!-- Feedback Modal -->
 <p-dialog [(visible)]="displayModal" [modal]="true" [closable]="true" header="Feedback">
+
+    <!-- Static Category Buttons -->
+    <div class="tw-flex tw-justify-between tw-mt-4 tw-gap-2 tw-mb-2">
+        <p-button 
+            label="Outdated Sources" 
+            (click)="selectCategory('Outdated Sources')" 
+            [severity]="selectedCategory === 'Outdated Sources' ? 'success' : 'secondary'">
+        </p-button>
+        <p-button 
+            label="Not Factually Correct" 
+            (click)="selectCategory('Not Factually Correct')" 
+            [severity]="selectedCategory === 'Not Factually Correct' ? 'success' : 'secondary'">
+        </p-button>
+        <p-button 
+            label="Does Not Answer Question" 
+            (click)="selectCategory('Does Not Answer Question')" 
+            [severity]="selectedCategory === 'Does Not Answer Question' ? 'success' : 'secondary'">
+        </p-button>
+        <p-button 
+            label="Others" 
+            (click)="selectCategory('Others')" 
+            [severity]="selectedCategory === 'Others' ? 'success' : 'secondary'">
+        </p-button>
+    </div>
+    
     <div class="field">
         <label for="feedback">Remarks:</label>
         <textarea
@@ -25,6 +51,7 @@
             class="tw-w-full tw-p-2 tw-rounded-lg tw-border-2"
         ></textarea>
     </div>
+
     <div class="tw-mt-3">
         <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
     </div>
@@ -33,6 +60,4 @@
 <!-- Confirmation Modal -->
 <p-dialog [(visible)]="confirmationModal" [modal]="true" [closable]="true" header="Thank You">
     <p>Your feedback has been submitted. Thank you!</p>
-    <div class="tw-mt-3">
-    </div>
 </p-dialog>

@@ -28,7 +28,7 @@ export class ConvoBrokerService {
     new BehaviorSubject<Profile | undefined>(undefined);
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(
-    MicState.PENDING,
+    MicState.PENDING
   );
   $isWaitingForVoiceApi: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(false);
@@ -41,7 +41,7 @@ export class ConvoBrokerService {
     private profileService: ProfileService,
     private vadService: VadService,
     private audioService: AudioService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe((p) => {
@@ -55,7 +55,10 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService)
+    this.recorder2 = new v2AudioRecorder(
+      this.chatMessageService,
+      this.profileService
+    );
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe((v) => {
@@ -109,7 +112,7 @@ export class ConvoBrokerService {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
-    this.recorder2.setupWebSocket()
+    this.recorder2.setupWebSocket();
   }
 
   /**
@@ -126,9 +129,9 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then((r) => {
-      this.recorder2.socket?.close()
+      this.recorder2.socket?.close();
       this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(
-        console.error,
+        console.error
       );
     });
   }
@@ -158,7 +161,7 @@ export class ConvoBrokerService {
     const assistantMessageId: string = createId();
 
     const history: Message[] = await this.chatMessageService.staticLoad(
-      profile.id,
+      profile.id
     );
 
     let audio_base64: string[] = [];
@@ -166,7 +169,7 @@ export class ConvoBrokerService {
     const res = await this.endpointService.sendVoice(
       audio,
       this.activeProfile.value || GeneralProfile,
-      history.slice(-8),
+      history.slice(-8)
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
@@ -181,7 +184,7 @@ export class ConvoBrokerService {
           role: MessageRole.User,
           message: d.user_transcript,
           timestamp: requestTime,
-          sources: []
+          sources: [],
         });
 
         // upsert assistant message
@@ -197,7 +200,7 @@ export class ConvoBrokerService {
         const nonNullAudio = d.assistant_response_audio.map((v) => v);
         if (nonNullAudio.length > audio_base64.length) {
           const newAudioStr = nonNullAudio.filter(
-            (a) => !audio_base64.includes(a),
+            (a) => !audio_base64.includes(a)
           );
           audio_base64 = nonNullAudio;
           newAudioStr.forEach((a) => {
@@ -226,7 +229,7 @@ export class ConvoBrokerService {
     const assistantMessageId: string = createId();
 
     const history: Message[] = await this.chatMessageService.staticLoad(
-      profile.id,
+      profile.id
     );
 
     let audio_base64: string[] = [];
@@ -234,7 +237,7 @@ export class ConvoBrokerService {
     const res = await this.endpointService.sendVoice2(
       message,
       this.activeProfile.value || GeneralProfile,
-      history.slice(-8),
+      history.slice(-8)
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {
@@ -254,7 +257,7 @@ export class ConvoBrokerService {
         const nonNullAudio = d.assistant_response_audio.map((v) => v);
         if (nonNullAudio.length > audio_base64.length) {
           const newAudioStr = nonNullAudio.filter(
-            (a) => !audio_base64.includes(a),
+            (a) => !audio_base64.includes(a)
           );
           audio_base64 = nonNullAudio;
           newAudioStr.forEach((a) => {
@@ -294,7 +297,7 @@ export class ConvoBrokerService {
       profile_id: profile.id,
       role: MessageRole.User,
       timestamp: new Date().getTime(),
-      sources: []
+      sources: [],
     };
     const responseMessageId = createId();
 
@@ -307,7 +310,7 @@ export class ConvoBrokerService {
     const res = await this.endpointService.sendChat(
       newMessage,
       profile,
-      history,
+      history
     );
     res.pipe(takeWhile((d) => d?.status !== "DONE", true)).subscribe({
       next: async (d) => {

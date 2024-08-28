@@ -1,0 +1,12 @@
+/* Default button style */
+.default-button {
+  background-color: gray !important; /* Primary color */
+  border-color: #007bff !important;
+  color: white !important;
+}
+
+/* Highlighted (selected) button style */
+.selected-button {
+  color: #007bff !important; /* Success color */
+  border-color: #007bff !important;
+}

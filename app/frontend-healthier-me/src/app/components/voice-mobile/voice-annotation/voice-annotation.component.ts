@@ -15,10 +15,16 @@ export class VoiceAnnotationComponent {
   confirmationModal: boolean = false;
   feedback: String = "";
   rating: Number = -1;
+  selectedCategory: string | null = null;
 
   showDialog(rating: Number) {
     this.displayModal = true;
     this.rating = rating;
+  }
+
+  selectCategory(category: string) {
+    this.selectedCategory = category;
+    console.log(`Selected category: ${category}`);
   }
 
   submitFeedback() {
