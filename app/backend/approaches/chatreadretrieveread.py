@@ -37,7 +37,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         search_client: SearchClient,
         auth_helper: AuthenticationHelper,
         openai_client: AsyncOpenAI,
-        openai_client_2: AsyncOpenAI,
         chatgpt_model: str,
         chatgpt_deployment: Optional[str],  # Not needed for non-Azure OpenAI
         embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
@@ -47,11 +46,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         content_field: str,
         query_language: str,
         query_speller: str,
-        whisper_deployment: str,
     ):
         self.search_client = search_client
         self.openai_client = openai_client
-        self.openai_client_2 = openai_client_2
         self.auth_helper = auth_helper
         self.chatgpt_model = chatgpt_model
         self.chatgpt_deployment = chatgpt_deployment
@@ -62,7 +59,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self.content_field = content_field
         self.query_language = query_language
         self.query_speller = query_speller
-        self.whisiper_deployment = whisper_deployment
         # See: https://github.com/pamelafox/openai-messages-token-helper/issues/16
         self.chatgpt_token_limit = get_token_limit(chatgpt_model)  # gpt-4o-mini not yet supported
 
@@ -81,6 +77,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
@@ -91,6 +88,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
@@ -100,6 +98,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,
@@ -121,9 +120,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
-        selected_language = (
-            config.SELECTED_LANGUAGE
-        )  # to be removed. variable to come from frontend user selection instead of config file
+        selected_language = language.upper()
+        print(f"Selected language: {selected_language}")
+        print(f"Profile Type: {profile.profile_type}")
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -149,8 +148,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         else:
             user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
 
-        print(f"user_query_request: {user_query_request}")
-
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -173,7 +170,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(selected_language=selected_language)
+            answer_generation_prompt = general_prompt.format(language=selected_language)
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
@@ -182,7 +179,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
-                selected_language=selected_language,
+                language=selected_language,
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -214,8 +211,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
-        # print(f"query_text: {query_text}")
-
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
 
         # If retrieval mode includes vectors, compute an embedding for the query
@@ -237,15 +232,11 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
-        print(sources_content)
 
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        # print(f"chat history: {messages[:-1]}")
-
-        # response_token_limit = 1024
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,

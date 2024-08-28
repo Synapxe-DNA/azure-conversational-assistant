@@ -9,7 +9,7 @@ describe("TextUserComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextUserComponent],
+      imports: [TextUserComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextUserComponent);
@@ -19,7 +19,7 @@ describe("TextUserComponent", () => {
       timestamp: 1,
       profile_id: "123",
       role: MessageRole.User,
-      message: "testing message",
+      message: "testing message"
     };
     fixture.detectChanges();
   });

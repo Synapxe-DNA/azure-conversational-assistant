@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { VoiceMicrophoneComponent } from './voice-microphone.component';
+import { VoiceMicrophoneComponent } from "./voice-microphone.component";
 
-describe('VoiceMicrophoneComponent', () => {
+describe("VoiceMicrophoneComponent", () => {
   let component: VoiceMicrophoneComponent;
   let fixture: ComponentFixture<VoiceMicrophoneComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [VoiceMicrophoneComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceMicrophoneComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

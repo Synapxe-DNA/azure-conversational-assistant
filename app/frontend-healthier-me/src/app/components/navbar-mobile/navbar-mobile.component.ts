@@ -1,8 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { NavbarLogoGroupComponent } from "../navbar/navbar-logo-group/navbar-logo-group.component";
 import { NavbarLineComponent } from "../navbar/navbar-line/navbar-line.component";
 import { NavbarProfileLinkComponent } from "../navbar/navbar-profile-links/navbar-profile-link.component";
@@ -14,11 +10,12 @@ import { Button } from "primeng/button";
 import { CommonModule } from "@angular/common";
 import { PreferenceService } from "../../services/preference/preference.service";
 import { ChatMode } from "../../types/chat-mode.type";
-import { SidebarModule } from 'primeng/sidebar';
+import { SidebarModule } from "primeng/sidebar";
 import { NavbarComponent } from "../navbar/navbar.component";
+import { LucideAngularModule } from "lucide-angular";
 
 @Component({
-  selector: 'app-navbar-mobile',
+  selector: "app-navbar-mobile",
   standalone: true,
   imports: [
     NavbarLogoGroupComponent,
@@ -27,14 +24,15 @@ import { NavbarComponent } from "../navbar/navbar.component";
     NavbarProfileCreateComponent,
     NavbarLanguageComponent,
     NavbarComponent,
-    Button,
     CommonModule,
-    SidebarModule
+    SidebarModule,
+    LucideAngularModule,
+    Button
   ],
-  templateUrl: './navbar-mobile.component.html',
-  styleUrl: './navbar-mobile.component.css'
+  templateUrl: "./navbar-mobile.component.html",
+  styleUrl: "./navbar-mobile.component.css"
 })
-export class NavbarMobileComponent implements OnInit{
+export class NavbarMobileComponent implements OnInit {
   chatMode?: ChatMode;
   profiles: Profile[] = [];
   sidebar: boolean = false;
@@ -43,15 +41,15 @@ export class NavbarMobileComponent implements OnInit{
   constructor(
     private profileService: ProfileService,
     private cdr: ChangeDetectorRef,
-    private preferences: PreferenceService,
+    private preferences: PreferenceService
   ) {
-    this.preferences.$chatMode.subscribe((m) => {
+    this.preferences.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
   }
 
   ngOnInit() {
-    this.profileService.getProfiles().subscribe((v) => {
+    this.profileService.getProfiles().subscribe(v => {
       this.profiles = v;
       this.cdr.markForCheck();
     });
@@ -61,7 +59,7 @@ export class NavbarMobileComponent implements OnInit{
     this.sidebar = !this.sidebar;
     this.firstLoad = false;
   }
-  
+
   closeSidebar() {
     this.sidebar = false;
   }
@@ -70,12 +68,13 @@ export class NavbarMobileComponent implements OnInit{
     switch (this.chatMode) {
       case ChatMode.Voice:
         this.preferences.setChatMode(ChatMode.Text);
-        break
+        break;
       case ChatMode.Text:
         this.preferences.setChatMode(ChatMode.Voice);
-        break
+        break;
     }
   }
 
   protected readonly GeneralProfile = GeneralProfile;
+  protected readonly ChatMode = ChatMode;
 }

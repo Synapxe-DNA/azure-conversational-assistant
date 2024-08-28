@@ -21,6 +21,7 @@ function func_backend {
     Push-Location ..
     Write-Host 'Creating python virtual environment ".venv"'
     python3 -m venv .venv
+    pip install -r app/backend/requirements.txt
 
     Write-Host "`nRestoring backend python packages`n"
 

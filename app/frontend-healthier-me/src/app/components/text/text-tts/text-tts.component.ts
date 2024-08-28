@@ -8,7 +8,7 @@ import { AudioPlayerService } from "../../../services/audio-player/audio-player.
   standalone: true,
   imports: [Button],
   templateUrl: "./text-tts.component.html",
-  styleUrl: "./text-tts.component.css",
+  styleUrl: "./text-tts.component.css"
 })
 export class TextTtsComponent {
   @Input() message!: string;
@@ -20,19 +20,17 @@ export class TextTtsComponent {
 
   async textToSpeech() {
     try {
-      const audioSubject = await this.endpointService.textToSpeech(
-        this.message
-      );
+      const audioSubject = await this.endpointService.textToSpeech(this.message);
 
       audioSubject.subscribe({
-        next: (blob) => {
+        next: blob => {
           if (blob) {
             this.audioPlayerService.play(blob);
           }
         },
-        error: (error) => {
+        error: error => {
           console.error("Error:", error);
-        },
+        }
       });
     } catch (error) {
       console.error("Failed to get BehaviorSubject:", error);

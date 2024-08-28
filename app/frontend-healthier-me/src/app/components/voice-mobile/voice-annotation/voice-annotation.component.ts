@@ -10,7 +10,7 @@ import { Feedback } from "../../../types/feedback.type";
   standalone: true,
   imports: [ButtonModule, DialogModule, FormsModule],
   templateUrl: "./voice-annotation.component.html",
-  styleUrls: ["./voice-annotation.component.css"],
+  styleUrls: ["./voice-annotation.component.css"]
 })
 export class VoiceAnnotationComponent {
   displayModal: boolean = false;

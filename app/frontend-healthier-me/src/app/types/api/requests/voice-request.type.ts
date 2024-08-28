@@ -10,5 +10,9 @@ export interface ApiVoiceRequest {
 export interface ApiVoiceRequest2 {
   chat_history: ApiChatHistory[];
   profile: ApiProfile;
-  query: string;
+  query: {
+    role: "user";
+    content: string;
+  };
+  language: string;
 }

@@ -12,24 +12,21 @@ tw-transform-gpu
 {{ buttonStateClasses() }}
 "
   >
-    <lucide-icon
-      *ngIf="state !== MicState.DISABLED"
-      name="mic"
-      size="36"
-    ></lucide-icon>
+    <lucide-icon *ngIf="state !== MicState.DISABLED && !isPlaying" name="mic" size="36"></lucide-icon>
+    <!-- PENDING -->
 
-    <!-- <lucide-icon
-    *ngIf="state === MicState.DISABLED"
-    name="mic-off"
-    size="36"
-  ></lucide-icon> -->
+    <lucide-icon *ngIf="state === MicState.DISABLED && !isPlaying" name="mic-off" size="36"></lucide-icon>
+    <!-- DISABLED -->
+
     <app-waveform
       [bars]="4"
       [heightScalingFactor]="0.3"
       [containerHeight]="'5rem'"
       [containerGap]="'0.5rem'"
-      *ngIf="state === MicState.DISABLED"
+      *ngIf="isPlaying"
+      (audioLevelChange)="handleAudioLevelChange($event)"
     >
+      <!-- PLAYING AUDIO -->
     </app-waveform>
   </button>
 </div>

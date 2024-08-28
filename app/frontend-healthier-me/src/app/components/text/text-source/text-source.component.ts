@@ -7,7 +7,7 @@ import { CommonModule } from "@angular/common";
   standalone: true,
   imports: [CommonModule],
   templateUrl: "./text-source.component.html",
-  styleUrl: "./text-source.component.css",
+  styleUrl: "./text-source.component.css"
 })
 export class TextSourceComponent {
   @Input() sources?: MessageSource[];

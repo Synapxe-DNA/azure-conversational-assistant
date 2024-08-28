@@ -13,7 +13,7 @@ describe("ChatMessageService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
-      providers: [NgxIndexedDBService],
+      providers: [NgxIndexedDBService]
     });
     service = TestBed.inject(ChatMessageService);
   });
@@ -30,6 +30,7 @@ describe("ChatMessageService", () => {
       message: "Test message",
       timestamp: 1,
       role: MessageRole.User,
+      sources: []
     };
 
     const initVal = (await service.load(randomProfileId)).value;
@@ -51,6 +52,7 @@ describe("ChatMessageService", () => {
       message: "Test message",
       timestamp: 1,
       role: MessageRole.User,
+      sources: []
     };
 
     const initVal = (await service.load(randomProfileId)).value;
@@ -68,6 +70,7 @@ describe("ChatMessageService", () => {
       message: "Test message that is longer",
       timestamp: 2,
       role: MessageRole.User,
+      sources: []
     };
 
     await service.upsert(newestMessage);

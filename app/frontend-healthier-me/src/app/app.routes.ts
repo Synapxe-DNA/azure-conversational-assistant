@@ -11,7 +11,7 @@ export const routes: Routes = [
       { path: "", pathMatch: "full", redirectTo: "/chat/general" },
       {
         path: "create",
-        component: CreateProfileComponent,
+        component: CreateProfileComponent
       },
 
       {
@@ -21,14 +21,14 @@ export const routes: Routes = [
           { path: "*", redirectTo: "/chat/general" },
           {
             path: ":profileId",
-            component: ChatComponent,
-          },
-        ],
-      },
-    ],
+            component: ChatComponent
+          }
+        ]
+      }
+    ]
   },
   {
     path: "**",
-    redirectTo: "/chat/general",
-  },
+    redirectTo: "/chat/general"
+  }
 ];

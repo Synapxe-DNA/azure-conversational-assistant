@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { VoiceMessageComponent } from './voice-message.component';
+import { VoiceMessageComponent } from "./voice-message.component";
 
-describe('VoiceMessageComponent', () => {
+describe("VoiceMessageComponent", () => {
   let component: VoiceMessageComponent;
   let fixture: ComponentFixture<VoiceMessageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [VoiceMessageComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceMessageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

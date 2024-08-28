@@ -11,24 +11,24 @@ import { TextMobileComponent } from "../../components/text-mobile/text-mobile.co
   standalone: true,
   imports: [VoiceComponent, TextComponent, VoiceMobileComponent, TextMobileComponent],
   templateUrl: "./chat.component.html",
-  styleUrl: "./chat.component.css",
+  styleUrl: "./chat.component.css"
 })
 export class ChatComponent {
   chatMode?: ChatMode;
   isMobile?: boolean;
 
   constructor(private preference: PreferenceService) {
-    this.preference.$chatMode.subscribe((m) => {
+    this.preference.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
     this.isMobile = window.innerWidth < 768;
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener("window:resize", ["$event"])
   onResize(event: any) {
     this.checkViewport();
   }
-   checkViewport() {
+  checkViewport() {
     this.isMobile = window.innerWidth < 768; // Adjust this value as needed
   }
 

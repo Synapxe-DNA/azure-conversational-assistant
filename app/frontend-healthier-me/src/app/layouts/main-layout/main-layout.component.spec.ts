@@ -15,22 +15,12 @@ describe("MainLayoutComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        MainLayoutComponent,
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-        ToastModule,
-        LucideAngularModule.pick(icons),
-      ],
-      providers: [
-        ProfileService,
-        NgxIndexedDBService,
-        MessageService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [MainLayoutComponent, NgxIndexedDBModule.forRoot(NgxIndexedDbConfig), ToastModule, LucideAngularModule.pick(icons)],
+      providers: [ProfileService, NgxIndexedDBService, MessageService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MainLayoutComponent);

@@ -2,9 +2,10 @@ import { Injectable, OnInit } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ChatMode } from "../../types/chat-mode.type";
 import { PreferenceKey } from "../../types/configs/preference-keys.type";
+import { Language } from "../../types/language.type";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class PreferenceService {
   /**
@@ -12,30 +13,16 @@ export class PreferenceService {
    */
 
   // BehaviorSubject to manage chat mode state
-  $chatMode = new BehaviorSubject<ChatMode>(
-    this.loadFromLocalStorage<ChatMode>(PreferenceKey.ChatMode, ChatMode.Voice),
-  );
+  $chatMode = new BehaviorSubject<ChatMode>(this.loadFromLocalStorage<ChatMode>(PreferenceKey.ChatMode, ChatMode.Voice));
+
+  $language = new BehaviorSubject<Language>(this.loadFromLocalStorage<Language>(PreferenceKey.Language, Language.Spoken));
 
   // BehaviorSubjects to manage voice detection states
-  $voiceDetectInterrupt = new BehaviorSubject<boolean>(
-    this.loadFromLocalStorage<boolean>(
-      PreferenceKey.VoiceDetectInterrupt,
-      false,
-    ),
-  );
-  $voiceDetectStart = new BehaviorSubject<boolean>(
-    this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, false),
-  );
-  $voiceDetectEnd = new BehaviorSubject<boolean>(
-    this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, false),
-  );
+  $voiceDetectInterrupt = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, false));
+  $voiceDetectStart = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, false));
+  $voiceDetectEnd = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, false));
 
-  $showLiveTranscription = new BehaviorSubject<boolean>(
-    this.loadFromLocalStorage<boolean>(
-      PreferenceKey.VoiceLiveTranscription,
-      false,
-    ),
-  );
+  $showLiveTranscription = new BehaviorSubject<boolean>(this.loadFromLocalStorage<boolean>(PreferenceKey.VoiceLiveTranscription, false));
 
   constructor() {
     this.initialisePreferences();
@@ -47,19 +34,22 @@ export class PreferenceService {
    * @private
    */
   private initialisePreferences() {
-    this.$chatMode.subscribe((v) => {
+    this.$chatMode.subscribe(v => {
       this.setToLocalStorage<ChatMode>(PreferenceKey.ChatMode, v);
     });
-    this.$voiceDetectInterrupt.subscribe((v) => {
+    this.$language.subscribe(v => {
+      this.setToLocalStorage<Language>(PreferenceKey.Language, v);
+    });
+    this.$voiceDetectInterrupt.subscribe(v => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectInterrupt, v);
     });
-    this.$voiceDetectStart.subscribe((v) => {
+    this.$voiceDetectStart.subscribe(v => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectStart, v);
     });
-    this.$voiceDetectEnd.subscribe((v) => {
+    this.$voiceDetectEnd.subscribe(v => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceDetectEnd, v);
     });
-    this.$showLiveTranscription.subscribe((v) => {
+    this.$showLiveTranscription.subscribe(v => {
       this.setToLocalStorage<boolean>(PreferenceKey.VoiceLiveTranscription, v);
     });
   }
@@ -70,10 +60,7 @@ export class PreferenceService {
    */
   private listenToLocalStorageEvents() {
     const updateStates = (e: StorageEvent) => {
-      if (
-        !e.key ||
-        !Object.values(PreferenceKey).includes(e.key as PreferenceKey)
-      ) {
+      if (!e.key || !Object.values(PreferenceKey).includes(e.key as PreferenceKey)) {
         // DON'T DO ANYTHING IF:
         // - Local storage has been cleared
         // - Affected storage key is not our preference key
@@ -82,39 +69,29 @@ export class PreferenceService {
 
       switch (e.key) {
         case PreferenceKey.ChatMode: {
-          this.$chatMode.next(
-            this.loadFromLocalStorage(PreferenceKey.ChatMode, ChatMode.Voice),
-          );
+          this.$chatMode.next(this.loadFromLocalStorage(PreferenceKey.ChatMode, ChatMode.Voice));
           break;
         }
+
+        case PreferenceKey.Language: {
+          this.$language.next(this.loadFromLocalStorage(PreferenceKey.Language, Language.Spoken));
+          break;
+        }
+
         case PreferenceKey.VoiceDetectInterrupt: {
-          this.$voiceDetectInterrupt.next(
-            this.loadFromLocalStorage(
-              PreferenceKey.VoiceDetectInterrupt,
-              false,
-            ),
-          );
+          this.$voiceDetectInterrupt.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectInterrupt, false));
           break;
         }
         case PreferenceKey.VoiceDetectStart: {
-          this.$voiceDetectStart.next(
-            this.loadFromLocalStorage(PreferenceKey.VoiceDetectStart, false),
-          );
+          this.$voiceDetectStart.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectStart, false));
           break;
         }
         case PreferenceKey.VoiceDetectEnd: {
-          this.$voiceDetectEnd.next(
-            this.loadFromLocalStorage(PreferenceKey.VoiceDetectEnd, false),
-          );
+          this.$voiceDetectEnd.next(this.loadFromLocalStorage(PreferenceKey.VoiceDetectEnd, false));
           break;
         }
         case PreferenceKey.VoiceLiveTranscription: {
-          this.$showLiveTranscription.next(
-            this.loadFromLocalStorage(
-              PreferenceKey.VoiceLiveTranscription,
-              false,
-            ),
-          );
+          this.$showLiveTranscription.next(this.loadFromLocalStorage(PreferenceKey.VoiceLiveTranscription, false));
           break;
         }
       }
@@ -158,6 +135,10 @@ export class PreferenceService {
    */
   setChatMode(mode: ChatMode): void {
     this.$chatMode.next(mode);
+  }
+
+  setLanguage(language: Language): void {
+    this.$language.next(language);
   }
 
   setShowLiveTranscription(value: boolean): void {

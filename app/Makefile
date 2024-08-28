@@ -19,6 +19,6 @@ set-env: # Manually set environment variables for Azure
 	azd env set USE_SPEECH_INPUT_BROWSER true
 	azd env set USE_SPEECH_OUTPUT_BROWSER true
 	azd env set USE_SPEECH_OUTPUT_AZURE true
-	azd env set AZURE_OPENAI_WHISPER_DEPLOYMENT whisper-001
-	azd env set AZURE_OPENAI_SERVICE_2 cog-zicuh2lqrbb2s-002
-	azd env set AZURE_FEEDBACK_STORAGE_CONTAINER feedback
+	azd env set AZURE_FEEDBACK_DATABASE_ID feedbacks
+	azd env set AZURE_FEEDBACK_CONTAINER_ID feedbacks
+	azd env set AZURE_COSMOS_URL https://cosmos-zicuh2lqrbb2s.documents.azure.com:443/

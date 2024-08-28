@@ -1,8 +1,4 @@
-<div
-  #container
-  class="tw-w-full tw-flex tw-flex-row tw-justify-between tw-items-center"
-  [ngStyle]="{ height: containerHeight, gap: containerGap }"
->
+<div #container class="tw-w-full tw-flex tw-flex-row tw-justify-between tw-items-center" [ngStyle]="{ height: containerHeight, gap: containerGap }">
   <div
     *ngFor="let n of Array.from(Array(bars).keys())"
     #bar

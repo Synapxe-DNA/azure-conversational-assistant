@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input } from "@angular/core";
 import { MessageRole } from "../../types/message.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
 import { Profile } from "../../types/profile.type";
@@ -17,24 +17,16 @@ import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bott
 @Component({
   selector: "app-text-mobile",
   standalone: true,
-  imports: [
-    TextUserComponent,
-    TextSystemComponent,
-    TextFollowupComponent,
-    TextInputComponent,
-    StickyBottomDirective,
-  ],
+  imports: [TextUserComponent, TextSystemComponent, TextFollowupComponent, TextInputComponent, StickyBottomDirective],
   templateUrl: "./text-mobile.component.html",
-  styleUrl: "./text-mobile.component.css",
+  styleUrl: "./text-mobile.component.css"
 })
 export class TextMobileComponent implements OnInit {
   @Input() showTextInput?: boolean = true;
 
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   messages: Message[] = [];
   followUps: FollowUp[] = [];
@@ -48,17 +40,21 @@ export class TextMobileComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap
-      .pipe(takeWhile((p) => p.get("profileId") !== undefined, true))
-      .subscribe((p) => {
+      .pipe(
+        takeWhile(p => {
+          return p.get("profileId") !== undefined;
+        }, true)
+      )
+      .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
 
-    this.profile.subscribe((p) => {
+    this.profile.subscribe(p => {
       if (!p) {
         return;
       }
-      this.chatMessageService.load(p.id).then((m) => {
-        m.subscribe((messages) => {
+      this.chatMessageService.load(p.id).then(m => {
+        m.subscribe(messages => {
           this.messages = messages;
 
           if (this.messages.length === 0) {
@@ -76,7 +72,7 @@ export class TextMobileComponent implements OnInit {
       role: MessageRole.Assistant,
       message: "Welcome! How can I assist you today?",
       timestamp: Date.now(),
-      sources: [],
+      sources: []
     };
 
     await this.chatMessageService.upsert(introMessage);

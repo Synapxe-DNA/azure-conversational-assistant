@@ -1,3 +1,5 @@
+import logging
+import queue
 import time
 
 import azure.cognitiveservices.speech as speechsdk
@@ -19,17 +21,25 @@ class SpeechToText:
         auth_token = self.getAuthToken(resource_id, speech_token.token)
 
         # create recognizer
-        speech_config = speechsdk.SpeechConfig(auth_token=auth_token, region=region)
-        auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
+        self.speech_config = speechsdk.SpeechConfig(auth_token=auth_token, region=region)
+        self.auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
             languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
         )
+
         self.stream = speechsdk.audio.PushAudioInputStream()
         audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
         self.speech_recognizer = speechsdk.SpeechRecognizer(
-            speech_config=speech_config,
+            speech_config=self.speech_config,
             audio_config=audio_config,
-            auto_detect_source_language_config=auto_detect_source_language_config,
+            auto_detect_source_language_config=self.auto_detect_source_language_config,
         )
+
+        # Connect callbacks
+        self.speech_recognizer.recognizing.connect(self.recognizing_cb)
+        self.speech_recognizer.recognized.connect(self.recognized_cb)
+        self.speech_recognizer.canceled.connect(self.canceled_cb)
+        self.result_queue = queue.Queue()
+        self.all_result = ""
 
     @classmethod
     async def create(cls):
@@ -49,8 +59,29 @@ class SpeechToText:
     def getAuthToken(self, resource_id, token):
         return "aad#" + resource_id + "#" + token
 
-    def getSpeechRecognizer(self):
+    def getSpeechRecognizer(self) -> speechsdk.SpeechRecognizer:
         return self.speech_recognizer
 
     def getStream(self):
         return self.stream
+
+    def getQueue(self):
+        return self.result_queue
+
+    def reset(self):
+        self.result_queue = queue.Queue()
+        self.all_result = ""
+
+    # Set up callbacks
+    def recognizing_cb(self, evt):
+        logging.info(f"Recognizing: {evt.result.text}")
+        self.result_queue.put({"text": self.all_result + evt.result.text, "is_final": False})
+
+    def recognized_cb(self, evt):
+        self.all_result += evt.result.text + " "
+        logging.info(f"Recognized: {evt.result.text}")
+        self.result_queue.put({"text": self.all_result, "is_final": True})
+
+    def canceled_cb(self, evt):
+        logging.warning(f"Recognition canceled: {evt.result.reason}")
+        self.result_queue.put({"error": f"Recognition canceled: {evt.result.reason}"})
