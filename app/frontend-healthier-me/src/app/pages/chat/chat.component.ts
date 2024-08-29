@@ -9,21 +9,16 @@ import { TextMobileComponent } from "../../components/text-mobile/text-mobile.co
 @Component({
   selector: "app-chat",
   standalone: true,
-  imports: [
-    VoiceComponent,
-    TextComponent,
-    VoiceMobileComponent,
-    TextMobileComponent,
-  ],
+  imports: [VoiceComponent, TextComponent, VoiceMobileComponent, TextMobileComponent],
   templateUrl: "./chat.component.html",
-  styleUrl: "./chat.component.css",
+  styleUrl: "./chat.component.css"
 })
 export class ChatComponent {
   chatMode?: ChatMode;
   isMobile?: boolean;
 
   constructor(private preference: PreferenceService) {
-    this.preference.$chatMode.subscribe((m) => {
+    this.preference.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
     this.isMobile = window.innerWidth < 768;

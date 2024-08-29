@@ -10,7 +10,7 @@ import { Language } from "../../../types/language.type";
   standalone: true,
   imports: [DropdownModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: "./navbar-language.component.html",
-  styleUrl: "./navbar-language.component.css",
+  styleUrl: "./navbar-language.component.css"
 })
 export class NavbarLanguageComponent implements OnInit {
   languageOptions!: string[];

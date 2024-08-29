@@ -12,31 +12,29 @@ import { FollowUp } from "../../../types/follow-up.type";
   standalone: true,
   imports: [Button],
   templateUrl: "./text-followup.component.html",
-  styleUrl: "./text-followup.component.css",
+  styleUrl: "./text-followup.component.css"
 })
 export class TextFollowupComponent implements OnInit {
   @Input() followUps?: FollowUp[];
   followUp1: string = "";
   followUp2: string = "";
 
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   constructor(
     private convoBroker: ConvoBrokerService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        takeWhile((p) => {
+        takeWhile(p => {
           return p.get("profileId") !== undefined;
-        }, true),
+        }, true)
       )
-      .subscribe((p) => {
+      .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
 
@@ -48,9 +46,7 @@ export class TextFollowupComponent implements OnInit {
 
   sendFollowUp(message: string | undefined) {
     if (message) {
-      this.convoBroker
-        .sendChat(message, this.profile.value || GeneralProfile)
-        .catch(console.error);
+      this.convoBroker.sendChat(message, this.profile.value || GeneralProfile).catch(console.error);
     } else {
       console.log("Follow up is undefined");
     }

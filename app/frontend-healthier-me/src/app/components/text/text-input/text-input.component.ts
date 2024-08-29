@@ -1,12 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { MessageRole, MessageSource } from "../../../types/message.type";
 import { LucideAngularModule } from "lucide-angular";
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from "@angular/forms";
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { InputTextModule } from "primeng/inputtext";
 import { ChatMessageService } from "../../../services/chat-message/chat-message.service";
@@ -23,41 +18,32 @@ import { ConvoBrokerService } from "../../../services/convo-broker/convo-broker.
 @Component({
   selector: "app-text-input",
   standalone: true,
-  imports: [
-    LucideAngularModule,
-    FormsModule,
-    CommonModule,
-    InputTextModule,
-    Button,
-    ReactiveFormsModule,
-  ],
+  imports: [LucideAngularModule, FormsModule, CommonModule, InputTextModule, Button, ReactiveFormsModule],
   templateUrl: "./text-input.component.html",
-  styleUrl: "./text-input.component.css",
+  styleUrl: "./text-input.component.css"
 })
 export class TextInputComponent implements OnInit {
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   questionForm = new FormGroup({
-    question: new FormControl(""),
+    question: new FormControl("")
   });
 
   constructor(
     private convoBroker: ConvoBrokerService,
     private preferences: PreferenceService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.route.paramMap
       .pipe(
-        takeWhile((p) => {
+        takeWhile(p => {
           return p.get("profileId") !== undefined;
-        }, true),
+        }, true)
       )
-      .subscribe((p) => {
+      .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
   }
@@ -72,10 +58,7 @@ export class TextInputComponent implements OnInit {
     }
 
     this.convoBroker
-      .sendChat(
-        this.questionForm.value.question,
-        this.profile.value || GeneralProfile,
-      )
+      .sendChat(this.questionForm.value.question, this.profile.value || GeneralProfile)
       .then(() => {
         this.questionForm.reset();
       })

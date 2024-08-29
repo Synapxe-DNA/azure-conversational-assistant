@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class AudioService {
   constructor() {}
@@ -23,7 +23,7 @@ export class AudioService {
     const audioContext = new AudioContext();
     const audioDestination = audioContext.createMediaStreamDestination();
 
-    streams.forEach((s) => {
+    streams.forEach(s => {
       audioDestination.connect(audioContext.createMediaStreamSource(s));
     });
 

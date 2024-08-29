@@ -9,15 +9,9 @@ import { MarkdownComponent } from "../../markdown/markdown.component";
 @Component({
   selector: "app-text-system",
   standalone: true,
-  imports: [
-    TextSourceComponent,
-    TextTtsComponent,
-    TextClipboardComponent,
-    TextShowSourceComponent,
-    MarkdownComponent,
-  ],
+  imports: [TextSourceComponent, TextTtsComponent, TextClipboardComponent, TextShowSourceComponent, MarkdownComponent],
   templateUrl: "./text-system.component.html",
-  styleUrl: "./text-system.component.css",
+  styleUrl: "./text-system.component.css"
 })
 export class TextSystemComponent {
   @Input() message!: Message;

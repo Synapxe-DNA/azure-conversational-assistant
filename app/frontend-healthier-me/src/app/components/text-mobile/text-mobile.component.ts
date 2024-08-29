@@ -17,24 +17,16 @@ import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bott
 @Component({
   selector: "app-text-mobile",
   standalone: true,
-  imports: [
-    TextUserComponent,
-    TextSystemComponent,
-    TextFollowupComponent,
-    TextInputComponent,
-    StickyBottomDirective,
-  ],
+  imports: [TextUserComponent, TextSystemComponent, TextFollowupComponent, TextInputComponent, StickyBottomDirective],
   templateUrl: "./text-mobile.component.html",
-  styleUrl: "./text-mobile.component.css",
+  styleUrl: "./text-mobile.component.css"
 })
 export class TextMobileComponent {
   @Input() showTextInput?: boolean = true;
 
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
-  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<
-    Profile | undefined
-  >(undefined);
+  profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   messages: Message[] = [];
   followUps: FollowUp[] = [];
@@ -43,26 +35,26 @@ export class TextMobileComponent {
     private chatMessageService: ChatMessageService,
     private followUpService: ChatFollowupService,
     private profileService: ProfileService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        takeWhile((p) => {
+        takeWhile(p => {
           return p.get("profileId") !== undefined;
-        }, true),
+        }, true)
       )
-      .subscribe((p) => {
+      .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
 
-    this.profile.subscribe((p) => {
+    this.profile.subscribe(p => {
       if (!p) {
         return;
       }
-      this.chatMessageService.load(p.id).then((m) => {
-        m.subscribe((messages) => {
+      this.chatMessageService.load(p.id).then(m => {
+        m.subscribe(messages => {
           this.messages = messages;
         });
       });

@@ -13,12 +13,7 @@ describe("ConvoBrokerService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
-      providers: [
-        ChatMessageService,
-        AudioPlayerService,
-        EndpointService,
-        NgxIndexedDBService,
-      ],
+      providers: [ChatMessageService, AudioPlayerService, EndpointService, NgxIndexedDBService]
     });
     service = TestBed.inject(ConvoBrokerService);
   });

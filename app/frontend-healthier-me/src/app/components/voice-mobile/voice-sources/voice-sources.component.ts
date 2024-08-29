@@ -8,7 +8,7 @@ import { MessageSource } from "../../../types/message.type";
   standalone: true,
   imports: [CarouselModule, AccordionModule],
   templateUrl: "./voice-sources.component.html",
-  styleUrls: ["./voice-sources.component.css"],
+  styleUrls: ["./voice-sources.component.css"]
 })
 export class VoiceSourcesComponent implements OnInit {
   responsiveOptions: any[] | undefined;
@@ -22,17 +22,15 @@ export class VoiceSourcesComponent implements OnInit {
       {
         breakpoint: "768px",
         numVisible: 1,
-        numScroll: 1,
-      },
+        numScroll: 1
+      }
     ];
   }
 
   // Method to get the image URL
   getImageUrl(coverImageUrl: string | null): string {
     // Check if coverImageUrl is 'None' or falsy and return the fallback image URL
-    return coverImageUrl && coverImageUrl !== "None"
-      ? coverImageUrl
-      : this.imgUrl;
+    return coverImageUrl && coverImageUrl !== "None" ? coverImageUrl : this.imgUrl;
   }
 
   // Method to log the image URL

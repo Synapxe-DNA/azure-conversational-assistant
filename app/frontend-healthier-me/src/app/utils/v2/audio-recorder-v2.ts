@@ -11,17 +11,16 @@ export class v2AudioRecorder {
   processor?: ScriptProcessorNode;
 
   userMessageId: string = "";
-  private activeProfile: BehaviorSubject<Profile | undefined> =
-    new BehaviorSubject<Profile | undefined>(undefined);
+  private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
   finalText: string = "";
   isFinal: boolean = false;
   requestTime: number = 0;
 
   constructor(
     private chatMessageService: ChatMessageService,
-    private profileService: ProfileService,
+    private profileService: ProfileService
   ) {
-    this.profileService.$currentProfileInUrl.subscribe((p) => {
+    this.profileService.$currentProfileInUrl.subscribe(p => {
       this.activeProfile = this.profileService.getProfile(p);
     });
   }
@@ -35,7 +34,7 @@ export class v2AudioRecorder {
       this.startAudioCapture();
     };
 
-    this.socket.onerror = (error) => {
+    this.socket.onerror = error => {
       console.error("WebSocket error:", error);
     };
 
@@ -44,7 +43,7 @@ export class v2AudioRecorder {
     //   this.stopAudioCapture();
     // };
 
-    this.socket.onmessage = (event) => {
+    this.socket.onmessage = event => {
       try {
         const data = JSON.parse(event.data);
         if (data.text) {
@@ -63,7 +62,7 @@ export class v2AudioRecorder {
   startAudioCapture() {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
-      .then((stream) => {
+      .then(stream => {
         this.audioContext = new AudioContext();
         const source = this.audioContext.createMediaStreamSource(stream);
         this.processor = this.audioContext.createScriptProcessor(1024, 1, 1);
@@ -75,11 +74,9 @@ export class v2AudioRecorder {
 
         let sampleCounter = 0;
 
-        this.processor.onaudioprocess = (e) => {
+        this.processor.onaudioprocess = e => {
           const inputBuffer = e.inputBuffer.getChannelData(0);
-          const outputBuffer = new Float32Array(
-            Math.floor(inputBuffer.length / downsampleFactor),
-          );
+          const outputBuffer = new Float32Array(Math.floor(inputBuffer.length / downsampleFactor));
 
           for (let i = 0; i < outputBuffer.length; i++) {
             sampleCounter += downsampleFactor;
@@ -100,14 +97,14 @@ export class v2AudioRecorder {
           }
         };
       })
-      .catch((error) => {
+      .catch(error => {
         console.error("Error accessing microphone:", error);
       });
   }
 
   stopAudioCapture(): Promise<string> {
     this.socket?.send("close"); // Send close message to backend
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (this.processor) {
         this.processor.disconnect();
         this.processor = undefined;
@@ -143,7 +140,7 @@ export class v2AudioRecorder {
       role: MessageRole.User,
       message: finalText,
       timestamp: this.requestTime,
-      sources: [],
+      sources: []
     });
   }
 }

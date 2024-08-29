@@ -8,7 +8,7 @@ describe("TextMobileComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextMobileComponent],
+      imports: [TextMobileComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextMobileComponent);

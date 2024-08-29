@@ -59,21 +59,14 @@
       <div id="result"></div>
       <div>
         <input type="text" id="message" placeholder="Type your message here" />
-        <input
-          type="file"
-          id="fileInput"
-          accept=".wav, .mp3, .webm, .m4a"
-          required
-        />
+        <input type="file" id="fileInput" accept=".wav, .mp3, .webm, .m4a" required />
       </div>
       <button onclick="sendText()" id="sendButton">Send Message</button>
       <button onclick="sendVoice()">Send audio</button>
       <button onclick="setProfile()">Set Profile</button>
       <button onclick="sendTTS()">TTS</button>
 
-      <audio controls id="audioPlayer">
-        Your browser does not support the audio element.
-      </audio>
+      <audio controls id="audioPlayer">Your browser does not support the audio element.</audio>
     </div>
     <div></div>
 
@@ -84,15 +77,15 @@
         var response = await fetch("http://0.0.0.0:8000/profile/set", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             type: "Myself",
             language: "chinese",
             age: 30,
             gender: "Male",
-            existing_conditions: null,
-          }),
+            existing_conditions: null
+          })
         });
         var text = await response.text();
         document.getElementById("result").innerHTML += text + "<br>";
@@ -115,7 +108,7 @@
           language: "chinese",
           user_age: 30,
           user_gender: "Female",
-          user_condition: "Diabetes and hypertension",
+          user_condition: "Diabetes and hypertension"
         });
 
         query = { content: msg, role: "user" };
@@ -126,7 +119,7 @@
 
         const response = await fetch("http://0.0.0.0:8000/chat/stream", {
           method: "POST",
-          body: formData,
+          body: formData
         });
 
         const reader = response.body.getReader();
@@ -167,7 +160,7 @@
           language: "default",
           user_age: 30,
           user_gender: "Female",
-          user_condition: "Diabetes and hypertension",
+          user_condition: "Diabetes and hypertension"
         });
         formData.append("query", file);
         formData.append("chat_history", JSON.stringify(chat_history));
@@ -175,7 +168,7 @@
 
         const response = await fetch("http://0.0.0.0:8000/voice", {
           method: "POST",
-          body: formData,
+          body: formData
         });
 
         const reader = response.body.getReader();
@@ -198,7 +191,7 @@
       async function sendTTS() {
         var msg = document.getElementById("message").value;
         var response = await fetch("http://0.0.0.0:8000/stream", {
-          method: "GET",
+          method: "GET"
         });
 
         const reader = response.body.getReader();

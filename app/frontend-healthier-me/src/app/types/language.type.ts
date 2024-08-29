@@ -3,5 +3,5 @@ export enum Language {
   English = "English",
   Chinese = "Chinese",
   Malay = "Malay",
-  Tamil = "Tamil",
+  Tamil = "Tamil"
 }
