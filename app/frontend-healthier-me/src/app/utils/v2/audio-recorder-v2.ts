@@ -13,6 +13,7 @@ export class v2AudioRecorder {
   userMessageId: string = "";
   private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
   finalText: string = "";
+  isFinal: boolean = false;
   requestTime: number = 0;
 
   constructor(
@@ -37,16 +38,18 @@ export class v2AudioRecorder {
       console.error("WebSocket error:", error);
     };
 
-    this.socket.onclose = () => {
-      console.log("WebSocket connection closed");
-      this.stopAudioCapture();
-    };
+    // this.socket.onclose = () => {
+    //   console.log("WebSocket connection closed");
+    //   this.stopAudioCapture();
+    // };
 
     this.socket.onmessage = event => {
       try {
         const data = JSON.parse(event.data);
         if (data.text) {
-          this.upsert(data.text);
+          this.finalText = data.text;
+          this.upsert(this.finalText);
+          this.isFinal = data.is_final;
         } else if (data.error) {
           console.error("Error:", data.error);
         }
@@ -100,6 +103,7 @@ export class v2AudioRecorder {
   }
 
   stopAudioCapture(): Promise<string> {
+    this.socket?.send("close"); // Send close message to backend
     return new Promise(resolve => {
       if (this.processor) {
         this.processor.disconnect();
@@ -109,13 +113,23 @@ export class v2AudioRecorder {
         this.audioContext.close();
         this.audioContext = undefined;
       }
-      resolve(this.finalText);
+
+      const checkInterval = setInterval(() => {
+        if (this.socket?.readyState === WebSocket.CLOSED && this.isFinal) {
+          // Return promise only when socket is closed and final text is received
+          clearInterval(checkInterval); // Stop checking once the socket is closed
+          this.upsert(this.finalText); // Final upsert to ensure final text is displayed
+          this.socket.close();
+          resolve(this.finalText);
+        }
+      }, 100);
     });
   }
 
   resetFields() {
     this.userMessageId = createId();
     this.finalText = "";
+    this.isFinal = false;
     this.requestTime = new Date().getTime();
   }
 

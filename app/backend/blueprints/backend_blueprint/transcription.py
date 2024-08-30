@@ -39,7 +39,14 @@ async def ws_transcribe():
     try:
         while True:
             data = await websocket.receive()
+            if isinstance(data, str) and data == "close":  # wait for frontend to send close message
+                while not stt.finished_recognising:
+                    stream.write(b"")  # empty bytes needed to trigger recognition if audio too short
+                while not stt.getQueue().empty():  # Ensure all results are sent before closing
+                    await asyncio.sleep(0.1)
+                break
             stream.write(data)
+
     except asyncio.CancelledError:
         # Handle WebSocket disconnection
         logging.info("WebSocket connection closed")
@@ -50,4 +57,6 @@ async def ws_transcribe():
             await send_task  # Wait for the task to be cancelled
         except asyncio.CancelledError:
             pass  # Task was cancelled successfully
+        await websocket.close(1000)
         stt.reset()
+        logging.info("WebSocket connection closed")
