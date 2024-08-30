@@ -8,7 +8,7 @@ import { ChatResponse } from "../../types/responses/chat-response.type";
 import { HttpClient, HttpDownloadProgressEvent, HttpEventType } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
 import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
-import { ApiChatHistory } from "../../types/api/api-chat-history.type";
+import { ApiChatHistory, ApiChatHistorywithSources } from "../../types/api/api-chat-history.type";
 import { ApiProfile, ApiProfileGender, ApiProfileType } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ApiSource } from "../../types/api/api-source.type";
@@ -16,6 +16,8 @@ import { ResponseStatus } from "../../types/responses/response-status.type";
 import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
+import { Feedback } from "../../types/feedback.type";
+import { ApiFeedbackRequest } from "../../types/api/requests/feedback-request.type";
 
 @Injectable({
   providedIn: "root"
@@ -66,6 +68,25 @@ export class EndpointService {
       return {
         role: role(),
         content: m.message
+      };
+    });
+  }
+
+  private messageToApiChatHistoryWithSources(messages: Message[]): ApiChatHistorywithSources[] {
+    return messages.map(m => {
+      const role = () => {
+        switch (m.role) {
+          case MessageRole.User:
+            return "user";
+          case MessageRole.Assistant:
+            return "assistant";
+        }
+      };
+
+      return {
+        role: role(),
+        content: m.message,
+        sources: m.sources
       };
     });
   }
@@ -336,6 +357,24 @@ export class EndpointService {
       });
 
     return responseBS;
+  }
+
+  async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
+    const data: ApiFeedbackRequest = {
+      date_time: feedback.datetime,
+      feedback_type: feedback.label,
+      feedback_category: feedback.category,
+      feedback_remarks: feedback.remarks,
+      user_profile: this.profileToApiProfile(profile),
+      chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
+    };
+
+    this.httpClient.post("/feedback", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+      next: () => {
+        console.log("Feedback sent successfully");
+      },
+      error: console.error
+    });
   }
 
   // Function to extract individual JSON objects from a concatenated raw JSON string

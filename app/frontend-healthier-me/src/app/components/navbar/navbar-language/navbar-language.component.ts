@@ -3,7 +3,7 @@ import { Component, OnInit, Input } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { DropdownModule } from "primeng/dropdown";
 import { PreferenceService } from "../../../services/preference/preference.service";
-import { Language } from "../../../types/language.type";
+import { Language, languageMap } from "../../../types/language.type";
 
 @Component({
   selector: "app-navbar-language",
@@ -13,7 +13,7 @@ import { Language } from "../../../types/language.type";
   styleUrl: "./navbar-language.component.css"
 })
 export class NavbarLanguageComponent implements OnInit {
-  languageOptions!: string[];
+  languageMap: any;
   chosenLanguage: string;
 
   constructor(private preference: PreferenceService) {
@@ -21,7 +21,7 @@ export class NavbarLanguageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.languageOptions = Object.values(Language);
+    this.languageMap = languageMap;
   }
 
   setLanguage(chosenLanguage: string) {

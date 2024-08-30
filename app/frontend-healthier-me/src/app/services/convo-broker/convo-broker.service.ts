@@ -3,7 +3,7 @@ import { ChatMessageService } from "../chat-message/chat-message.service";
 import { AudioPlayerService } from "../audio-player/audio-player.service";
 import { EndpointService } from "../endpoint/endpoint.service";
 import { GeneralProfile, Profile } from "../../types/profile.type";
-import { Message, MessageRole } from "../../types/message.type";
+import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../profile/profile.service";
 import { BehaviorSubject, takeWhile } from "rxjs";
@@ -17,6 +17,7 @@ import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
 import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
+import { Feedback } from "../../types/feedback.type";
 import { Language } from "../../types/language.type";
 
 @Injectable({
@@ -123,7 +124,6 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then(r => {
-      this.recorder2.socket?.close();
       this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
   }
@@ -250,6 +250,23 @@ export class ConvoBrokerService {
         this.$isWaitingForVoiceApi.next(false);
       }
     });
+  }
+
+  async sendFeedback(feedback: Feedback) {
+    const history: Message[] = (await this.chatMessageService.staticLoad(feedback.profile_id)).slice(-8);
+
+    const updated_feedback: Feedback = {
+      label: feedback.label,
+      category: feedback.category,
+      remarks: feedback.remarks,
+      chat_history: history,
+      profile_id: this.profileService.$currentProfileInUrl.value,
+      datetime: feedback.datetime
+    };
+
+    const profile = this.profileService.getProfile(this.profileService.$currentProfileInUrl.value).value!;
+
+    await this.endpointService.sendFeedback(updated_feedback, profile);
   }
 
   /**

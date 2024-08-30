@@ -13,6 +13,7 @@ import { ChatMode } from "../../types/chat-mode.type";
 import { SidebarModule } from "primeng/sidebar";
 import { NavbarComponent } from "../navbar/navbar.component";
 import { LucideAngularModule } from "lucide-angular";
+import { TagModule } from "primeng/tag";
 
 @Component({
   selector: "app-navbar-mobile",
@@ -27,7 +28,8 @@ import { LucideAngularModule } from "lucide-angular";
     CommonModule,
     SidebarModule,
     LucideAngularModule,
-    Button
+    Button,
+    TagModule
   ],
   templateUrl: "./navbar-mobile.component.html",
   styleUrl: "./navbar-mobile.component.css"

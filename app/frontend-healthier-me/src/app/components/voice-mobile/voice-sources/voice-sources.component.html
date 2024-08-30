@@ -13,18 +13,13 @@
         >
           <ng-template let-product pTemplate="item">
             <div class="tw-flex tw-items-center tw-border-1 tw-rounded tw-m-2 tw-p-3">
-              <div class="tw-w-1/3 image-container">
-                <a [href]="product.full_url">
-                  <img
-                    [src]="getImageUrl(product.cover_image_url)"
-                    alt="Product Image"
-                    (mouseover)="logImageUrl(product.cover_image_url)"
-                    (mouseleave)="clearLog()"
-                  />
+              <div class="tw-w-2/3">
+                <a [href]="product.full_url" target="_blank">
+                  <img class="tw-object-fill tw-rounded" [src]="getImageUrl(product.cover_image_url)" alt="Product Image" />
                 </a>
               </div>
-              <div class="tw-w-2/3 tw-pl-4">
-                <div class="tw-font-semibold tw-text-xl">
+              <div class="tw-w-1/3 tw-pl-4">
+                <div class="tw-font-semibold tw-text-base">
                   {{ product.title }}
                 </div>
               </div>
@@ -39,8 +34,3 @@
 <ng-template #noSources>
   <p style="text-align: center; color: lightgrey">No Sources Detected</p>
 </ng-template>
-
-<!-- Display image URL on hover -->
-<div *ngIf="hoveredImageUrl" class="hover-info">
-  {{ hoveredImageUrl }}
-</div>
