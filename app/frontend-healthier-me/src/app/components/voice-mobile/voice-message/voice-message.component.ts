@@ -26,7 +26,10 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     private audioPlayerService: AudioPlayerService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    this.startAnalyser().catch(console.error);
     this.audioPlayerService.$playing.subscribe(isPlaying => {
       if (isPlaying) {
         this.mainLoop();
@@ -35,10 +38,6 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
         this.box.nativeElement.style.boxShadow = `0 0 0px 0px rgb(243,244,246)`;
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.startAnalyser().catch(console.error);
   }
 
   async startAnalyser() {
