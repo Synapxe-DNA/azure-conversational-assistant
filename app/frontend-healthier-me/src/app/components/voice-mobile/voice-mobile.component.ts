@@ -147,13 +147,13 @@ export class VoiceMobileComponent {
     this.preference.setVoiceDetectEnd(e.checked);
   }
 
-  handleMicAudioLevelChange(level: number) {
-    if (level === 0) {
-      this.currentBackgroundColor = `rgba(16, 185, 129, 1)`;
-      return;
-    }
-    const clampedLevel = Math.max(6, Math.min(level, 15));
-    const intensity = (clampedLevel - 6) / (15 - 6);
-    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
-  }
+  // handleMicAudioLevelChange(level: number) {
+  //   if (level === 0) {
+  //     this.currentBackgroundColor = `rgba(16, 185, 129, 1)`;
+  //     return;
+  //   }
+  //   const clampedLevel = Math.max(6, Math.min(level, 15));
+  //   const intensity = (clampedLevel - 6) / (15 - 6);
+  //   this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
+  // }
 }
