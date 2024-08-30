@@ -3,7 +3,7 @@
     <app-voice-sources [sources]="message!.sources"></app-voice-sources>
     <app-voice-message [message]="message"></app-voice-message>
     <app-voice-annotation></app-voice-annotation>
-    <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()" (audioLevelChange)="handleMicAudioLevelChange($event)"></app-voice-microphone>
+    <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"></app-voice-microphone>
     <div class="tw-self-center tw-text-center tw-text-xs tw-text-white tw-mt-[100px]">
       <p>Synapxe Innovation for Good</p>
       <p>Powered By AI</p>
