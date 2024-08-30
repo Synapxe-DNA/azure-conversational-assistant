@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class FeedbackRequest(BaseModel):
     date_time: str
     feedback_type: Literal["positive", "negative"]
-    feedback_category: str
+    feedback_category: List[str]
     feedback_remarks: Optional[str]
     user_profile: Profile
     chat_history: List[ChatHistoryWithSource]
@@ -17,7 +17,7 @@ class FeedbackRequest(BaseModel):
 class FeedbackStore(BaseModel):
     date_time: str
     feedback_type: Literal["positive", "negative"]
-    feedback_category: str
+    feedback_category: List[str]
     feedback_remarks: Optional[str]
     user_profile: Profile
     chat_history: List[ChatHistoryWithSource]
