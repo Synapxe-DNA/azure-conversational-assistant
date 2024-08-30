@@ -98,12 +98,6 @@ export class VoiceMobileComponent {
     this.preference.$voiceDetectEnd.subscribe(v => (this.voiceDetectEnd = v));
     this.preference.$showLiveTranscription.subscribe(v => (this.showLiveTranscription = v));
     this.convoBroker.$micState.subscribe(v => (this.micState = v));
-
-    this.audioPlayerService.$playing.subscribe(isPlaying => {
-      if (!isPlaying) {
-        this.currentBackgroundColor = "rgba(16, 185, 129, 1)";
-      }
-    });
   }
 
   ngAfterViewInit() {
@@ -149,5 +143,21 @@ export class VoiceMobileComponent {
 
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
+  }
+
+  private async upsertIntroMessage(profileId: string): Promise<void> {
+    const introMessage: Message = {
+      id: "intro-message", // Assign a unique ID for the intro message
+      profile_id: profileId,
+      role: MessageRole.Assistant,
+      message: "Welcome! How can I assist you today?",
+      timestamp: Date.now(),
+      sources: []
+    };
+
+    await this.chatMessageService.upsert(introMessage);
+
+    // After upserting, refresh the message list to ensure it's reflected
+    this.message = await this.chatMessageService.staticLoad(profileId).then(messages => messages.sort((b, a) => a.timestamp - b.timestamp)[0]);
   }
 }
