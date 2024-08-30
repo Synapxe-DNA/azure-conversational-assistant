@@ -40,8 +40,8 @@ export class VoiceSourcesComponent implements OnInit {
     }
   }
 
-  // Method to clear the log
-  clearLog(): void {
-    this.hoveredImageUrl = null; // Clear the hovered image URL
-  }
+  // // Method to clear the log
+  // clearLog(): void {
+  //   this.hoveredImageUrl = null; // Clear the hovered image URL
+  // }
 }

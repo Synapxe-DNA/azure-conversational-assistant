@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { MessageRole } from "../../types/message.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
 import { Profile } from "../../types/profile.type";
@@ -18,7 +18,8 @@ import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bott
   templateUrl: "./text-mobile.component.html",
   styleUrl: "./text-mobile.component.css"
 })
-export class TextMobileComponent {
+export class TextMobileComponent implements OnInit {
+  @Input() showTextInput?: boolean = true;
 
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
@@ -50,8 +51,28 @@ export class TextMobileComponent {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.messages = messages;
+
+          if (this.messages.length === 0) {
+            this.upsertIntroMessage(p.id);
+          }
         });
       });
     });
+  }
+
+  private async upsertIntroMessage(profileId: string): Promise<void> {
+    const introMessage: Message = {
+      id: "intro-message", // Assign a unique ID for the intro message
+      profile_id: profileId,
+      role: MessageRole.Assistant,
+      message: "Welcome! How can I assist you today?",
+      timestamp: Date.now(),
+      sources: []
+    };
+
+    await this.chatMessageService.upsert(introMessage);
+
+    // After upserting, refresh the message list to ensure it's reflected
+    this.messages = await this.chatMessageService.staticLoad(profileId);
   }
 }

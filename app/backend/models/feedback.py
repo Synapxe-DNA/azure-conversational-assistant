@@ -1,8 +1,7 @@
 from typing import List, Literal, Optional
 
-from models.chat_history import ChatHistory
+from models.chat_history import ChatHistoryWithSource
 from models.profile import Profile
-from models.source import Source, SourceWithChunk
 from pydantic import BaseModel
 
 
@@ -12,8 +11,7 @@ class FeedbackRequest(BaseModel):
     feedback_category: str
     feedback_remarks: Optional[str]
     user_profile: Profile
-    chat_history: List[ChatHistory]
-    retrieved_sources: List[Source]
+    chat_history: List[ChatHistoryWithSource]
 
 
 class FeedbackStore(BaseModel):
@@ -22,5 +20,4 @@ class FeedbackStore(BaseModel):
     feedback_category: str
     feedback_remarks: Optional[str]
     user_profile: Profile
-    chat_history: List[ChatHistory]
-    retrieved_sources: List[SourceWithChunk]
+    chat_history: List[ChatHistoryWithSource]
