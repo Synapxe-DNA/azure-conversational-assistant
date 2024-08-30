@@ -16,7 +16,7 @@
 
 /* Ensure the container div for images maintains the fixed height */
 .image-container {
-  height: 50px; /* Set this to the desired fixed height */
+  height: fit-content; /* Set this to the desired fixed height */
   overflow: hidden; /* Hide any overflow to maintain a clean look */
 }
 
