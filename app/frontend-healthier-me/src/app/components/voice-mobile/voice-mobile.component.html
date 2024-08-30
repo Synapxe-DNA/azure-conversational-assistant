@@ -1,5 +1,4 @@
-<div class=" tw-relative tw-bg-emerald-600 tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-overflow-auto"
-  [ngStyle]="{ backgroundColor: currentBackgroundColor }">
+<div class="tw-relative tw-bg-emerald-600 tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-overflow-auto" [ngStyle]="{ backgroundColor: currentBackgroundColor }">
   <app-voice-sources [sources]="message!.sources"></app-voice-sources>
   <div class="tw-mt-[-80px]">
     <app-voice-message [message]="message"></app-voice-message>
@@ -21,13 +20,11 @@
   <p-overlayPanel #preferenceOverlayPanel>
     <div class="tw-grid tw-grid-cols-6 tw-justify-items-end">
       <label class="tw-w-full tw-col-span-5" id="interrupt">Interrupt with my voice</label>
-      <p-inputSwitch (onChange)="prefVoiceInterrupt($event)" [(ngModel)]="voiceInterrupt"
-        ariaLabelledBy="interrupt"></p-inputSwitch>
+      <p-inputSwitch (onChange)="prefVoiceInterrupt($event)" [(ngModel)]="voiceInterrupt" ariaLabelledBy="interrupt"></p-inputSwitch>
       <label class="tw-w-full tw-col-span-5" id="detect-start">Detect voice start</label>
-      <p-inputSwitch (onChange)="prefVoiceStart($event)" [(ngModel)]="voiceDetectStart"
-        ariaLabelledBy="detect-start"></p-inputSwitch>
+      <p-inputSwitch (onChange)="prefVoiceStart($event)" [(ngModel)]="voiceDetectStart" ariaLabelledBy="detect-start"></p-inputSwitch>
       <label class="tw-w-full tw-col-span-5" id="detect-end">Detect voice end</label>
-      <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd"
-        ariaLabelledBy="detect-end"></p-inputSwitch>
+      <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd" ariaLabelledBy="detect-end"></p-inputSwitch>
     </div>
   </p-overlayPanel>
+</div>

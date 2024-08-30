@@ -3,8 +3,14 @@
     <form [formGroup]="profileForm" class="tw-w-[60dvw] tw-grid tw-grid-cols-1 tw-gap-4">
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-type">This profile is for</label>
-        <p-selectButton styleClass="tw-w-full [&>*]:tw-w-[50%]" id="profile-type" formControlName="profile_type"
-          [options]="profileTypeOptions" optionLabel="label" optionValue="value" />
+        <p-selectButton
+          styleClass="tw-w-full [&>*]:tw-w-[50%]"
+          id="profile-type"
+          formControlName="profile_type"
+          [options]="profileTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+        />
       </div>
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-name">Profile name</label>
@@ -13,19 +19,26 @@
 
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="user-age">Gender</label>
-        <p-dropdown styleClass="tw-w-full" id="user-age" [options]="profileGenderOptions" placeholder="Gender"
-          formControlName="gender" />
+        <p-dropdown styleClass="tw-w-full" id="user-age" [options]="profileGenderOptions" placeholder="Gender" formControlName="gender" />
       </div>
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-age">Age</label>
         <p-inputNumber id="profile-age" formControlName="age" styleClass="tw-w-full" [min]="0" />
       </div>
       <div class="tw-flex tw-flex-col tw-gap-2">
-        <label for="profile-preexist">Do
+        <label for="profile-preexist"
+          >Do
           {{ profileForm.value?.profile_type !== "OTHERS" ? "you" : "they" }}
-          have any of these pre-existing conditions?</label>
-        <p-multiSelect styleClass="tw-w-full" display="chip" id="profile-preexist" [options]="profileConditionOptions"
-          formControlName="existing_condition" placeholder="Conditions" />
+          have any of these pre-existing conditions?</label
+        >
+        <p-multiSelect
+          styleClass="tw-w-full"
+          display="chip"
+          id="profile-preexist"
+          [options]="profileConditionOptions"
+          formControlName="existing_condition"
+          placeholder="Conditions"
+        />
       </div>
       <p-button (click)="createProfile()" class="tw-w-full tw-mt-4" styleClass="tw-w-full" label="Create profile" />
     </form>

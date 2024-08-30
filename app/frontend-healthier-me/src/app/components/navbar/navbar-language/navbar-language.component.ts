@@ -13,7 +13,7 @@ import { Language, languageMap } from "../../../types/language.type";
   styleUrl: "./navbar-language.component.css"
 })
 export class NavbarLanguageComponent implements OnInit {
-  languageMap: any
+  languageMap: any;
   chosenLanguage: string;
 
   constructor(private preference: PreferenceService) {
@@ -21,7 +21,7 @@ export class NavbarLanguageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.languageMap = languageMap
+    this.languageMap = languageMap;
   }
 
   setLanguage(chosenLanguage: string) {

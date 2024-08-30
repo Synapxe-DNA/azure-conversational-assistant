@@ -1,18 +1,17 @@
-<div appStickyBottom
-  class="tw-w-full tw-h-full tw-overflow-y-auto tw-relative tw-flex tw-flex-col tw-justify-start tw-items-center tw-pt-8 tw-pb-32 tw-mt-4">
+<div appStickyBottom class="tw-w-full tw-h-full tw-overflow-y-auto tw-relative tw-flex tw-flex-col tw-justify-start tw-items-center tw-pt-8 tw-pb-32 tw-mt-4">
   <div class="tw-w-full tw-flex tw-flex-row tw-justify-center tw-items-center">
     <div class="tw-w-[80ch] tw-max-w-full tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-6 tw-mx-4">
       @for (message of messages; track message) {
-      @if (message.message.trim()) {
-      @switch (message.role) {
-      @case (user) {
-      <app-text-user [message]="message"></app-text-user>
-      }
-      @case (system) {
-      <app-text-system [message]="message"></app-text-system>
-      }
-      }
-      }
+        @if (message.message.trim()) {
+          @switch (message.role) {
+            @case (user) {
+              <app-text-user [message]="message"></app-text-user>
+            }
+            @case (system) {
+              <app-text-system [message]="message"></app-text-system>
+            }
+          }
+        }
       }
     </div>
   </div>
@@ -20,5 +19,4 @@
   <div class="tw-fixed tw-bottom-6 tw-mx-auto tw-w-[80dvw] tw-max-w-[800px]">
     <app-text-input />
   </div>
-
 </div>
