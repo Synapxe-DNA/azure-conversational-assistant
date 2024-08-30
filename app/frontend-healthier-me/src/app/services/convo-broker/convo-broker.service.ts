@@ -254,6 +254,23 @@ export class ConvoBrokerService {
     });
   }
 
+  async sendFeedback(feedback: Feedback) {
+    const history: Message[] = (await this.chatMessageService.staticLoad(feedback.profile_id)).slice(-8);
+
+    const updated_feedback: Feedback = {
+      label: feedback.label,
+      category: feedback.category,
+      remarks: feedback.remarks,
+      chat_history: history,
+      profile_id: this.profileService.$currentProfileInUrl.value,
+      datetime: feedback.datetime
+    };
+
+    const profile = this.profileService.getProfile(this.profileService.$currentProfileInUrl.value).value!;
+
+    await this.endpointService.sendFeedback(updated_feedback, profile);
+  }
+
   /**
    * Callback method to be called from anywhere to directly interact with audio recording/voice interaction.
    */

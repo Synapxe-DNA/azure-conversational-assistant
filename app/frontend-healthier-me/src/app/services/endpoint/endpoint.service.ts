@@ -369,7 +369,12 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
 
-    this.httpClient.post("/feedback", data);
+    this.httpClient.post("/feedback", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+      next: () => {
+        console.log("Feedback sent successfully");
+      },
+      error: console.error
+    });
   }
 
   // Function to extract individual JSON objects from a concatenated raw JSON string

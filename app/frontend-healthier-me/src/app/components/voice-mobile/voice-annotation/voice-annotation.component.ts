@@ -39,8 +39,8 @@ export class VoiceAnnotationComponent {
       chat_history: [],
       profile_id: "",
       datetime: new Date().toLocaleString("en-GB", {
-        timeZone: "Asia/Singapore",
-      }),
+        timeZone: "Asia/Singapore"
+      })
     };
 
     // log the fields of the feedback object
@@ -48,6 +48,8 @@ export class VoiceAnnotationComponent {
     console.log("Feedback category:", feedback.category);
     console.log("Feedback remarks:", feedback.remarks);
     console.log("Feedback date:", feedback.datetime);
+
+    this.convoBrokerService.sendFeedback(feedback);
 
     // Handle the feedback submission logic here
     this.displayModal = false;
