@@ -123,7 +123,6 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then(r => {
-      this.recorder2.socket?.close();
       this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
   }
