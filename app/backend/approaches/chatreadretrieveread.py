@@ -146,7 +146,11 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         if profile.profile_type == "general":
             user_query_request = "Generate search query for: " + original_user_query
         else:
-            user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
+            stripped_text_check = original_user_query.replace(" ", "")  # check if user input is an empty string
+            if not stripped_text_check:
+                user_query_request = "Generate search query for: " + original_user_query
+            else:
+                user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
 
         tools: List[ChatCompletionToolParam] = [
             {
