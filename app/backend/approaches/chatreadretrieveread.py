@@ -146,7 +146,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         if profile.profile_type == "general":
             user_query_request = "Generate search query for: " + original_user_query
         else:
-            stripped_text_check = original_user_query.replace(" ", "") # check if user input is an empty string
+            stripped_text_check = original_user_query.replace(" ", "")  # check if user input is an empty string
             if not stripped_text_check:
                 user_query_request = "Generate search query for: " + original_user_query
             else:
