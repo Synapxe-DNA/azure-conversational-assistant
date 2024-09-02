@@ -13,7 +13,7 @@ import { ProfileService } from "./services/profile/profile.service";
   providers: [MessageService]
 })
 export class AppComponent {
-  title = "frontend";
+  title = "HealthierME";
 
   constructor() {}
 }

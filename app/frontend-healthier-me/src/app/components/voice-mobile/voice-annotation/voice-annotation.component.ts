@@ -34,7 +34,7 @@ export class VoiceAnnotationComponent {
   submitFeedback() {
     const feedback: Feedback = {
       label: this.rating === 0 ? "positive" : "negative",
-      category: this.selectedCategory!,
+      category: [this.selectedCategory!],
       remarks: this.remarks,
       chat_history: [],
       profile_id: "",

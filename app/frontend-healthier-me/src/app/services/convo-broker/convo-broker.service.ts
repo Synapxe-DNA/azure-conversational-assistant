@@ -108,7 +108,6 @@ export class ConvoBrokerService {
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
     this.recorder2.setupWebSocket();
-    this.recorder2.setupWebSocket();
   }
 
   /**

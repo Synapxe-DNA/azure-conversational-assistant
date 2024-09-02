@@ -4,6 +4,7 @@ import { MicState } from "../../../types/mic-state.type";
 import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { AudioService } from "../../../services/audio/audio.service";
 import { MarkdownComponent } from "../../markdown/markdown.component";
+import { AudioPlayerService } from "../../../services/audio-player/audio-player.service";
 
 @Component({
   selector: "app-voice-message",
@@ -15,15 +16,31 @@ import { MarkdownComponent } from "../../markdown/markdown.component";
 export class VoiceMessageComponent implements AfterViewInit, OnInit {
   @Input() message?: Message;
   @Input() state?: string;
+  @Input() level?: number;
   audioAnalyser: AudioAnalyser | undefined;
+  private animationFrameId: number | null = null;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>;
 
-  constructor(private audioService: AudioService) {}
+  constructor(
+    private audioService: AudioService,
+    private audioPlayerService: AudioPlayerService
+  ) {}
 
   ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.startAnalyser().catch(console.error);
+    this.audioPlayerService.$playing.subscribe(isPlaying => {
+      if (isPlaying) {
+        if (this.animationFrameId == null) {
+          // To prevent creation of multiple animation frames
+          this.mainLoop();
+        }
+      } else {
+        this.stopLoop();
+        this.box.nativeElement.style.boxShadow = `0 0 0px 0px rgb(243,244,246)`;
+      }
+    });
   }
 
   async startAnalyser() {
@@ -33,9 +50,17 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   mainLoop() {
     if (this.audioAnalyser) {
       const raw_level = this.audioAnalyser.getAudioLevel();
-      const level = (32 - (raw_level * this.box.nativeElement.clientHeight) / 3).toFixed(2);
-      this.box.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
-      window.requestAnimationFrame(this.mainLoop.bind(this));
+      let adjusted_level = Math.round(Math.max(0, Math.min(1, raw_level * 4)) * 10) / 10;
+      const level = Math.floor(40 * adjusted_level);
+      this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
+      this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
+    }
+  }
+
+  stopLoop() {
+    if (this.animationFrameId != null) {
+      window.cancelAnimationFrame(this.animationFrameId); // AnimationFrame needs to be cancelled
+      this.animationFrameId = null;
     }
   }
 }

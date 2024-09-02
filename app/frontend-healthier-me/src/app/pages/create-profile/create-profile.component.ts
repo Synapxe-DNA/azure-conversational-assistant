@@ -41,7 +41,7 @@ export class CreateProfileComponent {
 
   profileTypeOptions: { label: string; value: ProfileType }[] = [
     { label: "Myself", value: ProfileType.Myself },
-    { label: "Someone else", value: ProfileType.Others }
+    { label: "Others", value: ProfileType.Others }
   ];
 
   profileGenderOptions: ProfileGender[] = [ProfileGender.Male, ProfileGender.Female];

@@ -120,6 +120,7 @@ export class v2AudioRecorder {
           clearInterval(checkInterval); // Stop checking once the socket is closed
           this.upsert(this.finalText); // Final upsert to ensure final text is displayed
           this.socket.close();
+          console.log("WebSocket connection closed");
           resolve(this.finalText);
         }
       }, 100);
