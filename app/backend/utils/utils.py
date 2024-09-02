@@ -116,20 +116,32 @@ class Utils:
 
     @staticmethod
     def form_request(data: MultiDict) -> Request:
-
-        language = json.loads(data["language"])
-        print("CHOSEN LANGUAGE: ", language)
-        query = json.loads(data["query"])
-        language = Utils.get_language(query["content"]) if language == LanguageSelected.SPOKEN.value else language
-        print("DETECTED LANGUAGE: ", language)
-
+        print(f"CHOSEN LANGUAGE: {data['language']}")
+        language = (
+            Utils.get_language(data["query"]) if data["language"] == LanguageSelected.SPOKEN.value else data["language"]
+        )
+        print(f"DETECTED LANGUAGE: {language}")
         request = Request(
-            chat_history=json.loads(data.get("chat_history", "[]")),
-            profile=Profile(**json.loads(data.get("profile", "{}"))),
-            query=query,
+            chat_history=json.loads(data["chat_history"]),
+            profile=Profile(**json.loads(data["profile"])),
+            query=json.loads(data["query"]),
             language=language,
         )
+
         return request
+
+    @staticmethod
+    def form_feedback_request(data: MultiDict) -> FeedbackRequest:
+
+        feedback_request = FeedbackRequest(
+            date_time=data["date_time"],
+            feedback_type=data["feedback_type"],
+            feedback_category=json.loads(data["feedback_category"]),
+            feedback_remarks=data.get("feedback_remarks", ""),
+            user_profile=Profile(**json.loads(data["user_profile"])),
+            chat_history=json.loads(data["chat_history"]),
+        )
+        return feedback_request
 
     @staticmethod
     def get_language(query_text: str):

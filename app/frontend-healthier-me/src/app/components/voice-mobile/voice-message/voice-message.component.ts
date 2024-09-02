@@ -32,7 +32,10 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     this.startAnalyser().catch(console.error);
     this.audioPlayerService.$playing.subscribe(isPlaying => {
       if (isPlaying) {
-        this.mainLoop();
+        if (this.animationFrameId == null) {
+          // To prevent creation of multiple animation frames
+          this.mainLoop();
+        }
       } else {
         this.stopLoop();
         this.box.nativeElement.style.boxShadow = `0 0 0px 0px rgb(243,244,246)`;
@@ -55,7 +58,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   }
 
   stopLoop() {
-    if (this.animationFrameId !== null) {
+    if (this.animationFrameId != null) {
       window.cancelAnimationFrame(this.animationFrameId); // AnimationFrame needs to be cancelled
       this.animationFrameId = null;
     }
