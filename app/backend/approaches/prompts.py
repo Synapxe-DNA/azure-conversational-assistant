@@ -125,6 +125,6 @@ If you cannot generate a search query, return just the number 0.
 """
 
 query_check_prompt = """
-Please analyze the following user query and determine if it is related to any of the following categories: health, medication, fitness, or parenthood. 
+Please analyze the following user query and determine if it is related to any of the following categories: health, healthy eating, healthy lifestyle, medication, fitness, or parenthood.
 Respond with 'True' if the query relates to one or more of these categories, and 'False' if it does not.
 """

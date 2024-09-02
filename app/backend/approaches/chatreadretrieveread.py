@@ -9,7 +9,7 @@ from approaches.prompts import (
     general_query_prompt,
     profile_prompt,
     profile_query_prompt,
-    query_check_prompt
+    query_check_prompt,
 )
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
@@ -230,9 +230,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         query_check_response = await self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
-            messages=query_check_messages
+            messages=query_check_messages,
         )
-        
+
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
 
