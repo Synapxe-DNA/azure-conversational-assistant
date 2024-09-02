@@ -6,7 +6,7 @@ from quart import Blueprint, current_app, jsonify, request
 speech = Blueprint("speech", __name__, url_prefix="/speech")
 
 
-@speech.route("/", methods=["POST"])
+@speech.route("/stream", methods=["POST"])
 async def speech_endpoint():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415

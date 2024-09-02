@@ -33,7 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
+      const blob = await this.httpClient.post("/speech/stream", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -149,7 +149,7 @@ export class EndpointService {
     };
 
     this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
+      .post("/voice/stream", new TypedFormData<ApiVoiceRequest>(data), {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -226,13 +226,14 @@ export class EndpointService {
     };
 
     this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
+      .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
         reportProgress: true,
         observe: "events"
       })
       .subscribe({
         next: e => {
+          console.log(e);
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
@@ -369,7 +370,7 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
 
-    this.httpClient.post("/feedback", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+    this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
       },
