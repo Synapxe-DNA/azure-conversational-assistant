@@ -110,10 +110,6 @@ export class VoiceMobileComponent {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
-
-          if (this.message === undefined) {
-            this.upsertIntroMessage(p.id);
-          }
         });
       });
     });
@@ -145,6 +141,15 @@ export class VoiceMobileComponent {
     this.preference.setVoiceDetectEnd(e.checked);
   }
 
+  handleMicAudioLevelChange(level: number) {
+    if (level === 0) {
+      this.currentBackgroundColor = `rgba(16, 185, 129, 1)`;
+      return;
+    }
+    const clampedLevel = Math.max(6, Math.min(level, 15));
+    const intensity = (clampedLevel - 6) / (15 - 6);
+    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
+  }
   private async upsertIntroMessage(profileId: string): Promise<void> {
     const introMessage: Message = {
       id: "intro-message", // Assign a unique ID for the intro message
