@@ -33,7 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
+      const blob = await this.httpClient.post("/speech/stream", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -153,36 +153,41 @@ export class EndpointService {
     };
 
     this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
+      .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
         reportProgress: true,
         observe: "events"
       })
       .subscribe({
         next: e => {
-          console.log("sendVoice2 e",e)
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
 
-              const jsonParsed = this.parseSendVoice(responseData)
+              const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
+              const matches = data.match(/}/g);
+              if (matches) {
+                const lastIndex = data.lastIndexOf("}");
+                const jsonString = data.substring(0, lastIndex + 1);
+                const jsonParsed = this.parseSendVoice(jsonString);
 
-              existingAudio.push(...jsonParsed[0])
-              currentAssistantMessage += jsonParsed[1]
-              currentSources.push(...jsonParsed[2])
+                currentAssistantMessage = currentAssistantMessage + jsonParsed[0];
+                currentSources.push(...jsonParsed[1]);
+                existingAudio.push(...jsonParsed[2]);
 
-
-              responseBS.next({
-                status: ResponseStatus.Pending,
-                assistant_response: currentAssistantMessage,
-                assistant_response_audio: existingAudio,
-                sources: currentSources
-              });
-              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
-              return;
+                responseBS.next({
+                  status: ResponseStatus.Pending,
+                  assistant_response: currentAssistantMessage,
+                  assistant_response_audio: existingAudio,
+                  sources: currentSources
+                });
+                lastResponseLength += lastIndex + 1 || 0;
+                return;
+              } else {
+                return;
+              }
             }
             case HttpEventType.Response: {
               let existingData = responseBS.value;
@@ -243,7 +248,6 @@ export class EndpointService {
               // parse chunks into multiple json objects
 
               const jsonParsed = this.parseSendChat(currentResponseData);
-
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
               currentSources.push(...jsonParsed[1]);
@@ -282,7 +286,7 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
 
-    this.httpClient.post("/feedback", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+    this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
       },
@@ -335,34 +339,31 @@ export class EndpointService {
   }
 
   private parseSendVoice(rawJsonString: string): any[] {
-    
-    let aggregatedAudio: string[] = [];
-    let aggregatedResponse: string = "";
+    let aggregatedResponseMessage: string = "";
     let aggregatedSources: [] = [];
+    let aggregatedAudio: string[] = [];
 
+    // Extract individual JSON objects
     const jsonObjects = this.extractJsonObjects(rawJsonString);
-
     // Process each JSON object
     for (const jsonObject of jsonObjects) {
-      console.log("parseSendVoice jsonObjects", jsonObjects)
       try {
         // Parse the JSON object
         const data = JSON.parse(jsonObject);
 
-        
         // Extract and append the response message
         const responseMessage: string = data.response_message || "";
+        const audioMessage: string = data.audio_base64 || "";
         const sources: [] = data.sources || [];
-        const audio: [] = data.audio_base64 || [];
-
-        aggregatedResponse += responseMessage;
-        aggregatedAudio.push(...audio)
+        aggregatedResponseMessage += responseMessage;
         aggregatedSources.push(...sources);
-
+        if (audioMessage != "") {
+          aggregatedAudio.push(audioMessage);
+        }
       } catch (error) {
         console.error("Error decoding JSON:", error);
       }
     }
-    return [aggregatedAudio, aggregatedResponse, aggregatedSources ];
+    return [aggregatedResponseMessage, aggregatedSources, aggregatedAudio];
   }
 }

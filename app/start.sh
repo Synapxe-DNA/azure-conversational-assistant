@@ -4,6 +4,8 @@ echo ""
 echo "Loading azd .env file from current environment"
 echo ""
 
+make set-env
+
 while IFS='=' read -r key value; do
     value=$(echo "$value" | sed 's/^"//' | sed 's/"$//')
     export "$key=$value"
@@ -15,8 +17,6 @@ if [ $? -ne 0 ]; then
     echo "Failed to load environment variables from azd environment"
     exit $?
 fi
-
-make set-env
 
 cd ../
 echo 'Creating python virtual environment ".venv"'

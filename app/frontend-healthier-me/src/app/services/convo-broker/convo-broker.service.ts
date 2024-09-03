@@ -108,7 +108,6 @@ export class ConvoBrokerService {
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
     this.recorder2.setupWebSocket();
-    this.recorder2.setupWebSocket();
   }
 
   /**
@@ -138,7 +137,6 @@ export class ConvoBrokerService {
     const audioBlob = convertBase64ToBlob(val, "audio/*");
     this.audioPlayer.play(audioBlob);
   }
-
   /**
    * Method to send the transcribed text as a request to the backend.
    * Handled by `EndpointService`

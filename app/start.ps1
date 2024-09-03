@@ -2,6 +2,8 @@ Write-Host ""
 Write-Host "Loading azd .env file from current environment"
 Write-Host ""
 
+make set-env
+
 foreach ($line in (& azd env get-values)) {
     if ($line -match "([^=]+)=(.*)") {
         $key = $matches[1]
@@ -14,8 +16,6 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to load environment variables from azd environment"
     exit $LASTEXITCODE
 }
-
-make set-env
 
 function func_backend {
     Push-Location ..

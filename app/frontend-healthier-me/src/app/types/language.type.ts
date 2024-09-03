@@ -7,9 +7,9 @@ export enum Language {
 }
 
 export const languageMap = [
-  {"name": "As Spoken", "value": Language.Spoken},
-  {"name": "English", "value": Language.English},
-  {"name": "Chinese", "value": Language.Chinese},
-  {"name": "Malay", "value": Language.Malay},
-  {"name": "Tamil", "value": Language.Tamil}
-]
+  { name: "As Spoken", value: Language.Spoken },
+  { name: "English", value: Language.English },
+  { name: "Chinese", value: Language.Chinese },
+  { name: "Malay", value: Language.Malay },
+  { name: "Tamil", value: Language.Tamil }
+];
