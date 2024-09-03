@@ -33,7 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
+      const blob = await this.httpClient.post("/speech/stream", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -149,7 +149,7 @@ export class EndpointService {
     };
 
     this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
+      .post("/voice/stream", new TypedFormData<ApiVoiceRequest>(data), {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -177,10 +177,8 @@ export class EndpointService {
 
               responseBS.next({
                 status: ResponseStatus.Pending,
-                user_transcript: currentQueryMessage,
                 assistant_response: currentAssistantMessage,
                 assistant_response_audio: existingAudio,
-                additional_questions: [responseData.additional_question_1, responseData.additional_question_2],
                 sources: responseData.sources
               });
               lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
@@ -226,46 +224,42 @@ export class EndpointService {
     };
 
     this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
+      .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
         reportProgress: true,
         observe: "events"
       })
       .subscribe({
         next: e => {
+          console.log(e);
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
 
-              if (responseData.audio_base64) {
-                existingAudio.push(responseData.audio_base64);
+              const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
+              const matches = data.match(/}/g);
+              if (matches) {
+                const lastIndex = data.lastIndexOf("}");
+                const jsonString = data.substring(0, lastIndex + 1);
+                const jsonParsed = this.parseSendVoice(jsonString);
+
+                currentAssistantMessage = currentAssistantMessage + jsonParsed[0];
+                currentSources.push(...jsonParsed[1]);
+                existingAudio.push(...jsonParsed[2]);
+
+                responseBS.next({
+                  status: ResponseStatus.Pending,
+                  assistant_response: currentAssistantMessage,
+                  assistant_response_audio: existingAudio,
+                  sources: currentSources
+                });
+                lastResponseLength += lastIndex + 1 || 0;
+                return;
+              } else {
+                return;
               }
-
-              if (responseData.response_message) {
-                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
-              }
-
-              if (responseData.query_message) {
-                currentQueryMessage = currentQueryMessage + responseData.query_message;
-              }
-
-              if (responseData.sources) {
-                currentSources.push(...responseData.sources);
-              }
-
-              responseBS.next({
-                status: ResponseStatus.Pending,
-                user_transcript: currentQueryMessage,
-                assistant_response: currentAssistantMessage,
-                assistant_response_audio: existingAudio,
-                additional_questions: [responseData.additional_question_1, responseData.additional_question_2],
-                sources: currentSources
-              });
-              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
-              return;
             }
             case HttpEventType.Response: {
               let existingData = responseBS.value!;
@@ -326,7 +320,6 @@ export class EndpointService {
               // parse chunks into multiple json objects
 
               const jsonParsed = this.parseSendChat(currentResponseData);
-
               //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
               currentSources.push(...jsonParsed[1]);
@@ -369,7 +362,7 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
 
-    this.httpClient.post("/feedback", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+    this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
       },
@@ -417,5 +410,34 @@ export class EndpointService {
       }
     }
     return [aggregatedResponseMessage, aggregatedSources];
+  }
+
+  private parseSendVoice(rawJsonString: string): any[] {
+    let aggregatedResponseMessage: string = "";
+    let aggregatedSources: [] = [];
+    let aggregatedAudio: string[] = [];
+
+    // Extract individual JSON objects
+    const jsonObjects = this.extractJsonObjects(rawJsonString);
+    // Process each JSON object
+    for (const jsonObject of jsonObjects) {
+      try {
+        // Parse the JSON object
+        const data = JSON.parse(jsonObject);
+
+        // Extract and append the response message
+        const responseMessage: string = data.response_message || "";
+        const audioMessage: string = data.audio_base64 || "";
+        const sources: [] = data.sources || [];
+        aggregatedResponseMessage += responseMessage;
+        aggregatedSources.push(...sources);
+        if (audioMessage != "") {
+          aggregatedAudio.push(audioMessage);
+        }
+      } catch (error) {
+        console.error("Error decoding JSON:", error);
+      }
+    }
+    return [aggregatedResponseMessage, aggregatedSources, aggregatedAudio];
   }
 }

@@ -168,7 +168,7 @@ export class ConvoBrokerService {
           id: userMessageId,
           profile_id: profile.id,
           role: MessageRole.User,
-          message: d.user_transcript,
+          message: "",
           timestamp: requestTime,
           sources: []
         });
