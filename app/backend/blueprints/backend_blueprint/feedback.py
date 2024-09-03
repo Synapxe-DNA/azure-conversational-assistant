@@ -1,6 +1,6 @@
 from azure.cosmos import ContainerProxy
 from config import CONFIG_FEEDBACK_CONTAINER_CLIENT
-from quart import Blueprint, current_app, request
+from quart import Blueprint, current_app, request, jsonify
 from utils.utils import Utils
 
 feedback = Blueprint("feedback", __name__, url_prefix="/feedback")
@@ -15,8 +15,7 @@ async def feedback_endpoint():
         feedback_request = Utils.form_feedback_request(data)
         feedback_store = await Utils.construct_feedback_for_storing(feedback_request)
         await containerClient.create_item(feedback_store.model_dump(), enable_automatic_id_generation=True)
-        return "Feedback sent!", 200
+        return jsonify({"message":"Feedback sent!"}), 200
 
     except Exception as error:
-        print(error)
-        return str(error), 500
+        return jsonify({"error": str(error)}), 500
