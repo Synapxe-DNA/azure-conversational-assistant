@@ -110,10 +110,6 @@ export class VoiceMobileComponent {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
-
-          if (this.message === undefined) {
-            this.upsertIntroMessage(p.id);
-          }
         });
       });
     });
@@ -143,21 +139,5 @@ export class VoiceMobileComponent {
 
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
-  }
-
-  private async upsertIntroMessage(profileId: string): Promise<void> {
-    const introMessage: Message = {
-      id: "intro-message", // Assign a unique ID for the intro message
-      profile_id: profileId,
-      role: MessageRole.Assistant,
-      message: "Welcome! How can I assist you today?",
-      timestamp: Date.now(),
-      sources: []
-    };
-
-    await this.chatMessageService.upsert(introMessage);
-
-    // After upserting, refresh the message list to ensure it's reflected
-    this.message = await this.chatMessageService.staticLoad(profileId).then(messages => messages.sort((b, a) => a.timestamp - b.timestamp)[0]);
   }
 }

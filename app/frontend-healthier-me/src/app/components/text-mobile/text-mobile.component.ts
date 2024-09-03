@@ -51,28 +51,8 @@ export class TextMobileComponent implements OnInit {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.messages = messages;
-
-          if (this.messages.length === 0) {
-            this.upsertIntroMessage(p.id);
-          }
         });
       });
     });
-  }
-
-  private async upsertIntroMessage(profileId: string): Promise<void> {
-    const introMessage: Message = {
-      id: "intro-message", // Assign a unique ID for the intro message
-      profile_id: profileId,
-      role: MessageRole.Assistant,
-      message: "Welcome! How can I assist you today?",
-      timestamp: Date.now(),
-      sources: []
-    };
-
-    await this.chatMessageService.upsert(introMessage);
-
-    // After upserting, refresh the message list to ensure it's reflected
-    this.messages = await this.chatMessageService.staticLoad(profileId);
   }
 }
