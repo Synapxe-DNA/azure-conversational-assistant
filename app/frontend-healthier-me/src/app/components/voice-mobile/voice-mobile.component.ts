@@ -140,4 +140,29 @@ export class VoiceMobileComponent {
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
   }
+
+  handleMicAudioLevelChange(level: number) {
+    if (level === 0) {
+      this.currentBackgroundColor = `rgba(16, 185, 129, 1)`;
+      return;
+    }
+    const clampedLevel = Math.max(6, Math.min(level, 15));
+    const intensity = (clampedLevel - 6) / (15 - 6);
+    this.currentBackgroundColor = `rgba(16, 185, 129, ${intensity})`;
+  }
+  private async upsertIntroMessage(profileId: string): Promise<void> {
+    const introMessage: Message = {
+      id: "intro-message", // Assign a unique ID for the intro message
+      profile_id: profileId,
+      role: MessageRole.Assistant,
+      message: "Welcome! How can I assist you today?",
+      timestamp: Date.now(),
+      sources: []
+    };
+
+    await this.chatMessageService.upsert(introMessage);
+
+    // After upserting, refresh the message list to ensure it's reflected
+    this.message = await this.chatMessageService.staticLoad(profileId).then(messages => messages.sort((b, a) => a.timestamp - b.timestamp)[0]);
+  }
 }
