@@ -220,11 +220,15 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         query_text = self.get_search_query(chat_completion, original_user_query)
 
         ## STEP 2: LLM to check if the query is health-related
+        # previous_system_reply = messages[-2]
+        # print(f"previous_system_reply: {previous_system_reply}")
+
         query_check_messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=query_check_prompt,
             new_user_content=original_user_query,
-            max_tokens=20,
+            past_messages=messages[:-1],
+            max_tokens=self.chatgpt_token_limit - query_response_token_limit,
         )
 
         query_check_response = await self.openai_client.chat.completions.create(
@@ -275,8 +279,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
 
-        data_points = {"text": sources_content}
-        print(f"data_points: {data_points}")
+        # data_points = {"text": sources_content}
+        # print(f"data_points: {data_points}")
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
