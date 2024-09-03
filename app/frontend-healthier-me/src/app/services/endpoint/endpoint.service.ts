@@ -241,14 +241,12 @@ export class EndpointService {
                 return;
               }
 
-              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength); //splits response into chunks
+              // since response is re-emitted as a whole each time, we need to keep track of the  
+              // last response length and slice to remove the last response from the current response
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
 
-              // console.log(currentResponseData)
-
-              // parse chunks into multiple json objects
-
+              // parses latest response into multiple json objects
               const jsonParsed = this.parseSendChat(currentResponseData);
-              //adds response_message to local variable
               currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
               currentSources.push(...jsonParsed[1]);
 
