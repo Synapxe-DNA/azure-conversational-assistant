@@ -124,7 +124,7 @@ export class ConvoBrokerService {
     // });
 
     this.recorder2.stopAudioCapture().then(r => {
-      this.sendVoice2(r, this.activeProfile.value || GeneralProfile).catch(console.error);
+      this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
   }
 
@@ -137,67 +137,6 @@ export class ConvoBrokerService {
     const audioBlob = convertBase64ToBlob(val, "audio/*");
     this.audioPlayer.play(audioBlob);
   }
-
-  /**
-   * Method to send the voice blob as a request to the backend.
-   * Handled by `EndpointService`
-   * @param audio {Blob}
-   * @param profile {Profile}
-   * @private
-   */
-  private async sendVoice(audio: Blob, profile: Profile) {
-    this.$isWaitingForVoiceApi.next(true);
-
-    const requestTime: number = new Date().getTime();
-    const userMessageId = createId();
-    const assistantMessageId: string = createId();
-
-    const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
-
-    let audio_base64: string[] = [];
-
-    const res = await this.endpointService.sendVoice(audio, this.activeProfile.value || GeneralProfile, history.slice(-8));
-    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-      next: async d => {
-        if (!d) {
-          return;
-        }
-
-        // upsert user message
-        await this.chatMessageService.upsert({
-          id: userMessageId,
-          profile_id: profile.id,
-          role: MessageRole.User,
-          message: "",
-          timestamp: requestTime,
-          sources: []
-        });
-
-        // upsert assistant message
-        await this.chatMessageService.upsert({
-          id: assistantMessageId,
-          profile_id: profile.id,
-          role: MessageRole.Assistant,
-          message: d.assistant_response,
-          timestamp: new Date().getTime(),
-          sources: d.sources
-        });
-
-        const nonNullAudio = d.assistant_response_audio.map(v => v);
-        if (nonNullAudio.length > audio_base64.length) {
-          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-          audio_base64 = nonNullAudio;
-          newAudioStr.forEach(a => {
-            this.playAudioBase64(a);
-          });
-        }
-      },
-      complete: () => {
-        this.$isWaitingForVoiceApi.next(false);
-      }
-    });
-  }
-
   /**
    * Method to send the transcribed text as a request to the backend.
    * Handled by `EndpointService`
@@ -205,7 +144,7 @@ export class ConvoBrokerService {
    * @param profile {Profile}
    * @private
    */
-  private async sendVoice2(message: string, profile: Profile) {
+  private async sendVoice(message: string, profile: Profile) {
     this.$isWaitingForVoiceApi.next(true);
 
     const requestTime: number = new Date().getTime();
@@ -216,7 +155,7 @@ export class ConvoBrokerService {
 
     let audio_base64: string[] = [];
 
-    const res = await this.endpointService.sendVoice2(
+    const res = await this.endpointService.sendVoice(
       message,
       this.activeProfile.value || GeneralProfile,
       history.slice(-8),

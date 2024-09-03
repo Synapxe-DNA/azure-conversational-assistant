@@ -129,89 +129,18 @@ export class EndpointService {
   }
 
   /**
-   * Method to send voice blob to the endpoint for LLM generation
-   * @param recording {Blob} Audio file with user recording
-   * @param profile {Profile}
-   * @param history {Message[]} history of chat to be used for LLM context
-   */
-  async sendVoice(recording: Blob, profile: Profile, history: Message[]): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
-
-    let lastResponseLength: number = 0;
-    let currentAssistantMessage: string = "";
-    let currentQueryMessage: string = "";
-    let existingAudio: string[] = [];
-
-    const data: ApiVoiceRequest = {
-      chat_history: this.messageToApiChatHistory(history),
-      profile: this.profileToApiProfile(profile),
-      query: recording
-    };
-
-    this.httpClient
-      .post("/voice/stream", new TypedFormData<ApiVoiceRequest>(data), {
-        responseType: "text",
-        reportProgress: true,
-        observe: "events"
-      })
-      .subscribe({
-        next: e => {
-          switch (e.type) {
-            case HttpEventType.DownloadProgress: {
-              if (!(e as HttpDownloadProgressEvent).partialText) {
-                return;
-              }
-              const responseData = JSON.parse((e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength)) as ApiVoiceResponse;
-
-              if (responseData.audio_base64) {
-                existingAudio.push(responseData.audio_base64);
-              }
-
-              if (responseData.response_message) {
-                currentAssistantMessage = currentAssistantMessage + responseData.response_message;
-              }
-
-              if (responseData.query_message) {
-                currentQueryMessage = currentQueryMessage + responseData.query_message;
-              }
-
-              responseBS.next({
-                status: ResponseStatus.Pending,
-                assistant_response: currentAssistantMessage,
-                assistant_response_audio: existingAudio,
-                sources: responseData.sources
-              });
-              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
-              return;
-            }
-            case HttpEventType.Response: {
-              let existingData = responseBS.value!;
-              existingData.status = ResponseStatus.Done;
-              responseBS.next(existingData);
-              return;
-            }
-          }
-        },
-        error: console.error
-      });
-
-    return responseBS;
-  }
-
-  /**
    * Method to send transcribed text to the endpoint for LLM generation
    * @param message {string} transcribed text from websocket
    * @param profile {Profile}
    * @param history {Message[]} history of chat to be used for LLM context
    */
-  async sendVoice2(message: string, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<VoiceResponse | null>> {
+  async sendVoice(message: string, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<VoiceResponse | null>> {
     const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
-    let currentQueryMessage: string = "";
-    let existingAudio: string[] = [];
-    let currentSources: ApiSource[] = [];
+    const existingAudio: string[] = [];
+    const currentSources: ApiSource[] = [];
 
     const data: ApiVoiceRequest2 = {
       chat_history: this.messageToApiChatHistory(history),
@@ -231,7 +160,6 @@ export class EndpointService {
       })
       .subscribe({
         next: e => {
-          console.log(e);
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
@@ -262,8 +190,8 @@ export class EndpointService {
               }
             }
             case HttpEventType.Response: {
-              let existingData = responseBS.value!;
-              existingData.status = ResponseStatus.Done;
+              let existingData = responseBS.value;
+              existingData!.status = ResponseStatus.Done;
               responseBS.next(existingData);
               return;
             }
@@ -327,10 +255,6 @@ export class EndpointService {
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
-                additional_questions: [
-                  // responseData.additional_question_1,
-                  // responseData.additional_question_2,
-                ],
                 sources: currentSources
               });
 
@@ -374,7 +298,7 @@ export class EndpointService {
   private extractJsonObjects(rawString: string): string[] {
     // Regular expression to match JSON objects
     const jsonObjects: string[] = [];
-    const jsonRegex = /\{.*?\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
+    const jsonRegex = /\{[^{}]*\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
     let match;
 
     // Find all matches
@@ -403,8 +327,10 @@ export class EndpointService {
         // Extract and append the response message
         const responseMessage: string = data.response_message || "";
         const sources: [] = data.sources || [];
+
         aggregatedResponseMessage += responseMessage;
         aggregatedSources.push(...sources);
+        
       } catch (error) {
         console.error("Error decoding JSON:", error);
       }
