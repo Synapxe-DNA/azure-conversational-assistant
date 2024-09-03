@@ -296,7 +296,7 @@ export class EndpointService {
   private extractJsonObjects(rawString: string): string[] {
     // Regular expression to match JSON objects
     const jsonObjects: string[] = [];
-    const jsonRegex = /\{[^{}]*\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
+    const jsonRegex = /\{.*?\}(?=\{|\s*$)/g; // Regex to capture non-nested JSON objects
     let match;
 
     // Find all matches
