@@ -15,9 +15,9 @@ export class TextSourceComponent {
 
   imgUrl: string = "assets/healthhub-logo.png";
 
-    // Method to get the image URL
-    getImageUrl(coverImageUrl: string | null): string {
-      // Check if coverImageUrl is 'None' or falsy and return the fallback image URL
-      return coverImageUrl && coverImageUrl !== "None" ? coverImageUrl : this.imgUrl;
-    }
+  // Method to get the image URL
+  getImageUrl(coverImageUrl: string | null): string {
+    // Check if coverImageUrl is 'None' or falsy and return the fallback image URL
+    return coverImageUrl && coverImageUrl !== "None" ? coverImageUrl : this.imgUrl;
+  }
 }

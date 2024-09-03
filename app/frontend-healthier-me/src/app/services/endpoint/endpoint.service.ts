@@ -330,7 +330,6 @@ export class EndpointService {
 
         aggregatedResponseMessage += responseMessage;
         aggregatedSources.push(...sources);
-        
       } catch (error) {
         console.error("Error decoding JSON:", error);
       }
