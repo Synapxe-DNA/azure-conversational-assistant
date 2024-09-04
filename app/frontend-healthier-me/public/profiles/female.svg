@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+<svg height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 	 viewBox="0 0 187.366 187.366" xml:space="preserve">
 <g>
 	<defs>
@@ -11,7 +11,7 @@
 		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
 	</clipPath>
 	<circle style="clip-path:url(#SVGID_2_);fill:#FF9166;" cx="93.683" cy="93.682" r="93.668"/>
-	<polygon style="clip-path:url(#SVGID_2_);fill:#6BB9BF;" points="59.675,196.326 62.592,171.036 47.522,194.647 48.909,195.654 
+	<polygon style="clip-path:url(#SVGID_2_);fill:#6BB9BF;" points="59.675,196.326 62.592,171.036 47.522,194.647 48.909,195.654
 		48.421,196.326 	"/>
 	<path style="clip-path:url(#SVGID_2_);fill:#6BB9BF;" d="M146.378,195.654l1.187-0.861l-1.696-3.011l-12.842-20.226l1.91,16.671
 		c0.289,2.523,0.536,5.247,0.744,8.1h11.185L146.378,195.654z"/>
@@ -41,7 +41,7 @@
 			<g>
 				<path style="fill:#3281A0;" d="M133.253,189.576l-0.807-7.002l4.469,7.002h2.333l11.893-9.168
 					c-13.737-27.192-33.36-31.677-33.36-31.677v40.845H133.253z"/>
-				<polygon style="fill:#4198C4;" points="149.211,189.576 157.576,183.505 152.308,176.244 134.611,189.086 134.966,189.576 				
+				<polygon style="fill:#4198C4;" points="149.211,189.576 157.576,183.505 152.308,176.244 134.611,189.086 134.966,189.576
 					"/>
 				<polygon style="fill:#4198C4;" points="121.187,189.576 121.187,147.61 113.814,145.086 113.814,189.576 				"/>
 			</g>
@@ -66,7 +66,7 @@
 		</g>
 		<path style="fill:#74320A;" d="M70.915,68.838c0,0,33.639,31.117,76.53,25.229c0,0,4.204-57.188-52.982-57.188
 			c-57.188,0-49.242,47.727-49.242,47.727S55.777,82.294,70.915,68.838z"/>
-		<polygon style="fill:#FF0000;" points="72.388,63.294 61.993,39.765 51.303,54.659 50.978,54.165 32.554,52.559 43.632,75.775 
+		<polygon style="fill:#FF0000;" points="72.388,63.294 61.993,39.765 51.303,54.659 50.978,54.165 32.554,52.559 43.632,75.775
 			54.234,60.63 		"/>
 	</g>
 </g>

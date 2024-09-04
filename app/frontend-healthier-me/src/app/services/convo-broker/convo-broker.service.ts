@@ -19,13 +19,13 @@ import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { Feedback } from "../../types/feedback.type";
 import { Language } from "../../types/language.type";
+import { VoiceResponse } from "../../types/responses/voice-response.type";
 
 @Injectable({
   providedIn: "root"
 })
 export class ConvoBrokerService {
-  private recorder!: AudioRecorder;
-  private recorder2!: v2AudioRecorder;
+  private recorder!: v2AudioRecorder;
   private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   $language: BehaviorSubject<string> = new BehaviorSubject<string>(Language.Spoken);
@@ -58,7 +58,7 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe(v => {
@@ -103,29 +103,27 @@ export class ConvoBrokerService {
    * Method to trigger the start of audio recording
    * @private
    */
-  private handleStartRecording() {
+  handleStartRecording() {
     this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
     // this.recorder.start();
-    this.recorder2.setupWebSocket();
+    this.recorder.setupWebSocket();
   }
 
   /**
    * Method to stop the recording, and handle post-processing of recorded audio
    * @private
    */
-  private handleStopRecording() {
+  async handleStopRecording(): Promise<BehaviorSubject<VoiceResponse | null>> {
     this.$micState.next(MicState.DISABLED);
-
-    // this.recorder.stop().then((r) => {
-    //   this.sendVoice(r.data, this.activeProfile.value || GeneralProfile).catch(
-    //     console.error,
-    //   );
-    // });
-
-    this.recorder2.stopAudioCapture().then(r => {
-      this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
-    });
+    let res = new BehaviorSubject<VoiceResponse | null>(null);
+    try {
+      const audioData = await this.recorder.stopAudioCapture();
+      res = await this.sendVoice(audioData, this.activeProfile.value || GeneralProfile);
+    } catch (error) {
+      console.error(error);
+    }
+    return res;
   }
 
   /**
@@ -133,7 +131,7 @@ export class ConvoBrokerService {
    * @param val {string} Base 64 encoding of an audio blob
    * @private
    */
-  private async playAudioBase64(val: string): Promise<void> {
+  async playAudioBase64(val: string): Promise<void> {
     const audioBlob = convertBase64ToBlob(val, "audio/*");
     this.audioPlayer.play(audioBlob);
   }
@@ -144,16 +142,16 @@ export class ConvoBrokerService {
    * @param profile {Profile}
    * @private
    */
-  private async sendVoice(message: string, profile: Profile) {
+  private async sendVoice(message: string, profile: Profile): Promise<BehaviorSubject<VoiceResponse | null>> {
     this.$isWaitingForVoiceApi.next(true);
 
-    const requestTime: number = new Date().getTime();
-    const userMessageId = createId();
-    const assistantMessageId: string = createId();
+    // const requestTime: number = new Date().getTime();
+    // const userMessageId = createId();
+    // const assistantMessageId: string = createId();
 
     const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
 
-    let audio_base64: string[] = [];
+    // let audio_base64: string[] = [];
 
     const res = await this.endpointService.sendVoice(
       message,
@@ -161,34 +159,37 @@ export class ConvoBrokerService {
       history.slice(-8),
       this.$language.value || Language.Spoken
     );
-    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-      next: async d => {
-        if (!d) {
-          return;
-        }
-        // upsert assistant message
-        await this.chatMessageService.upsert({
-          id: assistantMessageId,
-          profile_id: profile.id,
-          role: MessageRole.Assistant,
-          message: d.assistant_response,
-          timestamp: new Date().getTime(),
-          sources: d.sources
-        });
 
-        const nonNullAudio = d.assistant_response_audio.map(v => v);
-        if (nonNullAudio.length > audio_base64.length) {
-          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-          audio_base64 = nonNullAudio;
-          newAudioStr.forEach(a => {
-            this.playAudioBase64(a);
-          });
-        }
-      },
-      complete: () => {
-        this.$isWaitingForVoiceApi.next(false);
-      }
-    });
+    return res;
+
+    // res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+    //   next: async d => {
+    //     if (!d) {
+    //       return;
+    //     }
+    //     // upsert assistant message
+    //     await this.chatMessageService.upsert({
+    //       id: assistantMessageId,
+    //       profile_id: profile.id,
+    //       role: MessageRole.Assistant,
+    //       message: d.assistant_response,
+    //       timestamp: new Date().getTime(),
+    //       sources: d.sources
+    //     });
+
+    //     const nonNullAudio = d.assistant_response_audio.map(v => v);
+    //     if (nonNullAudio.length > audio_base64.length) {
+    //       const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
+    //       audio_base64 = nonNullAudio;
+    //       newAudioStr.forEach(a => {
+    //         this.playAudioBase64(a);
+    //       });
+    //     }
+    //   },
+    //   complete: () => {
+    //     this.$isWaitingForVoiceApi.next(false);
+    //   }
+    // });
   }
 
   async sendFeedback(feedback: Feedback) {
