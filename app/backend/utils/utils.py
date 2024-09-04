@@ -95,7 +95,10 @@ class Utils:
             sources: List[SourceWithChunk] = []
             for source in chatHistory.sources:
                 for id in source.ids:
-                    result = await search_client.get_document(id)  # Retrieve text chunks via id
+                    try:
+                        result = await search_client.get_document(id)  # Retrieve text chunks via id
+                    except Exception:
+                        result = {"chunks": "Chunk for source cannot be found"}
                     src = SourceWithChunk(
                         id=id,
                         title=source.title,

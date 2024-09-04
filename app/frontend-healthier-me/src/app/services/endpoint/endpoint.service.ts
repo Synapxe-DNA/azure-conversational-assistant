@@ -241,7 +241,7 @@ export class EndpointService {
                 return;
               }
 
-              // since response is re-emitted as a whole each time, we need to keep track of the  
+              // since response is re-emitted as a whole each time, we need to keep track of the
               // last response length and slice to remove the last response from the current response
               const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
 
