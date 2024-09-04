@@ -1,7 +1,7 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { ProfileService } from "../../services/profile/profile.service";
 import { createId } from "@paralleldrive/cuid2";
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
+import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
 import { ProfileGender, ProfileType } from "../../types/profile.type";
 import { CardModule } from "primeng/card";
 import { InputTextModule } from "primeng/inputtext";
@@ -12,6 +12,9 @@ import { InputTextareaModule } from "primeng/inputtextarea";
 import { Button } from "primeng/button";
 import { MessageService } from "primeng/api";
 import { MultiSelectModule } from "primeng/multiselect";
+import { PreferenceService } from "../../services/preference/preference.service";
+import { ChatMode } from "../../types/chat-mode.type";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-create-profile",
@@ -53,8 +56,10 @@ export class CreateProfileComponent {
   ];
 
   constructor(
+    private preferences: PreferenceService,
     private profileService: ProfileService,
-    private toastService: MessageService
+    private toastService: MessageService,
+    private router: Router
   ) {}
 
   createProfile() {
@@ -72,6 +77,8 @@ export class CreateProfileComponent {
         summary: "Profile created!",
         detail: `Profile ${this.profileForm.value.name} has been created!`
       });
+      this.preferences.$chatMode.next(ChatMode.Voice);
+      this.router.navigate(["/app/chat/general"]);
     }
   }
 }
