@@ -112,8 +112,6 @@ export class VoiceMobileComponent {
       });
     });
 
-
-
     this.initVoiceChat().catch(console.error);
   }
 
@@ -143,7 +141,7 @@ export class VoiceMobileComponent {
                 timestamp: new Date().getTime(),
                 sources: d.sources
               });
-      
+
               const nonNullAudio = d.assistant_response_audio.map(v => v);
               if (nonNullAudio.length > audio_base64.length) {
                 const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));

@@ -118,13 +118,13 @@ export class ConvoBrokerService {
     this.$micState.next(MicState.DISABLED);
     let res = new BehaviorSubject<VoiceResponse | null>(null);
     try {
-        const audioData = await this.recorder.stopAudioCapture();
-        res = await this.sendVoice(audioData, this.activeProfile.value || GeneralProfile);
+      const audioData = await this.recorder.stopAudioCapture();
+      res = await this.sendVoice(audioData, this.activeProfile.value || GeneralProfile);
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
     return res;
-}
+  }
 
   /**
    * Method to convert string to blob and play the blob.
@@ -160,7 +160,7 @@ export class ConvoBrokerService {
       this.$language.value || Language.Spoken
     );
 
-    return res
+    return res;
 
     // res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
     //   next: async d => {
