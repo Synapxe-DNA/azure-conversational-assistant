@@ -78,7 +78,6 @@ export class CreateProfileComponent {
         detail: `Profile ${this.profileForm.value.name} has been created!`
       });
       this.preferences.$chatMode.next(ChatMode.Voice);
-      this.router.navigate(["/app/chat/general"]);
     }
   }
 }
