@@ -112,8 +112,6 @@ export class VoiceMobileComponent {
       });
     });
 
-
-
     this.initVoiceChat().catch(console.error);
   }
 
@@ -124,9 +122,8 @@ export class VoiceMobileComponent {
   handleMicButtonClick() {
     switch (this.micState) {
       case MicState.ACTIVE:
-        this.convoBroker.handleStopRecording().then((res) => {
-
-          const assistantMessageId: string = createId()
+        this.convoBroker.handleStopRecording().then(res => {
+          const assistantMessageId: string = createId();
           let audio_base64: string[] = [];
 
           res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
@@ -143,7 +140,7 @@ export class VoiceMobileComponent {
                 timestamp: new Date().getTime(),
                 sources: d.sources
               });
-      
+
               const nonNullAudio = d.assistant_response_audio.map(v => v);
               if (nonNullAudio.length > audio_base64.length) {
                 const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
