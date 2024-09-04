@@ -121,10 +121,10 @@ export class VoiceMobileComponent {
     this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
-  handleMicButtonClick() {
+  async handleMicButtonClick() {
     switch (this.micState) {
       case MicState.ACTIVE:
-        this.convoBroker.handleStopRecording().then((res) => {
+        const res = await this.convoBroker.handleStopRecording()
 
           const assistantMessageId: string = createId()
           let audio_base64: string[] = [];
@@ -161,7 +161,6 @@ export class VoiceMobileComponent {
               this.convoBroker.$isWaitingForVoiceApi.next(false);
             }
           });
-        });
         break;
       case MicState.PENDING:
         this.convoBroker.handleStartRecording();
