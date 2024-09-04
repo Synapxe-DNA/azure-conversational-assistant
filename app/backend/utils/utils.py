@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import base64
 from typing import Any, AsyncGenerator, List
 
 from azure.search.documents.aio import SearchClient
@@ -37,7 +38,13 @@ class Utils:
         async def generator() -> AsyncGenerator[str, None]:
             response_message = ""
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
-
+            if request_type == RequestType.VOICE:
+                silentVoiceResponse = VoiceChatResponse(
+                                response_message=response_message,
+                                sources=[],
+                                audio_base64=base64.b64encode(open("asset/silentaudio.wav", "rb").read()).decode("utf-8"),
+                )
+                yield silentVoiceResponse.model_dump_json()
             async for res in format_as_ndjson(result):
                 # Extract sources
                 res = json.loads(res)

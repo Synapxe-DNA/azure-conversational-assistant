@@ -37,7 +37,7 @@ export class ConvoBrokerService {
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
     private profileService: ProfileService,
-    private vadService: VadService,
+    private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe(p => {
