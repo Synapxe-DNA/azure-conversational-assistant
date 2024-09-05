@@ -124,8 +124,8 @@ Once in the web app:
 >
 > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
 
-
 ## Running webapp locally to test on other devices
+
 To test the webapp locally on other devices in the same network, follow the steps below:
 
 1. Navigate to the `app` folder

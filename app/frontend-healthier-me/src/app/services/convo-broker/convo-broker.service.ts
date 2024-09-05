@@ -112,6 +112,7 @@ export class ConvoBrokerService {
    */
   private handleStopRecording() {
     this.$micState.next(MicState.DISABLED);
+    this.audioPlayer.playSilentAudio();
     this.recorder.stopAudioCapture().then(r => {
       this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
