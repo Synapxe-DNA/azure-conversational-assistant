@@ -118,8 +118,18 @@ Once in the web app:
 
 1. Navigate to the `app` folder
 2. Run `make run-local'
-3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
+3. To access the endpoints for testing, navigate to `https://0.0.0.0:8000/{route name}`
 
 > [!NOTE]
 >
 > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
+
+
+## Running webapp locally to test on other devices
+To test the webapp locally on other devices in the same network, follow the steps below:
+
+1. Navigate to the `app` folder
+2. Run this command `make ssl-cert` or `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes`
+3. Fill up the information however you like
+4. Run startwithssl.sh or startwithssl.ps1
+5. Access the webapp via `https://{ipv4 address of the machine running the webapp}:50505`
