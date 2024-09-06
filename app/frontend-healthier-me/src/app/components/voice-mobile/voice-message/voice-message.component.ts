@@ -44,7 +44,12 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   }
 
   async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
+    this.audioPlayerService.getAudioStream().subscribe(v => {
+      if (v) {
+        // One more bar is added so that the "highest" frequency bar is attainable with regular voice
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 0 , 0.3);
+      }
+    });
   }
 
   mainLoop() {
