@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { MessageRole } from "../../types/message.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
 import { Profile } from "../../types/profile.type";
@@ -19,6 +19,7 @@ import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bott
   styleUrl: "./text-mobile.component.css"
 })
 export class TextMobileComponent implements OnInit {
+  @ViewChild("scrollContainer") private scrollContainer!: ElementRef;
   @Input() showTextInput?: boolean = true;
 
   user: string = MessageRole.User;
@@ -54,10 +55,16 @@ export class TextMobileComponent implements OnInit {
 
           if (this.messages.length === 0) {
             this.upsertIntroMessage(p.id);
+          } else {
+            this.scrollToBottom();
           }
         });
       });
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.scrollToBottom();
   }
 
   private async upsertIntroMessage(profileId: string): Promise<void> {
@@ -74,5 +81,13 @@ export class TextMobileComponent implements OnInit {
 
     // After upserting, refresh the message list to ensure it's reflected
     this.messages = await this.chatMessageService.staticLoad(profileId);
+  }
+
+  private scrollToBottom(): void {
+    try {
+      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    } catch (err) {
+      console.error("Scroll to bottom failed:", err);
+    }
   }
 }

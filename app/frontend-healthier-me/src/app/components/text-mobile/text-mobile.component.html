@@ -1,5 +1,5 @@
-<div appStickyBottom class="tw-w-full tw-h-full tw-overflow-y-auto tw-relative tw-flex tw-flex-col tw-justify-start tw-items-center tw-pt-8 tw-pb-32 tw-mt-4">
-  <div class="tw-w-full tw-flex tw-flex-row tw-justify-center tw-items-center">
+<div class="tw-w-full tw-h-full tw-flex tw-flex-col tw-fixed tw-bottom-0 tw-left-0">
+  <div #scrollContainer class="tw-w-full tw-h-full tw-overflow-y-auto tw-flex tw-justify-center tw-items-start tw-mb-4 tw-mt-12">
     <div class="tw-w-[80ch] tw-max-w-full tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-6 tw-mx-4">
       @for (message of messages; track message) {
         @if (message.message.trim()) {
@@ -16,7 +16,9 @@
     </div>
   </div>
 
-  <div class="tw-fixed tw-bottom-6 tw-mx-auto tw-w-[80dvw] tw-max-w-[800px]">
-    <app-text-input />
+  <div class="tw-w-full tw-flex tw-justify-center tw-px-4 tw-mb-4">
+    <div class="tw-w-[80dvw] tw-max-w-[800px]">
+      <app-text-input />
+    </div>
   </div>
 </div>
