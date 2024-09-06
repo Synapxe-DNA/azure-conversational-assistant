@@ -47,7 +47,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     this.audioPlayerService.getAudioStream().subscribe(v => {
       if (v) {
         // One more bar is added so that the "highest" frequency bar is attainable with regular voice
-        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 0 , 0.3);
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 9 , 0.3);
       }
     });
   }
@@ -55,8 +55,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   mainLoop() {
     if (this.audioAnalyser) {
       const raw_level = this.audioAnalyser.getAudioLevel();
-      let adjusted_level = Math.round(Math.max(0, Math.min(1, raw_level * 4)) * 10) / 10;
-      const level = Math.floor(40 * adjusted_level);
+      const level = Math.floor(40 * raw_level);
       this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
       this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
     }

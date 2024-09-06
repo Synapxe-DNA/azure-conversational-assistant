@@ -16,7 +16,6 @@ import { NavbarLanguageComponent } from "./navbar-language/navbar-language.compo
 })
 export class NavbarComponent implements OnInit {
   profiles: Profile[] = [];
-  isMobile: boolean = false;
   sidebarOpen: boolean = false;
 
   constructor(
@@ -25,20 +24,10 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.checkViewport();
     this.profileService.getProfiles().subscribe(v => {
       this.profiles = v;
       this.cdr.markForCheck();
     });
-  }
-
-  @HostListener("window:resize", ["$event"])
-  onResize(event: any) {
-    this.checkViewport();
-  }
-
-  checkViewport() {
-    this.isMobile = window.innerWidth < 768; // Adjust this value as needed
   }
 
   toggleSidebar() {
