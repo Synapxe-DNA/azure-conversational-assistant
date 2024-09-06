@@ -57,7 +57,8 @@ class TextToSpeech:
         self.speech_config.speech_synthesis_voice_name = LanguageBCP47.voice_mapping[language]
         self.speech_synthesizer = SpeechSynthesizer(speech_config=self.speech_config, audio_config=None)
 
-        text = re.sub(r"[*#]", "", text)  # remove * from markdown
+        text = re.sub(r"[*#]", "", text)  # remove * and # from markdown
+        text = re.sub(r"-{2,}", "", text)  # remove 2 or more consecutive `-` from markdown
         result: SpeechSynthesisResult = self.speech_synthesizer.speak_text_async(text).get()
         if result.reason == ResultReason.SynthesizingAudioCompleted:
             if encode:

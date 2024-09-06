@@ -31,7 +31,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   ngAfterViewInit(): void {
     this.startAnalyser().catch(console.error);
     this.audioPlayerService.$playing.subscribe(isPlaying => {
-      if (isPlaying) {
+      if (isPlaying && !this.audioPlayerService.playingSilent) {
         if (this.animationFrameId == null) {
           // To prevent creation of multiple animation frames
           this.mainLoop();
