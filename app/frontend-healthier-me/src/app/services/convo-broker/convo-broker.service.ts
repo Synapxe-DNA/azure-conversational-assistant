@@ -193,16 +193,18 @@ export class ConvoBrokerService {
   }
 
   async sendFeedback(feedback: Feedback) {
-    const history: Message[] = (await this.chatMessageService.staticLoad(feedback.profile_id)).slice(-8);
+    const profile_id = this.profileService.$currentProfileInUrl.value;
+    const history: Message[] = (await this.chatMessageService.staticLoad(profile_id)).slice(-8);
 
     const updated_feedback: Feedback = {
       label: feedback.label,
       category: feedback.category,
       remarks: feedback.remarks,
       chat_history: history,
-      profile_id: this.profileService.$currentProfileInUrl.value,
+      profile_id: profile_id,
       datetime: feedback.datetime
     };
+    console.log("Updated Feedback: ", updated_feedback);
 
     const profile = this.profileService.getProfile(this.profileService.$currentProfileInUrl.value).value!;
 

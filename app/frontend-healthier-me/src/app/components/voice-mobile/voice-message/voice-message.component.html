@@ -1,5 +1,12 @@
+<!-- Font size slider control -->
+<div class="tw-flex tw-justify-center tw-mb-4">
+  <label for="fontSizeSlider" class="tw-text-black tw-mr-2">Font Size:</label>
+  <input id="fontSizeSlider" type="range" min="12" max="36" [(ngModel)]="fontSize" class="tw-w-48" />
+</div>
+
+<!-- Box containing the message -->
 <div #box class="tw-mx-auto tw-bg-gray-200 tw-w-[80dvw] tw-h-[60dvh] tw-rounded-lg tw-overflow-auto no-scrollbar box">
-  <p class="tw-px-4 tw-text-xl tw-text-left tw-text-black">
+  <p class="tw-px-4 tw-text-left tw-text-black" [ngStyle]="{ 'font-size.px': fontSize }">
     <app-markdown [markdownContent]="message?.message"></app-markdown>
   </p>
 </div>
