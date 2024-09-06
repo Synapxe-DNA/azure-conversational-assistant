@@ -39,7 +39,7 @@
   </div>
 
   <div class="field">
-    <label for="feedback" class="tw-text-[2.5dvw]">Remarks:</label>
+    <label for="feedback" class="tw-text">Remarks:</label>
     <textarea
       id="feedback"
       pInputTextarea
@@ -110,11 +110,11 @@
 
 <!-- Confirmation Modal -->
 <p-dialog
+class="responsive-modal tw-w-[90dvw] tw-h-[20dvh]"
   [(visible)]="confirmationModal"
   [modal]="true"
   [closable]="true"
   header="Thank You"
-  [style]="{ width: '90dvw', maxWidth: '30dvw', height: '20dvh', maxHeight: '30dvh' }"
 >
-  <p class="tw-text-[2.5dvw] tw-text-center">Your feedback has been submitted. Thank you!</p>
+  <p class="tw-text-[1dvw] tw-text-center">Your feedback has been submitted. Thank you!</p>
 </p-dialog>
