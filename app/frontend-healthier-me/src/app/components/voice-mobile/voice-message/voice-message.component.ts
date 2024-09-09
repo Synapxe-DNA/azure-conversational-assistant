@@ -11,7 +11,7 @@ import { CommonModule } from "@angular/common";
 @Component({
   selector: "app-voice-message",
   standalone: true,
-  imports: [MarkdownComponent, FormsModule, CommonModule ],
+  imports: [MarkdownComponent, FormsModule, CommonModule],
   templateUrl: "./voice-message.component.html",
   styleUrl: "./voice-message.component.css"
 })
