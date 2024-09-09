@@ -100,8 +100,9 @@ export class ConvoBrokerService {
    * @private
    */
   handleStartRecording() {
-    this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
+    this.audioPlayer.playStartVoiceAudio();
+    this.$micState.next(MicState.ACTIVE);
     // this.recorder.start();
     this.recorder.setupWebSocket();
   }
@@ -111,8 +112,8 @@ export class ConvoBrokerService {
    * @private
    */
   private handleStopRecording() {
+    this.audioPlayer.playStopVoiceAudio();
     this.$micState.next(MicState.DISABLED);
-    this.audioPlayer.playSilentAudio();
     this.recorder.stopAudioCapture().then(r => {
       this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
     });
@@ -124,7 +125,7 @@ export class ConvoBrokerService {
    * @private
    */
   async playAudioBase64(val: string): Promise<void> {
-    const audioBlob = convertBase64ToBlob(val, "audio/*");
+    const audioBlob = convertBase64ToBlob(val, "audio/mp3");
     this.audioPlayer.play(audioBlob);
   }
   /**

@@ -29,42 +29,19 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   ngOnInit(): void {}
 
   ngAfterViewInit(): void {
-    this.startAnalyser().catch(console.error);
-    this.audioPlayerService.$playing.subscribe(isPlaying => {
-      if (isPlaying && !this.audioPlayerService.playingSilent) {
-        if (this.animationFrameId == null) {
-          // To prevent creation of multiple animation frames
-          this.mainLoop();
-        }
-      } else {
-        this.stopLoop();
-        this.box.nativeElement.style.boxShadow = `0 0 0px 0px rgb(243,244,246)`;
-      }
-    });
-  }
-
-  async startAnalyser() {
     this.audioPlayerService.getAudioStream().subscribe(v => {
       if (v) {
         // One more bar is added so that the "highest" frequency bar is attainable with regular voice
-        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 9 , 0.3);
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 9, 0.3);
+        this.mainLoop();
       }
     });
   }
 
   mainLoop() {
-    if (this.audioAnalyser) {
-      const raw_level = this.audioAnalyser.getAudioLevel();
-      const level = Math.floor(40 * raw_level);
-      this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
-      this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
-    }
-  }
-
-  stopLoop() {
-    if (this.animationFrameId != null) {
-      window.cancelAnimationFrame(this.animationFrameId); // AnimationFrame needs to be cancelled
-      this.animationFrameId = null;
-    }
+    const raw_level = this.audioAnalyser!.getAudioLevel();
+    const level = Math.floor(40 * raw_level);
+    this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
+    this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
   }
 }
