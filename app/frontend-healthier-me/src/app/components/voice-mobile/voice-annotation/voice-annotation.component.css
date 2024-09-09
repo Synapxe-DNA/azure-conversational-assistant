@@ -10,3 +10,14 @@
   color: #007bff !important; /* Success color */
   border-color: #007bff !important;
 }
+
+@media (max-width: 768px) {
+
+  .responsive-text {
+    font-size: 50% !important;
+  }
+  .responsive-modal {
+    width: 80dvw !important;
+    height: 100dvh !important;
+  }
+}

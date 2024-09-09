@@ -284,6 +284,8 @@ export class EndpointService {
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
 
+    console.log("Feedback data:", data);
+
     this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
