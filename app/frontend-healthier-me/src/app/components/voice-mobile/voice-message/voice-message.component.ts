@@ -19,7 +19,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   @Input() message?: Message;
   @Input() state?: string;
   @Input() level?: number;
-  @Input() fontSize: number = 16;
+  @Input() fontSize: number = 16; // Default value
   audioAnalyser: AudioAnalyser | undefined;
   private animationFrameId: number | null = null;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>;
@@ -29,12 +29,17 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     private audioPlayerService: AudioPlayerService
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Retrieve the font size from local storage (if it exists)
+    const savedFontSize = localStorage.getItem('fontSize');
+    if (savedFontSize) {
+      this.fontSize = Number(savedFontSize);
+    }
+  }
 
   ngAfterViewInit(): void {
     this.audioPlayerService.getAudioStream().subscribe(v => {
       if (v) {
-        // One more bar is added so that the "highest" frequency bar is attainable with regular voice
         this.audioAnalyser = new AudioAnalyser(v as MediaStream, 9, 0.3);
         this.mainLoop();
       }
@@ -47,4 +52,10 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
     this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
   }
+
+  onFontSizeChange() {
+    // Save the font size in local storage whenever it changes
+    localStorage.setItem('fontSize', this.fontSize.toString());
+  }
 }
+

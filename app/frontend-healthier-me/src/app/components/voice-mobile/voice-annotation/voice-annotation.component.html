@@ -61,6 +61,7 @@
   [(visible)]="displayPositiveModal"
   [modal]="true"
   [closable]="true"
+  [draggable]="false"
   header="Feedback"
   [style]="{ width: '90dvw', maxWidth: '80dvw', height: '60dvh', maxHeight: '80dvh' }"
 >
@@ -113,9 +114,11 @@
   [(visible)]="confirmationModal"
   [modal]="true"
   [closable]="true"
+  [draggable]="false"
   header="Thank You"
 >
   <p class="tw-text-center">Your feedback has been submitted. Thank you!</p>
 </p-dialog>
+
 
 

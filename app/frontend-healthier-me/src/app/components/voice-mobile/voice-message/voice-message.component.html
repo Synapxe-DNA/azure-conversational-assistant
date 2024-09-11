@@ -1,7 +1,7 @@
 <!-- Font size slider control -->
 <div class="tw-flex tw-justify-center tw-mb-4">
   <label for="fontSizeSlider" class="tw-text-black tw-mr-2">Font Size:</label>
-  <input id="fontSizeSlider" type="range" min="12" max="36" [(ngModel)]="fontSize" class="tw-w-48" />
+  <input id="fontSizeSlider" type="range" min="12" max="36" [(ngModel)]="fontSize" (change)="onFontSizeChange()" class="tw-w-48" />
 </div>
 
 <!-- Box containing the message -->
