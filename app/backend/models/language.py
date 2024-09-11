@@ -18,7 +18,7 @@ class LanguageBCP47:
     }
 
     voice_mapping = {
-        LanguageSelected.ENGLISH.value: "en-US-EmmaMultilingualNeural",
+        LanguageSelected.ENGLISH.value: "en-US-EmmaNeural",
         LanguageSelected.CHINESE.value: "zh-CN-XiaoxiaoNeural",
         LanguageSelected.MALAY.value: "ms-MY-YasminNeural",
         LanguageSelected.TAMIL.value: "ta-SG-VenbaNeural",

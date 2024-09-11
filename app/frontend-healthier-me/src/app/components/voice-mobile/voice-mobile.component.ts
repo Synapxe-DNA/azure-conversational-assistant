@@ -29,8 +29,6 @@ import { ChatMessageService } from "../../services/chat-message/chat-message.ser
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { CommonModule } from "@angular/common";
 import { AudioPlayerService } from "../../services/audio-player/audio-player.service";
-import { createId } from "@paralleldrive/cuid2";
-import { convertBase64ToBlob } from "../../utils/base-64-to-blob";
 
 @Component({
   selector: "app-voice-mobile",
@@ -73,8 +71,7 @@ export class VoiceMobileComponent {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService,
-    private audioPlayer: AudioPlayerService
+    private chatMessageService: ChatMessageService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -111,7 +108,6 @@ export class VoiceMobileComponent {
         });
       });
     });
-
     this.initVoiceChat().catch(console.error);
   }
 
@@ -120,50 +116,7 @@ export class VoiceMobileComponent {
   }
 
   handleMicButtonClick() {
-    switch (this.micState) {
-      case MicState.ACTIVE:
-        this.convoBroker.handleStopRecording().then(res => {
-          const assistantMessageId: string = createId();
-          let audio_base64: string[] = [];
-
-          res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-            next: async d => {
-              if (!d) {
-                return;
-              }
-              // upsert assistant message
-              await this.chatMessageService.upsert({
-                id: assistantMessageId,
-                profile_id: this.profile.value!.id,
-                role: MessageRole.Assistant,
-                message: d.assistant_response,
-                timestamp: new Date().getTime(),
-                sources: d.sources
-              });
-
-              const nonNullAudio = d.assistant_response_audio.map(v => v);
-              if (nonNullAudio.length > audio_base64.length) {
-                const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-                audio_base64 = nonNullAudio;
-                newAudioStr.forEach(a => {
-                  const audioBlob = convertBase64ToBlob(a, "audio/*");
-                  console.log("check user Activation before playing", navigator.userActivation.hasBeenActive);
-                  if (navigator.userActivation.hasBeenActive) {
-                  this.audioPlayer.play(audioBlob);
-                  }
-                });
-              }
-            },
-            complete: () => {
-              this.convoBroker.$isWaitingForVoiceApi.next(false);
-            }
-          });
-        });
-        break;
-      case MicState.PENDING:
-        this.convoBroker.handleStartRecording();
-        break;
-    }
+    this.convoBroker.handleMicButtonClick();
   }
 
   prefChatModeToText(): void {

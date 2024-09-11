@@ -12,17 +12,11 @@
 }
 
 @media (max-width: 768px) {
-
   .responsive-text {
     font-size: 50% !important;
   }
   .responsive-modal {
     width: 80dvw !important;
     height: 100dvh !important;
-  }
-  .p-dialog {
-    margin-left: 5vw;
-    margin-right: 5vw;
-    width: auto;
   }
 }

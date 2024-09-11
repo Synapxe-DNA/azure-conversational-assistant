@@ -15,15 +15,11 @@
             <div class="tw-flex tw-items-center tw-max-h-80">
               <div class="tw-w-1/2">
                 <a [href]="product.full_url" target="_blank">
-                  <img 
-                  class="tw-object-contain tw-w-[50dvw] tw-h-[20dvh] responsive-image" 
-                  [src]="getImageUrl(product.cover_image_url)" 
-                  alt="Product Image" 
-                  />
+                  <img class="tw-object-contain tw-w-[50dvw] tw-h-[20dvh] responsive-image" [src]="getImageUrl(product.cover_image_url)" alt="Product Image" />
                 </a>
               </div>
               <div class="tw-w-1/3 tw-pl-[0.25dvw]">
-                <a [href]="product.full_url" target="_blank"> 
+                <a [href]="product.full_url" target="_blank">
                   <div class="tw-font-semibold tw-text-[1dvw] responsive-text">
                     {{ product.title }}
                   </div>

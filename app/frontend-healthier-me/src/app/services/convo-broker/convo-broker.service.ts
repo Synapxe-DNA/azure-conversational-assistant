@@ -3,7 +3,7 @@ import { ChatMessageService } from "../chat-message/chat-message.service";
 import { AudioPlayerService } from "../audio-player/audio-player.service";
 import { EndpointService } from "../endpoint/endpoint.service";
 import { GeneralProfile, Profile } from "../../types/profile.type";
-import { Message, MessageRole, MessageSource } from "../../types/message.type";
+import { Message, MessageRole } from "../../types/message.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../profile/profile.service";
 import { BehaviorSubject, takeWhile } from "rxjs";
@@ -12,14 +12,12 @@ import { VadService } from "../vad/vad.service";
 import { PreferenceService } from "../preference/preference.service";
 import { AudioService } from "../audio/audio.service";
 import { MicState } from "../../types/mic-state.type";
-import { AudioRecorder } from "../../utils/audio-recorder";
 import { VoiceActivity } from "../../types/voice-activity.type";
 import { ActivatedRoute } from "@angular/router";
 import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { Feedback } from "../../types/feedback.type";
 import { Language } from "../../types/language.type";
-import { VoiceResponse } from "../../types/responses/voice-response.type";
 
 @Injectable({
   providedIn: "root"
@@ -39,9 +37,7 @@ export class ConvoBrokerService {
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
     private profileService: ProfileService,
-    private vadService: VadService,
-    private audioService: AudioService,
-    private route: ActivatedRoute
+    private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe(p => {
@@ -104,8 +100,9 @@ export class ConvoBrokerService {
    * @private
    */
   handleStartRecording() {
-    this.$micState.next(MicState.ACTIVE);
     this.audioPlayer.stopAndClear();
+    this.audioPlayer.playStartVoiceAudio();
+    this.$micState.next(MicState.ACTIVE);
     // this.recorder.start();
     this.recorder.setupWebSocket();
   }
@@ -114,16 +111,12 @@ export class ConvoBrokerService {
    * Method to stop the recording, and handle post-processing of recorded audio
    * @private
    */
-  async handleStopRecording(): Promise<BehaviorSubject<VoiceResponse | null>> {
+  private handleStopRecording() {
+    this.audioPlayer.playStopVoiceAudio();
     this.$micState.next(MicState.DISABLED);
-    let res = new BehaviorSubject<VoiceResponse | null>(null);
-    try {
-      const audioData = await this.recorder.stopAudioCapture();
-      res = await this.sendVoice(audioData, this.activeProfile.value || GeneralProfile);
-    } catch (error) {
-      console.error(error);
-    }
-    return res;
+    this.recorder.stopAudioCapture().then(r => {
+      this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
+    });
   }
 
   /**
@@ -132,7 +125,7 @@ export class ConvoBrokerService {
    * @private
    */
   async playAudioBase64(val: string): Promise<void> {
-    const audioBlob = convertBase64ToBlob(val, "audio/*");
+    const audioBlob = convertBase64ToBlob(val, "audio/mp3");
     this.audioPlayer.play(audioBlob);
   }
   /**
@@ -142,16 +135,16 @@ export class ConvoBrokerService {
    * @param profile {Profile}
    * @private
    */
-  private async sendVoice(message: string, profile: Profile): Promise<BehaviorSubject<VoiceResponse | null>> {
+  private async sendVoice(message: string, profile: Profile) {
     this.$isWaitingForVoiceApi.next(true);
 
-    // const requestTime: number = new Date().getTime();
-    // const userMessageId = createId();
-    // const assistantMessageId: string = createId();
+    const requestTime: number = new Date().getTime();
+    const userMessageId = createId();
+    const assistantMessageId: string = createId();
 
     const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
 
-    // let audio_base64: string[] = [];
+    let audio_base64: string[] = [];
 
     const res = await this.endpointService.sendVoice(
       message,
@@ -160,36 +153,34 @@ export class ConvoBrokerService {
       this.$language.value || Language.Spoken
     );
 
-    return res;
+    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+      next: async d => {
+        if (!d) {
+          return;
+        }
+        // upsert assistant message
+        await this.chatMessageService.upsert({
+          id: assistantMessageId,
+          profile_id: profile.id,
+          role: MessageRole.Assistant,
+          message: d.assistant_response,
+          timestamp: new Date().getTime(),
+          sources: d.sources
+        });
 
-    // res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-    //   next: async d => {
-    //     if (!d) {
-    //       return;
-    //     }
-    //     // upsert assistant message
-    //     await this.chatMessageService.upsert({
-    //       id: assistantMessageId,
-    //       profile_id: profile.id,
-    //       role: MessageRole.Assistant,
-    //       message: d.assistant_response,
-    //       timestamp: new Date().getTime(),
-    //       sources: d.sources
-    //     });
-
-    //     const nonNullAudio = d.assistant_response_audio.map(v => v);
-    //     if (nonNullAudio.length > audio_base64.length) {
-    //       const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-    //       audio_base64 = nonNullAudio;
-    //       newAudioStr.forEach(a => {
-    //         this.playAudioBase64(a);
-    //       });
-    //     }
-    //   },
-    //   complete: () => {
-    //     this.$isWaitingForVoiceApi.next(false);
-    //   }
-    // });
+        const nonNullAudio = d.assistant_response_audio.map(v => v);
+        if (nonNullAudio.length > audio_base64.length) {
+          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
+          audio_base64 = nonNullAudio;
+          newAudioStr.forEach(a => {
+            this.playAudioBase64(a);
+          });
+        }
+      },
+      complete: () => {
+        this.$isWaitingForVoiceApi.next(false);
+      }
+    });
   }
 
   async sendFeedback(feedback: Feedback) {
