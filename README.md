@@ -133,3 +133,7 @@ To test the webapp locally on other devices in the same network, follow the step
 3. Fill up the information however you like
 4. Run startwithssl.sh or startwithssl.ps1
 5. Access the webapp via `https://{ipv4 address of the machine running the webapp}:50505`
+
+> [!NOTE]
+>
+> To find ipv4 address of the machine, run `ipconfig` on Windows or `ifconfig` on Linux/MacOS
