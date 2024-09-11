@@ -20,4 +20,9 @@
     width: 80dvw !important;
     height: 100dvh !important;
   }
+  .p-dialog {
+    margin-left: 5vw;
+    margin-right: 5vw;
+    width: auto;
+  }
 }
