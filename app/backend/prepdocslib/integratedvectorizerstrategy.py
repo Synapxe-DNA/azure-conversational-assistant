@@ -110,6 +110,8 @@ class IntegratedVectorizerStrategy(Strategy):
                         InputFieldMappingEntry(name="full_url", source="/document/full_url"),
                         InputFieldMappingEntry(name="content_category", source="/document/content_category"),
                         InputFieldMappingEntry(name="category_description", source="/document/category_description"),
+                        InputFieldMappingEntry(name="pr_name", source="/document/category_description"),
+                        InputFieldMappingEntry(name="date_modified", source="/document/category_description"),
                         # InputFieldMappingEntry(name="content", source="/document/content"), # only the parent document will have this field, we took it out to prevent content overlap in the search
                         InputFieldMappingEntry(name="chunks", source="/document/content/pages/*"),
                         InputFieldMappingEntry(name="embedding", source="/document/content/pages/*/vector"),
