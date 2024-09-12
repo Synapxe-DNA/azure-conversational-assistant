@@ -1,6 +1,5 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { ProfileService } from "../../services/profile/profile.service";
-import { createId } from "@paralleldrive/cuid2";
 import { FormControl, FormGroup, Validators, AbstractControl, ValidationErrors } from "@angular/forms";
 import { ProfileGender, ProfileType } from "../../types/profile.type";
 import { CardModule } from "primeng/card";
@@ -14,12 +13,13 @@ import { Button } from "primeng/button";
 import { MessageService } from "primeng/api";
 import { MultiSelectModule } from "primeng/multiselect";
 import { PreferenceService } from "../../services/preference/preference.service";
-import { ChatMode } from "../../types/chat-mode.type";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { ChatMode } from "../../types/chat-mode.type";
+import { Profile } from "../../types/profile.type";
 
 @Component({
-  selector: "app-create-profile",
+  selector: "app-edit-profile",
   standalone: true,
   imports: [
     CommonModule,
@@ -33,10 +33,12 @@ import { CommonModule } from "@angular/common";
     Button,
     MultiSelectModule
   ],
-  templateUrl: "./create-profile.component.html",
-  styleUrl: "./create-profile.component.css"
+  templateUrl: "./edit-profile.component.html",
+  styleUrl: "./edit-profile.component.css"
 })
-export class CreateProfileComponent {
+export class EditProfileComponent {
+  profileId!: string;
+  loadedProfile!: Profile;
   profileForm: FormGroup = new FormGroup({
     name: new FormControl<string>("", Validators.required),
     profile_type: new FormControl<ProfileType>(ProfileType.Myself, Validators.required),
@@ -59,11 +61,41 @@ export class CreateProfileComponent {
   ];
 
   constructor(
-    private preferences: PreferenceService,
     private profileService: ProfileService,
+    private preferences: PreferenceService,
     private toastService: MessageService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
+
+  ngOnInit() {
+    this.profileId = this.route.snapshot.paramMap.get('profileId')!;
+    if (this.profileId) {
+      this.loadProfileData();
+    }
+  }
+
+// Load the profile data from the service
+loadProfileData() {
+  this.loadedProfile = this.profileService.getProfile(this.profileId).value!;
+
+  // Split, trim, and map existing conditions to form options
+  const selectedConditions = this.loadedProfile.existing_conditions
+    .split(',') // Split by comma
+    .map(condition => condition.trim()) // Trim whitespace
+    .map(condition => this.profileConditionOptions.find(option => option.name === condition)) // Find matching options
+    .filter(Boolean) as { name: string; label: string }[]; // Ensure it's typed correctly and remove null/undefined values
+
+  // Patch the form with the existing profile data
+  this.profileForm.patchValue({
+    name: this.loadedProfile.name,
+    profile_type: this.loadedProfile.profile_type,
+    age: this.loadedProfile.age,
+    gender: this.loadedProfile.gender,
+    existing_condition: selectedConditions
+  });
+}
+
 
   // Custom validator to check if the age is greater than 100
   ageValidator(control: AbstractControl): ValidationErrors | null {
@@ -74,22 +106,28 @@ export class CreateProfileComponent {
     return null;
   }
 
-  createProfile() {
+  updateProfile() {
+    this.profileId = this.route.snapshot.paramMap.get('profileId')!;
+    console.log(this.profileId);
     if (this.profileForm.valid) {
-      this.profileService.createProfile({
-        id: createId(),
-        name: this.profileForm.value.name,
-        profile_type: this.profileForm.value.profile_type,
-        gender: this.profileForm.value.gender,
-        age: this.profileForm.value.age as number,
-        existing_conditions: this.profileForm.value.existing_condition.map((v: Record<string, string>) => v["label"]).join(", ")
-      });
-      this.toastService.add({
-        severity: "success",
-        summary: "Profile created!",
-        detail: `Profile ${this.profileForm.value.name} has been created!`
-      });
-      this.preferences.$chatMode.next(ChatMode.Voice);
+      if (this.profileId) {
+        this.profileService.updateProfile({
+          id: this.profileId, 
+          name: this.profileForm.value.name,
+          profile_type: this.profileForm.value.profile_type,
+          gender: this.profileForm.value.gender,
+          age: this.profileForm.value.age as number,
+          existing_conditions: this.profileForm.value.existing_condition.map((v: Record<string, string>) => v["label"]).join(", ")
+        });
+
+        this.toastService.add({
+          severity: "success",
+          summary: "Profile updated!",
+          detail: `Profile ${this.profileForm.value.name} has been updated!`
+        });
+        this.preferences.$chatMode.next(ChatMode.Voice);
+        // this.router.navigate([`/app/chat/${this.profileId}`]);
+      }
     }
   }
 }

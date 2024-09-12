@@ -61,6 +61,7 @@
   [(visible)]="displayPositiveModal"
   [modal]="true"
   [closable]="true"
+  [draggable]="false"
   header="Feedback"
   [style]="{ width: '90dvw', maxWidth: '80dvw', height: '60dvh', maxHeight: '80dvh' }"
 >
@@ -108,7 +109,16 @@
   </div>
 </p-dialog>
 
-<!-- Confirmation Modal -->
-<p-dialog class="responsive-modal tw-w-[90dvw] tw-h-[20dvh]" [(visible)]="confirmationModal" [modal]="true" [closable]="true" header="Thank You">
-  <p class="tw-text-[1dvw] tw-text-center">Your feedback has been submitted. Thank you!</p>
+<p-dialog
+  class="responsive-modal"
+  [(visible)]="confirmationModal"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  header="Thank You"
+>
+  <p class="tw-text-center">Your feedback has been submitted. Thank you!</p>
 </p-dialog>
+
+
+
