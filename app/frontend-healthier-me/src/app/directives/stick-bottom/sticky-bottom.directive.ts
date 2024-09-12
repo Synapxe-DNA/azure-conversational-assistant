@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewChecked, AfterViewInit, Directive, ElementRef, OnInit } from "@angular/core";
+import { AfterContentInit, AfterViewChecked, Directive, ElementRef } from "@angular/core";
 
 @Directive({
   selector: "[appStickyBottom]",

@@ -1,19 +1,14 @@
-from typing import List, Optional
+from typing import List
 
-from models.chat_history import ChatHistory
-from models.profile import Profile
+from models.request import Request
 from models.source import Source
 from pydantic import BaseModel
 
 
-class TextChatRequest(BaseModel):
-    chat_history: Optional[List[ChatHistory]]
-    profile: Optional[Profile]
-    query: dict[str, str]
+class TextChatRequest(Request):
+    pass
 
 
 class TextChatResponse(BaseModel):
     response_message: str
     sources: List[Source]
-    additional_question_1: Optional[str]
-    additional_question_2: Optional[str]

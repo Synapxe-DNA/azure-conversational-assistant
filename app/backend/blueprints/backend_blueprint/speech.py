@@ -1,7 +1,7 @@
 import logging
 
-from quart import Blueprint, jsonify, request
-from speech.text_to_speech import TextToSpeech
+from config import CONFIG_TEXT_TO_SPEECH_SERVICE
+from quart import Blueprint, current_app, jsonify, request
 
 speech = Blueprint("speech", __name__, url_prefix="/speech")
 
@@ -13,8 +13,8 @@ async def speech_endpoint():
     request_json = await request.get_json()
     text = request_json["text"]
     try:
-        tts = await TextToSpeech.create()
-        audio_data = tts.readText(text)
+        tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+        audio_data = tts.readText(text, False)
         return audio_data, 200, {"Content-Type": "audio/mp3"}
     except Exception as e:
         logging.exception("Exception in /speech")

@@ -6,6 +6,7 @@ import { ChatComponent } from "./pages/chat/chat.component";
 export const routes: Routes = [
   {
     path: "",
+    title: "HealthierME",
     component: MainLayoutComponent,
     children: [
       { path: "", pathMatch: "full", redirectTo: "/chat/general" },
