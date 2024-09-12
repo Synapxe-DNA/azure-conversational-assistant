@@ -27,14 +27,12 @@
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-age">Age</label>
         <p-inputNumber id="profile-age" formControlName="age" styleClass="tw-w-full" [min]="0"></p-inputNumber>
-        <div *ngIf="profileForm.get('age')?.hasError('invalidAge')" class="tw-text-red-500">
-          Invalid age, must be less than or equal to 100.
-        </div>
+        <div *ngIf="profileForm.get('age')?.hasError('invalidAge')" class="tw-text-red-500">Invalid age, must be less than or equal to 100.</div>
       </div>
 
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-preexist">
-          Do {{ profileForm.value?.profile_type !== 'OTHERS' ? 'you' : 'they' }} have any of these pre-existing conditions?
+          Do {{ profileForm.value?.profile_type !== "OTHERS" ? "you" : "they" }} have any of these pre-existing conditions?
         </label>
         <p-multiSelect
           styleClass="tw-w-full"

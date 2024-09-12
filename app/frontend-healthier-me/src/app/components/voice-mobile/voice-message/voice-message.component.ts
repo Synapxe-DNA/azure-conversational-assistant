@@ -31,7 +31,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     // Retrieve the font size from local storage (if it exists)
-    const savedFontSize = localStorage.getItem('fontSize');
+    const savedFontSize = localStorage.getItem("fontSize");
     if (savedFontSize) {
       this.fontSize = Number(savedFontSize);
     }
@@ -55,7 +55,6 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
 
   onFontSizeChange() {
     // Save the font size in local storage whenever it changes
-    localStorage.setItem('fontSize', this.fontSize.toString());
+    localStorage.setItem("fontSize", this.fontSize.toString());
   }
 }
-
