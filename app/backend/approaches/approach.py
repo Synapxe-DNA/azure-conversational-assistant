@@ -31,14 +31,13 @@ from text import nonewlines
 @dataclass
 class Document:
     id: Optional[str]
-    content: Optional[str]
+    parent_id: Optional[str]
+    title: Optional[str]
+    cover_image_url: Optional[str]
+    full_url: Optional[str]
+    content_category: Optional[str]
+    chunks: Optional[str]
     embedding: Optional[List[float]]
-    image_embedding: Optional[List[float]]
-    category: Optional[str]
-    sourcepage: Optional[str]
-    sourcefile: Optional[str]
-    oids: Optional[List[str]]
-    groups: Optional[List[str]]
     captions: List[QueryCaptionResult]
     score: Optional[float] = None
     reranker_score: Optional[float] = None
@@ -46,14 +45,13 @@ class Document:
     def serialize_for_results(self) -> dict[str, Any]:
         return {
             "id": self.id,
-            "content": self.content,
+            "parent_id": self.parent_id,
+            "title": self.title,
+            "cover_image_url": self.cover_image_url,
+            "full_url": self.full_url,
+            "content_category": self.content_category,
+            "chunks": self.chunks,
             "embedding": Document.trim_embedding(self.embedding),
-            "imageEmbedding": Document.trim_embedding(self.image_embedding),
-            "category": self.category,
-            "sourcePage": self.sourcepage,
-            "sourceFile": self.sourcefile,
-            "oids": self.oids,
-            "groups": self.groups,
             "captions": (
                 [
                     {
@@ -169,14 +167,13 @@ class Approach(ABC):
                 documents.append(
                     Document(
                         id=document.get("id"),
-                        content=document.get("content"),
+                        parent_id=document.get("parent_id"),
+                        title=document.get("title"),
+                        cover_image_url=document.get("cover_image_url"),
+                        full_url=document.get("full_url"),
+                        content_category=document.get("content_category"),
+                        chunks=document.get("chunks"),
                         embedding=document.get("embedding"),
-                        image_embedding=document.get("imageEmbedding"),
-                        category=document.get("category"),
-                        sourcepage=document.get("sourcePage"),
-                        sourcefile=document.get("sourceFile"),
-                        oids=document.get("oids"),
-                        groups=document.get("groups"),
                         captions=cast(List[QueryCaptionResult], document.get("@search.captions")),
                         score=document.get("@search.score"),
                         reranker_score=document.get("@search.reranker_score"),
@@ -199,14 +196,14 @@ class Approach(ABC):
     ) -> list[str]:
         if use_semantic_captions:
             return [
-                (self.get_citation((doc.sourcepage or ""), use_image_citation))
+                (self.get_citation((doc.title or ""), use_image_citation))
                 + ": "
                 + nonewlines(" . ".join([cast(str, c.text) for c in (doc.captions or [])]))
                 for doc in results
             ]
         else:
             return [
-                (self.get_citation((doc.sourcepage or ""), use_image_citation)) + ": " + nonewlines(doc.content or "")
+                (self.get_citation((doc.title or ""), use_image_citation)) + ": " + nonewlines(doc.chunks or "")
                 for doc in results
             ]
 
@@ -265,6 +262,7 @@ class Approach(ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
@@ -274,6 +272,7 @@ class Approach(ABC):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:

@@ -29,7 +29,8 @@ describe("ChatMessageService", () => {
       profile_id: randomProfileId,
       message: "Test message",
       timestamp: 1,
-      role: MessageRole.User
+      role: MessageRole.User,
+      sources: []
     };
 
     const initVal = (await service.load(randomProfileId)).value;
@@ -50,7 +51,8 @@ describe("ChatMessageService", () => {
       profile_id: randomProfileId,
       message: "Test message",
       timestamp: 1,
-      role: MessageRole.User
+      role: MessageRole.User,
+      sources: []
     };
 
     const initVal = (await service.load(randomProfileId)).value;
@@ -67,7 +69,8 @@ describe("ChatMessageService", () => {
       profile_id: randomProfileId,
       message: "Test message that is longer",
       timestamp: 2,
-      role: MessageRole.User
+      role: MessageRole.User,
+      sources: []
     };
 
     await service.upsert(newestMessage);

@@ -1,0 +1,23 @@
+from typing import List, Literal, Optional
+
+from models.chat_history import ChatHistoryWithSource
+from models.profile import Profile
+from pydantic import BaseModel
+
+
+class FeedbackRequest(BaseModel):
+    date_time: str
+    feedback_type: Literal["positive", "negative"]
+    feedback_category: List[str]
+    feedback_remarks: Optional[str]
+    user_profile: Profile
+    chat_history: List[ChatHistoryWithSource]
+
+
+class FeedbackStore(BaseModel):
+    date_time: str
+    feedback_type: Literal["positive", "negative"]
+    feedback_category: List[str]
+    feedback_remarks: Optional[str]
+    user_profile: Profile
+    chat_history: List[ChatHistoryWithSource]

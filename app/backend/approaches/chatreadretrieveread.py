@@ -5,7 +5,6 @@ from approaches import config
 from approaches.approach import ThoughtStep
 from approaches.chatapproach import ChatApproach
 from approaches.prompts import (
-    follow_up_questions_prompt,
     general_prompt,
     general_query_prompt,
     profile_prompt,
@@ -78,6 +77,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[False],
@@ -88,6 +88,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: Literal[True],
@@ -97,6 +98,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         self,
         messages: list[ChatCompletionMessageParam],
         profile: Profile,
+        language: str,
         # overrides: dict[str, Any],
         auth_claims: dict[str, Any],
         should_stream: bool = False,
@@ -107,26 +109,20 @@ class ChatReadRetrieveReadApproach(ChatApproach):
     ]:
         start_time = time.time()
 
-        # seed = overrides.get("seed", None)
-        # use_text_search = overrides.get("retrieval_mode") in ["text", "hybrid", None]
-        # use_vector_search = overrides.get("retrieval_mode") in ["vectors", "hybrid", None]
-        # use_semantic_ranker = True if overrides.get("semantic_ranker") else False
-        # use_semantic_captions = True if overrides.get("semantic_captions") else False
-        # top = overrides.get("top", 3)
-        # minimum_search_score = overrides.get("minimum_search_score", 0.0)
-        # minimum_reranker_score = overrides.get("minimum_reranker_score", 0.0)
-        # filter = self.build_filter(overrides, auth_claims)
-
         seed = config.SEED
         temperature = config.TEMPERATURE
         use_text_search = config.USE_TEXT_SEARCH
         use_vector_search = config.USE_VECTOR_SEARCH
         use_semantic_ranker = config.USE_SEMANTIC_RANKER
-        use_semantic_captions = config.USE_SEMENTIC_CAPTIONS
+        use_semantic_captions = config.USE_SEMANTIC_CAPTIONS
         top = config.SEARCH_MAX_RESULTS
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
+
+        selected_language = language.upper()
+        print(f"Selected language: {selected_language}")
+        print(f"Profile Type: {profile.profile_type}")
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -152,8 +148,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         else:
             user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
 
-        print(f"user_query_request: {user_query_request}")
-
         tools: List[ChatCompletionToolParam] = [
             {
                 "type": "function",
@@ -176,7 +170,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(follow_up_questions_prompt=follow_up_questions_prompt)
+            answer_generation_prompt = general_prompt.format(language=selected_language)
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
@@ -185,7 +179,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
-                follow_up_questions_prompt=follow_up_questions_prompt,
+                language=selected_language,
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -217,8 +211,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
-        # print(f"query_text: {query_text}")
-
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
 
         # If retrieval mode includes vectors, compute an embedding for the query
@@ -241,19 +233,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
 
-        # print(f"sources_content: {sources_content}")
-
         content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
 
-        # # Allow client to replace the entire prompt, or to inject into the exiting prompt using >>>
-        # system_message = self.get_system_prompt(
-        #     overrides.get("prompt_template"),
-        #     self.follow_up_questions_prompt_content if overrides.get("suggest_followup_questions") else "",
-        # )
-
-        # response_token_limit = 1024
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
@@ -263,7 +246,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
 
-        data_points = {"text": sources_content}
+        # data_points = {"text": sources_content}
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -279,7 +262,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         end_time = time.time()
 
         extra_info = {
-            "data_points": data_points,
+            # "data_points": data_points,
             "thoughts": [
                 ThoughtStep(
                     "Prompt to generate search query",
@@ -322,19 +305,4 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             ],
         }
 
-        citation_info = []
-        sources_info = extra_info["thoughts"][2].description
-        for source in sources_info:
-            filtered_results = {
-                "title": source["sourcePage"],  # to be updated to required field
-                "url": "",  # to be updated to required field
-                "meta_desc": "",  # to be updated to required field
-                "image_url": "",  # to be updated to required field
-            }
-            citation_info.append(filtered_results)
-
-        # print(f"extra_info: {extra_info}")
-        # print(f"chat_coroutine: {chat_coroutine}")
-        # print(f"citation_info: {citation_info}")
-
-        return (extra_info, chat_coroutine, citation_info)
+        return (extra_info, chat_coroutine)

@@ -41,6 +41,7 @@ azure-core==1.30.2
     #   microsoft-kiota-authentication-azure
     #   msrest
 azure-core-tracing-opentelemetry==1.0.0b11
+azure-cosmos==4.7.0
     # via azure-monitor-opentelemetry
 azure-identity==1.17.1
     # via
@@ -146,6 +147,7 @@ itsdangerous==2.2.0
     #   flask
     #   quart
 jinja2==3.1.4
+lingua-language-detector==2.0.2
     # via
     #   flask
     #   quart
