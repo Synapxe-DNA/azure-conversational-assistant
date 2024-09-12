@@ -34,6 +34,10 @@
 
 3. Git clone this repository.
 
+4. Run the "azure_rag" pipeline in Kedro to get the articles data.
+
+5. Copy the Azure RAG data from "03_primary" > "processed_articles" and paste it in "data" folder in the repository.
+
 ## Deploying
 
 Follow these steps to provision Azure resources and deploy the application code:
