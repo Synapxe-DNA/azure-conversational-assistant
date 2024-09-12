@@ -22,3 +22,6 @@ set-env: # Manually set environment variables for Azure
 	azd env set AZURE_FEEDBACK_DATABASE_ID feedbacks
 	azd env set AZURE_FEEDBACK_CONTAINER_ID feedbacks
 	azd env set AZURE_COSMOS_URL https://cosmos-zicuh2lqrbb2s.documents.azure.com:443/
+
+ssl-cert: # Create ssl for local development
+	openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes

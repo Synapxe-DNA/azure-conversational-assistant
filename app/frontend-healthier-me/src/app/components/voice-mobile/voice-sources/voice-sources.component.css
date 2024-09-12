@@ -30,3 +30,13 @@
 .component-container {
   margin-bottom: 100px;
 }
+
+@media (max-width: 768px) {
+  .responsive-image {
+    height: 50% !important;
+    width: 70% !important;
+  }
+  .responsive-text {
+    font-size: 50% !important;
+  }
+}
