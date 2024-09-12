@@ -14,6 +14,8 @@ class ChatApproach(Approach, ABC):
         {"role": "assistant", "content": "Provide a list of common flu symptoms"},
         {"role": "user", "content": "How can I manage high blood pressure?"},
         {"role": "assistant", "content": "Suggest ways to manage high blood pressure"},
+        {"role": "user", "content": " "},
+        {"role": "assistant", "content": ""},
     ]
     NO_RESPONSE = "0"
 

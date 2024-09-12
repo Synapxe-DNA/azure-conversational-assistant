@@ -15,8 +15,10 @@ import { ProfileService } from "../../../services/profile/profile.service";
 })
 export class NavbarProfileLinkComponent implements OnInit {
   @Input() profile!: Profile;
+  @Input() onCloseSidebar?: () => void; // Accept the function from the parent
 
   isActive: boolean = false;
+  gender: string = "";
 
   contextMenuItems: MenuItem[] = [
     {
@@ -54,7 +56,15 @@ export class NavbarProfileLinkComponent implements OnInit {
     if (this.profile.id === GeneralProfile.id) {
       return "No profile set";
     }
-
+    this.gender = this.profile.gender === ProfileGender.Undefined ? "" : this.profile.gender;
     return `${this.profile.gender === ProfileGender.Undefined ? "" : this.profile.gender + ","} ${this.profile.age} years old`;
+  }
+
+  onEditProfile(profileId: string) {
+    // Navigate to the edit profile page with the profile ID
+    this.router.navigate([`/edit-profile/${profileId}`]);
+    if (this.onCloseSidebar) {
+      this.onCloseSidebar();
+    }
   }
 }

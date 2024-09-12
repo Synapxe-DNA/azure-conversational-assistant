@@ -13,16 +13,17 @@ import { Feedback } from "../../../types/feedback.type";
   styleUrls: ["./voice-annotation.component.css"]
 })
 export class VoiceAnnotationComponent {
-  displayModal: boolean = false;
+  displayPositiveModal: boolean = false;
+  displayNegativeModal: boolean = false;
   confirmationModal: boolean = false;
   remarks: string = "";
-  rating: Number = -1;
+  rating: Number = -1; // 0 for positive, 1 for negative
   selectedCategory: string | null = "Others";
 
   constructor(private convoBrokerService: ConvoBrokerService) {}
 
   showDialog(rating: Number) {
-    this.displayModal = true;
+    rating === 0 ? (this.displayPositiveModal = true) : (this.displayNegativeModal = true);
     this.rating = rating;
   }
 
@@ -34,7 +35,7 @@ export class VoiceAnnotationComponent {
   submitFeedback() {
     const feedback: Feedback = {
       label: this.rating === 0 ? "positive" : "negative",
-      category: this.selectedCategory!,
+      category: [this.selectedCategory!],
       remarks: this.remarks,
       chat_history: [],
       profile_id: "",
@@ -52,7 +53,8 @@ export class VoiceAnnotationComponent {
     this.convoBrokerService.sendFeedback(feedback);
 
     // Handle the feedback submission logic here
-    this.displayModal = false;
+    this.displayNegativeModal = false;
+    this.displayPositiveModal = false;
     this.confirmationModal = true; // Show the confirmation modal
     this.remarks = ""; // Reset the feedback field
   }

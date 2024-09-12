@@ -55,8 +55,7 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
 })
 export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-  // private recorder: AudioRecorder | undefined;
-  private recorder2: v2AudioRecorder | undefined;
+  private recorder: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   micState: MicState = MicState.PENDING;
@@ -67,16 +66,12 @@ export class VoiceMobileComponent {
   voiceDetectEnd: boolean = false;
   showLiveTranscription: boolean = false;
 
-  currentBackgroundColor: string = "rgba(16, 185, 129, 1)";
-
   constructor(
     private preference: PreferenceService,
-    private audio: AudioService,
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService,
-    private audioPlayerService: AudioPlayerService
+    private chatMessageService: ChatMessageService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -110,10 +105,6 @@ export class VoiceMobileComponent {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.message = messages.sort((b, a) => a.timestamp - b.timestamp)[0];
-
-          if (this.message === undefined) {
-            this.upsertIntroMessage(p.id);
-          }
         });
       });
     });
@@ -121,8 +112,7 @@ export class VoiceMobileComponent {
   }
 
   private async initVoiceChat() {
-    // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {
@@ -143,21 +133,5 @@ export class VoiceMobileComponent {
 
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
-  }
-
-  private async upsertIntroMessage(profileId: string): Promise<void> {
-    const introMessage: Message = {
-      id: "intro-message", // Assign a unique ID for the intro message
-      profile_id: profileId,
-      role: MessageRole.Assistant,
-      message: "Welcome! How can I assist you today?",
-      timestamp: Date.now(),
-      sources: []
-    };
-
-    await this.chatMessageService.upsert(introMessage);
-
-    // After upserting, refresh the message list to ensure it's reflected
-    this.message = await this.chatMessageService.staticLoad(profileId).then(messages => messages.sort((b, a) => a.timestamp - b.timestamp)[0]);
   }
 }
