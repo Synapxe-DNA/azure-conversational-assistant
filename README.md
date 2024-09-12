@@ -134,8 +134,7 @@ Once in the web app:
 
 1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
 2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
-3. `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
-=======
+3. # `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
 
 ## Running webapp locally to test on other devices
 
