@@ -1,4 +1,4 @@
-<div class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-mx-2">
+<div class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-mx-2 {{ isActive ? 'tw-bg-gray-100' : 'tw-bg-white hover:bg-gray-50' }}">
   <a
     #profileLink
     href="/app/chat/{{ profile.id }}"
@@ -9,7 +9,6 @@
       tw-gap-3
       tw-px-4 tw-py-3
       tw-cursor-pointer
-      {{ isActive ? 'tw-bg-gray-100' : 'tw-bg-white hover:bg-gray-50' }}
     "
   >
     <div class="tw-flex tw-flex-row tw-items-center tw-gap-3">
@@ -26,7 +25,7 @@
 
   <!-- Edit Button Icon -->
   <button class="tw-cursor-pointer" (click)="onEditProfile(profile.id)">
-    <img ngSrc="/app/icons/edit.svg" height="24" width="24" class="tw-w-[24px] tw-h-[24px]" alt="Edit Profile" />
+    <img ngSrc="/app/icons/edit.svg" height="24" width="24" class="tw-w-[24px] tw-h-[24px] tw-mx-3" alt="Edit Profile" />
   </button>
 </div>
 

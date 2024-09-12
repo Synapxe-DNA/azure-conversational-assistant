@@ -15,6 +15,8 @@ import { ProfileService } from "../../../services/profile/profile.service";
 })
 export class NavbarProfileLinkComponent implements OnInit {
   @Input() profile!: Profile;
+  @Input() onCloseSidebar?: () => void;  // Accept the function from the parent
+
 
   isActive: boolean = false;
   gender: string = "";
@@ -62,6 +64,9 @@ export class NavbarProfileLinkComponent implements OnInit {
   onEditProfile(profileId: string) {
     // Navigate to the edit profile page with the profile ID
     this.router.navigate([`/edit-profile/${profileId}`]);
+    if (this.onCloseSidebar) {
+      this.onCloseSidebar();
+    }
   }
   
 }

@@ -16,6 +16,7 @@ import { PreferenceService } from "../../services/preference/preference.service"
 import { Router, ActivatedRoute } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ChatMode } from "../../types/chat-mode.type";
+import { Profile } from "../../types/profile.type";
 
 @Component({
   selector: "app-edit-profile",
@@ -37,6 +38,7 @@ import { ChatMode } from "../../types/chat-mode.type";
 })
 export class EditProfileComponent {
   profileId!: string;
+  loadedProfile!: Profile;
   profileForm: FormGroup = new FormGroup({
     name: new FormControl<string>("", Validators.required),
     profile_type: new FormControl<ProfileType>(ProfileType.Myself, Validators.required),
@@ -65,6 +67,35 @@ export class EditProfileComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {}
+
+  ngOnInit() {
+    this.profileId = this.route.snapshot.paramMap.get('profileId')!;
+    if (this.profileId) {
+      this.loadProfileData();
+    }
+  }
+
+// Load the profile data from the service
+loadProfileData() {
+  this.loadedProfile = this.profileService.getProfile(this.profileId).value!;
+
+  // Split, trim, and map existing conditions to form options
+  const selectedConditions = this.loadedProfile.existing_conditions
+    .split(',') // Split by comma
+    .map(condition => condition.trim()) // Trim whitespace
+    .map(condition => this.profileConditionOptions.find(option => option.name === condition)) // Find matching options
+    .filter(Boolean) as { name: string; label: string }[]; // Ensure it's typed correctly and remove null/undefined values
+
+  // Patch the form with the existing profile data
+  this.profileForm.patchValue({
+    name: this.loadedProfile.name,
+    profile_type: this.loadedProfile.profile_type,
+    age: this.loadedProfile.age,
+    gender: this.loadedProfile.gender,
+    existing_condition: selectedConditions
+  });
+}
+
 
   // Custom validator to check if the age is greater than 100
   ageValidator(control: AbstractControl): ValidationErrors | null {
