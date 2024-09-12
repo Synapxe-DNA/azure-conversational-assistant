@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "prettier": "3.3.3"
+    "prettier": "^3.3.3"
   },
   "dependencies": {
     "@rollup/rollup-darwin-arm64": "^4.20.0"
