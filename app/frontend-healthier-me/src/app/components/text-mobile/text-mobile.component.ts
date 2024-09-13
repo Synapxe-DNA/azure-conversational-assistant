@@ -10,11 +10,14 @@ import { TextUserComponent } from "../text/text-user/text-user.component";
 import { TextSystemComponent } from "../text/text-system/text-system.component";
 import { TextInputComponent } from "../text/text-input/text-input.component";
 import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bottom.directive";
+import { TextLoadingComponent } from "../text/text-loading/text-loading.component";
+import { APP_CONSTANTS } from "../../constants";
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: "app-text-mobile",
   standalone: true,
-  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, StickyBottomDirective],
+  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, TextLoadingComponent, StickyBottomDirective, CommonModule],
   templateUrl: "./text-mobile.component.html",
   styleUrl: "./text-mobile.component.css"
 })
@@ -26,6 +29,9 @@ export class TextMobileComponent implements OnInit {
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   messages: Message[] = [];
+  loading: boolean = false;
+  timeout: boolean = false;
+  private timeoutId: any; // Store the timeout reference
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -36,14 +42,12 @@ export class TextMobileComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        takeWhile(p => {
-          return p.get("profileId") !== undefined;
-        }, true)
+        takeWhile(p => p.get("profileId") !== undefined, true)
       )
       .subscribe(p => {
         this.profile = this.profileService.getProfile(p.get("profileId")!);
       });
-
+  
     this.profile.subscribe(p => {
       if (!p) {
         return;
@@ -51,8 +55,36 @@ export class TextMobileComponent implements OnInit {
       this.chatMessageService.load(p.id).then(m => {
         m.subscribe(messages => {
           this.messages = messages;
+          this.timeout = false;
+  
+          // Check the most recent message (last element in the array)
+          const mostRecentMessage = messages[messages.length - 1];
+          if (mostRecentMessage && mostRecentMessage.role === MessageRole.Assistant) {
+            this.loading = false; // Stop loading if the most recent message is from Assistant
+
+            // Clear the timeout to stop the timeout message from showing
+            if (this.timeoutId) {
+              clearTimeout(this.timeoutId);
+              this.timeoutId = null; // Reset the timeout reference
+            }
+          }
         });
       });
     });
+  }
+
+  onMessageSent() {
+    console.log("Message sent");
+    this.loading = true;
+
+    // Simulate message processing with a timeout
+    this.timeoutId = setTimeout(() => {
+      this.loading = false; // Hide the loading indicator after processing
+      this.showTimeoutMessage(); // Show timeout message if Assistant's message isn't received
+    }, APP_CONSTANTS.TIMEOUT); // Adjust the timeout duration as needed
+  }
+
+  showTimeoutMessage() {
+    this.timeout = true;
   }
 }
