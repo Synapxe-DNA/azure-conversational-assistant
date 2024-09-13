@@ -5,11 +5,13 @@ import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { AudioService } from "../../../services/audio/audio.service";
 import { MarkdownComponent } from "../../markdown/markdown.component";
 import { AudioPlayerService } from "../../../services/audio-player/audio-player.service";
+import { FormsModule } from "@angular/forms";
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: "app-voice-message",
   standalone: true,
-  imports: [MarkdownComponent],
+  imports: [MarkdownComponent, FormsModule, CommonModule],
   templateUrl: "./voice-message.component.html",
   styleUrl: "./voice-message.component.css"
 })
@@ -17,6 +19,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   @Input() message?: Message;
   @Input() state?: string;
   @Input() level?: number;
+  @Input() fontSize: number = 16; // Default value
   audioAnalyser: AudioAnalyser | undefined;
   private animationFrameId: number | null = null;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>;
@@ -26,41 +29,32 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     private audioPlayerService: AudioPlayerService
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Retrieve the font size from local storage (if it exists)
+    const savedFontSize = localStorage.getItem("fontSize");
+    if (savedFontSize) {
+      this.fontSize = Number(savedFontSize);
+    }
+  }
 
   ngAfterViewInit(): void {
-    this.startAnalyser().catch(console.error);
-    this.audioPlayerService.$playing.subscribe(isPlaying => {
-      if (isPlaying) {
-        if (this.animationFrameId == null) {
-          // To prevent creation of multiple animation frames
-          this.mainLoop();
-        }
-      } else {
-        this.stopLoop();
-        this.box.nativeElement.style.boxShadow = `0 0 0px 0px rgb(243,244,246)`;
+    this.audioPlayerService.getAudioStream().subscribe(v => {
+      if (v) {
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, 9, 0.3);
+        this.mainLoop();
       }
     });
   }
 
-  async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
-  }
-
   mainLoop() {
-    if (this.audioAnalyser) {
-      const raw_level = this.audioAnalyser.getAudioLevel();
-      let adjusted_level = Math.round(Math.max(0, Math.min(1, raw_level * 4)) * 10) / 10;
-      const level = Math.floor(40 * adjusted_level);
-      this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
-      this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
-    }
+    const raw_level = this.audioAnalyser!.getAudioLevel();
+    const level = Math.floor(40 * raw_level);
+    this.box.nativeElement.style.boxShadow = `0 0 ${level}px ${level}px rgb(243,244,246)`;
+    this.animationFrameId = window.requestAnimationFrame(this.mainLoop.bind(this));
   }
 
-  stopLoop() {
-    if (this.animationFrameId != null) {
-      window.cancelAnimationFrame(this.animationFrameId); // AnimationFrame needs to be cancelled
-      this.animationFrameId = null;
-    }
+  onFontSizeChange() {
+    // Save the font size in local storage whenever it changes
+    localStorage.setItem("fontSize", this.fontSize.toString());
   }
 }

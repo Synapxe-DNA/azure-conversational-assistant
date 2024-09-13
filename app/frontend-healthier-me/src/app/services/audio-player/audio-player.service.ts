@@ -36,6 +36,7 @@ export class AudioPlayerService {
 
   private playNextInQueue() {
     this.$playing.next(true);
+
     const blob = this.queue.shift()!;
     this.audioElement.src = URL.createObjectURL(blob);
     this.audioElement.play().then(() => {
@@ -55,7 +56,9 @@ export class AudioPlayerService {
    * @param blob {Blob}
    */
   play(...blob: Blob[]): void {
-    blob.forEach(b => this.queue.push(b));
+    blob.forEach(b => {
+      this.queue.push(b);
+    });
     if (!this.$playing.value) {
       this.playNextInQueue();
     }
@@ -74,5 +77,15 @@ export class AudioPlayerService {
     this.queue = [];
     this.audioElement.pause();
     this.$playing.next(false);
+  }
+
+  playStartVoiceAudio(): void {
+    this.audioElement.src = "assets/startvoice.mp3";
+    this.audioElement.play();
+  }
+
+  playStopVoiceAudio(): void {
+    this.audioElement.src = "assets/stopvoice.mp3";
+    this.audioElement.play();
   }
 }

@@ -64,6 +64,26 @@ export class ProfileService {
     return returnProfile;
   }
 
+  updateProfile(updatedProfile: Profile) {
+    const index = this.$profiles.value.findIndex(m => m.id === updatedProfile.id);
+
+    if (index !== -1) {
+      this.dbService.update("profiles", updatedProfile).subscribe({
+        next: () => {
+          const updatedProfiles = [...this.$profiles.value];
+          updatedProfiles[index] = updatedProfile;
+          this.$profiles.next(updatedProfiles);
+          console.log("Profile updated: ", this.$profiles.value);
+        },
+        error: err => {
+          console.error("Failed to update profile:", err);
+        }
+      });
+    } else {
+      console.error("Profile not found:", updatedProfile.id);
+    }
+  }
+
   /**
    * Method to delete a profile by ID
    * @param id {string}

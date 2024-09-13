@@ -1,10 +1,12 @@
-import { Component, HostListener } from "@angular/core";
+import { Component, HostListener, OnDestroy } from "@angular/core";
 import { ChatMode } from "../../types/chat-mode.type";
 import { PreferenceService } from "../../services/preference/preference.service";
 import { VoiceComponent } from "../../components/voice/voice.component";
 import { TextComponent } from "../../components/text/text.component";
 import { VoiceMobileComponent } from "../../components/voice-mobile/voice-mobile.component";
 import { TextMobileComponent } from "../../components/text-mobile/text-mobile.component";
+import { ConvoBrokerService } from "../../services/convo-broker/convo-broker.service";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-chat",
@@ -15,22 +17,19 @@ import { TextMobileComponent } from "../../components/text-mobile/text-mobile.co
 })
 export class ChatComponent {
   chatMode?: ChatMode;
-  isMobile?: boolean;
 
-  constructor(private preference: PreferenceService) {
+  constructor(
+    private preference: PreferenceService,
+    private convoBroker: ConvoBrokerService
+  ) {
     this.preference.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
-    this.isMobile = window.innerWidth < 768;
+    this.convoBroker.openWebSocket();
   }
-
-  @HostListener("window:resize", ["$event"])
-  onResize(event: any) {
-    this.checkViewport();
-  }
-  checkViewport() {
-    this.isMobile = window.innerWidth < 768; // Adjust this value as needed
-  }
-
   protected readonly ChatMode = ChatMode;
+
+  ngOnDestroy() {
+    this.convoBroker.closeWebSocket();
+  }
 }

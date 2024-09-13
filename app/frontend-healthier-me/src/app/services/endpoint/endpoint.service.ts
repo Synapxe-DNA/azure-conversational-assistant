@@ -241,7 +241,7 @@ export class EndpointService {
                 return;
               }
 
-              // since response is re-emitted as a whole each time, we need to keep track of the  
+              // since response is re-emitted as a whole each time, we need to keep track of the
               // last response length and slice to remove the last response from the current response
               const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
 
@@ -283,6 +283,8 @@ export class EndpointService {
       user_profile: this.profileToApiProfile(profile),
       chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
     };
+
+    console.log("Feedback data:", data);
 
     this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
       next: () => {

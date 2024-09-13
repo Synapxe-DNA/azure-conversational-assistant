@@ -48,6 +48,7 @@ export class ChatMessageService {
 
   async staticLoad(profileId: string): Promise<Message[]> {
     const messages = await firstValueFrom<Message[]>(this.indexedStore.getAllByIndex("messages", "profile_id", IDBKeyRange.only(profileId)));
+    console.log("Messages loaded: ", messages);
     return messages?.sort((a, b) => a.timestamp - b.timestamp) || [];
   }
 
