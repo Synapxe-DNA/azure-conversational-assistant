@@ -28,7 +28,6 @@ export class v2AudioRecorder {
   }
 
   setupWebSocket() {
-    this.startAudioCapture();
     this.socket = new WebSocket("/ws/transcribe");
     this.socket.onopen = () => {
       console.log("WebSocket connection opened");
@@ -39,10 +38,10 @@ export class v2AudioRecorder {
       console.error("WebSocket error:", error);
     };
 
-    // this.socket.onclose = () => {
-    //   console.log("WebSocket connection closed");
-    //   this.stopAudioCapture();
-    // };
+    this.socket.onclose = () => {
+      console.log("WebSocket connection closed");
+      this.socket = undefined;
+    };
 
     this.socket.onmessage = event => {
       try {
@@ -60,7 +59,16 @@ export class v2AudioRecorder {
     };
   }
 
+  closeWebSocket() {
+    this.socket?.close();
+    this.socket = undefined;
+  }
+
   startAudioCapture() {
+    if (this.socket === undefined) {
+      this.setupWebSocket();
+    }
+    this.resetFields();
     navigator.mediaDevices
       .getUserMedia({ audio: true })
       .then(stream => {
@@ -123,17 +131,15 @@ export class v2AudioRecorder {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
           this.sendAllPcmData();
           clearInterval(checkBufferInterval); // Stop checking once the buffer is empty
-          this.socket?.send("close"); // Send close message to backend
+          this.socket?.send("completed"); // Send completed message to backend
         }
       }, 100);
 
       const checkInterval = setInterval(() => {
-        if (this.socket?.readyState === WebSocket.CLOSED && this.isFinal) {
-          // Return promise only when socket is closed and final text is received
+        if (this.isFinal) {
           clearInterval(checkInterval); // Stop checking once the socket is closed
           this.upsert(this.finalText); // Final upsert to ensure final text is displayed
-          this.socket.close();
-          console.log("WebSocket connection closed");
+          console.log("Speech transcribed successfully");
           resolve(this.finalText);
         }
       }, 100);

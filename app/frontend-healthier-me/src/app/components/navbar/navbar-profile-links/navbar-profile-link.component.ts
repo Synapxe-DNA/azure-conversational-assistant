@@ -15,8 +15,7 @@ import { ProfileService } from "../../../services/profile/profile.service";
 })
 export class NavbarProfileLinkComponent implements OnInit {
   @Input() profile!: Profile;
-  @Input() onCloseSidebar?: () => void;  // Accept the function from the parent
-
+  @Input() onCloseSidebar?: () => void; // Accept the function from the parent
 
   isActive: boolean = false;
   gender: string = "";
@@ -68,5 +67,4 @@ export class NavbarProfileLinkComponent implements OnInit {
       this.onCloseSidebar();
     }
   }
-  
 }

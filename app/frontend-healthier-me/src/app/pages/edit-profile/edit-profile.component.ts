@@ -69,33 +69,32 @@ export class EditProfileComponent {
   ) {}
 
   ngOnInit() {
-    this.profileId = this.route.snapshot.paramMap.get('profileId')!;
+    this.profileId = this.route.snapshot.paramMap.get("profileId")!;
     if (this.profileId) {
       this.loadProfileData();
     }
   }
 
-// Load the profile data from the service
-loadProfileData() {
-  this.loadedProfile = this.profileService.getProfile(this.profileId).value!;
+  // Load the profile data from the service
+  loadProfileData() {
+    this.loadedProfile = this.profileService.getProfile(this.profileId).value!;
 
-  // Split, trim, and map existing conditions to form options
-  const selectedConditions = this.loadedProfile.existing_conditions
-    .split(',') // Split by comma
-    .map(condition => condition.trim()) // Trim whitespace
-    .map(condition => this.profileConditionOptions.find(option => option.name === condition)) // Find matching options
-    .filter(Boolean) as { name: string; label: string }[]; // Ensure it's typed correctly and remove null/undefined values
+    // Split, trim, and map existing conditions to form options
+    const selectedConditions = this.loadedProfile.existing_conditions
+      .split(",") // Split by comma
+      .map(condition => condition.trim()) // Trim whitespace
+      .map(condition => this.profileConditionOptions.find(option => option.name === condition)) // Find matching options
+      .filter(Boolean) as { name: string; label: string }[]; // Ensure it's typed correctly and remove null/undefined values
 
-  // Patch the form with the existing profile data
-  this.profileForm.patchValue({
-    name: this.loadedProfile.name,
-    profile_type: this.loadedProfile.profile_type,
-    age: this.loadedProfile.age,
-    gender: this.loadedProfile.gender,
-    existing_condition: selectedConditions
-  });
-}
-
+    // Patch the form with the existing profile data
+    this.profileForm.patchValue({
+      name: this.loadedProfile.name,
+      profile_type: this.loadedProfile.profile_type,
+      age: this.loadedProfile.age,
+      gender: this.loadedProfile.gender,
+      existing_condition: selectedConditions
+    });
+  }
 
   // Custom validator to check if the age is greater than 100
   ageValidator(control: AbstractControl): ValidationErrors | null {
@@ -107,12 +106,12 @@ loadProfileData() {
   }
 
   updateProfile() {
-    this.profileId = this.route.snapshot.paramMap.get('profileId')!;
+    this.profileId = this.route.snapshot.paramMap.get("profileId")!;
     console.log(this.profileId);
     if (this.profileForm.valid) {
       if (this.profileId) {
         this.profileService.updateProfile({
-          id: this.profileId, 
+          id: this.profileId,
           name: this.profileForm.value.name,
           profile_type: this.profileForm.value.profile_type,
           gender: this.profileForm.value.gender,

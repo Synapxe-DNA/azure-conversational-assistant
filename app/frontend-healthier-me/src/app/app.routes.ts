@@ -18,7 +18,7 @@ export const routes: Routes = [
       {
         path: "edit-profile/:profileId",
         component: EditProfileComponent
-      }, 
+      },
       {
         path: "chat",
         children: [

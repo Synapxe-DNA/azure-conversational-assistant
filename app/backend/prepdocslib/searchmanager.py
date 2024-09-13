@@ -94,8 +94,19 @@ class SearchManager:
                     ),
                     SimpleField(name="cover_image_url", type=SearchFieldDataType.String),
                     SimpleField(name="full_url", type=SearchFieldDataType.String),
-                    SimpleField(name="content_category", type=SearchFieldDataType.String),
-                    SimpleField(name="category_description", type=SearchFieldDataType.String),
+                    SearchableField(
+                        name="content_category",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                        filterable=True,
+                    ),
+                    SearchableField(
+                        name="category_description",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                    ),
+                    SimpleField(name="pr_name", type=SearchFieldDataType.String),
+                    SimpleField(name="date_modified", type=SearchFieldDataType.String),
                     # SearchableField(
                     #     name="content",
                     #     type=SearchFieldDataType.String,
@@ -214,6 +225,8 @@ class SearchManager:
                         "full_url": section.full_url,  # Adding a placeholder for the full URL
                         "content_category": section.category,  # Using 'content_category' for the section category
                         "category_description": section.category_description,  # Adding a placeholder for category description
+                        "pr_name": section.category_description,  # Adding a placeholder for category description
+                        "date_modified": section.category_description,  # Adding a placeholder for category description
                         "chunks": section.split_page.text,  # Using 'chunks' for the split page text content
                     }
                     for section_index, section in enumerate(batch)

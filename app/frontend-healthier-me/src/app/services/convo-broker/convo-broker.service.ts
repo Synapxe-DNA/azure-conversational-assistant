@@ -95,6 +95,14 @@ export class ConvoBrokerService {
     });
   }
 
+  openWebSocket() {
+    this.recorder.setupWebSocket();
+  }
+
+  closeWebSocket() {
+    this.recorder.closeWebSocket();
+  }
+
   /**
    * Method to trigger the start of audio recording
    * @private
@@ -104,7 +112,7 @@ export class ConvoBrokerService {
     this.audioPlayer.playStartVoiceAudio();
     this.$micState.next(MicState.ACTIVE);
     // this.recorder.start();
-    this.recorder.setupWebSocket();
+    this.recorder.startAudioCapture();
   }
 
   /**

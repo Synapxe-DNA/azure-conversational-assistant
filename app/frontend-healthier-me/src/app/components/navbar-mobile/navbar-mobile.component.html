@@ -15,9 +15,9 @@
     <app-navbar-line></app-navbar-line>
 
     <div class="tw-px-2">
-      <app-navbar-profile-link [profile]="GeneralProfile" [onCloseSidebar]="closeSidebar.bind(this)"/>
+      <app-navbar-profile-link [profile]="GeneralProfile" [onCloseSidebar]="closeSidebar.bind(this)" />
       @for (p of profiles; track p.id) {
-        <app-navbar-profile-link [profile]="p" [onCloseSidebar]="closeSidebar.bind(this)"/>
+        <app-navbar-profile-link [profile]="p" [onCloseSidebar]="closeSidebar.bind(this)" />
       }
       <app-navbar-profile-create />
     </div>
