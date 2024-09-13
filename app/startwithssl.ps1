@@ -2,8 +2,6 @@ Write-Host ""
 Write-Host "Loading azd .env file from current environment"
 Write-Host ""
 
-make set-env
-
 foreach ($line in (& azd env get-values)) {
     if ($line -match "([^=]+)=(.*)") {
         $key = $matches[1]

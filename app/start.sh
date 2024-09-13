@@ -4,8 +4,6 @@ echo ""
 echo "Loading azd .env file from current environment"
 echo ""
 
-make set-env
-
 while IFS='=' read -r key value; do
     value=$(echo "$value" | sed 's/^"//' | sed 's/"$//')
     export "$key=$value"
