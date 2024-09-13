@@ -1,4 +1,4 @@
-*.csv
+data/*
 
 # Azure az webapp deployment details
 .azure
