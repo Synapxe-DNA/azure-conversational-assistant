@@ -34,6 +34,12 @@
 
 3. Git clone this repository.
 
+4. Run the `azure_rag` pipeline in Kedro to get the articles data.
+
+5. Create a `data` folder in the `app` folder in this repository.
+
+6. Copy the Azure RAG data from `healthhub-content-optimization` repository under `03_primary` > `processed_articles` and paste it in `data` folder in the repository.
+
 ## Deploying
 
 Follow these steps to provision Azure resources and deploy the application code:
@@ -123,6 +129,13 @@ Once in the web app:
 > [!NOTE]
 >
 > To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
+
+## Notebooks
+
+1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
+2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
+
+3. # `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index
 
 ## Running webapp locally to test on other devices
 
