@@ -11,7 +11,7 @@ from utils.utils import Utils
 voice = Blueprint("voice", __name__, url_prefix="/voice")
 
 
-@voice.route("/", methods=["POST"])
+@voice.route("/stream", methods=["POST"])
 async def voice_endpoint():
 
     try:
