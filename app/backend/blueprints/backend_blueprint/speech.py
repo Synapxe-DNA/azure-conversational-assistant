@@ -11,8 +11,9 @@ async def speech_endpoint():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
-    text = request_json["text"]
+
     try:
+        text = request_json["text"]
         tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
         audio_data = tts.readText(text, False)
         return audio_data, 200, {"Content-Type": "audio/mp3"}
