@@ -1,16 +1,22 @@
+import datetime
 import json
 import logging
 import re
 from typing import Any, AsyncGenerator, List
 
 from azure.search.documents.aio import SearchClient
-from config import CONFIG_SEARCH_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
+from config import (
+    CONFIG_LOGGING_CONTAINER_CLIENT,
+    CONFIG_SEARCH_CLIENT,
+    CONFIG_TEXT_TO_SPEECH_SERVICE,
+)
 from error import error_dict
 from lingua import Language, LanguageDetectorBuilder
 from models.chat import TextChatResponse
 from models.chat_history import ChatHistory
 from models.feedback import FeedbackRequest, FeedbackStore
 from models.language import LanguageSelected
+from models.logstore import LogStore
 from models.profile import Profile
 from models.request import Request
 from models.request_type import RequestType
@@ -35,8 +41,10 @@ class Utils:
 
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
+
             response_message = ""
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+            logStore = LogStore()
 
             async for res in format_as_ndjson(result):
                 # Extract sources
@@ -44,11 +52,11 @@ class Utils:
                 error_msg = res.get("error", None)
                 thoughts = res.get("context", {}).get("thoughts", [])
                 text_response_chunk = ""
-
                 if error_msg is not None:
                     yield construct_error_response(error_msg, request_type, language)
                 elif not thoughts == []:
                     yield construct_source_response(thoughts, request_type)
+                    logStore = extract_thoughts_for_logging(thoughts, logStore)
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
@@ -64,6 +72,8 @@ class Utils:
                             yield response.model_dump_json()
                             response_message = ""
                         break
+
+                    logStore.response_message += text_response_chunk
 
                     if request_type == RequestType.CHAT:
                         response = TextChatResponse(
@@ -85,6 +95,7 @@ class Utils:
                             )
                             yield response.model_dump_json()
                             response_message = ""
+            await Utils.send_log(logStore)
 
         return generator()
 
@@ -158,11 +169,22 @@ class Utils:
             language = str(language).split(".")[1].lower()  # get language name from enum
         return language
 
+    @staticmethod
+    async def send_log(logStore: LogStore):
+        logStore.date_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        containerClient = current_app.config[CONFIG_LOGGING_CONTAINER_CLIENT]
+        try:
+            await containerClient.create_item(logStore.model_dump(), enable_automatic_id_generation=True)
+            logging.info("Log sent successfully")
+        except Exception as error:
+            logging.error("Error while sending log", error)
+            pass
+
 
 # Helper functions
 
 
-def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
+def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]) -> List[Source] | List[SourceWithChunk]:
     sources_desc = thoughts[2].get("description", [])  # thoughts[2] is search results
     sources = []
     for source in sources_desc:
@@ -178,10 +200,35 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]):
             for s in sources:
                 if s.full_url == src_instance.full_url:
                     s.ids.extend(src_instance.ids)
-        else:
-            sources.append(src_instance)
+
+        sources.append(src_instance)
 
     return sources
+
+
+def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) -> List[SourceWithChunk]:
+    sources_desc = thoughts[2].get("description", [])  # thoughts[2] is search results
+    sources = []
+    for source in sources_desc:
+        src_instance = SourceWithChunk(
+            id=str(source.get("id")),
+            title=str(source.get("title")),
+            cover_image_url=str(source.get("cover_image_url")),
+            full_url=str(source.get("full_url")),
+            content_category=str(source.get("content_category")),
+            chunk=str(source.get("chunks")),
+        )
+        sources.append(src_instance)
+
+    return sources
+
+
+def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], logStore: LogStore) -> LogStore:
+    logStore.time_taken = thoughts[4].get("description", -1)  # thoughts[4] is time taken
+    logStore.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
+    logStore.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
+
+    return logStore
 
 
 async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:

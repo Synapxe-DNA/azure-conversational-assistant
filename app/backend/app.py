@@ -39,6 +39,7 @@ from config import (
     CONFIG_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_GPT4V_DEPLOYED,
     CONFIG_INGESTER,
+    CONFIG_LOGGING_CONTAINER_CLIENT,
     CONFIG_OPENAI_CLIENT,
     CONFIG_SEARCH_CLIENT,
     CONFIG_SEMANTIC_RANKER_DEPLOYED,
@@ -211,8 +212,10 @@ async def setup_clients():
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
     AZURE_COSMOS_DB_NAME = os.environ["AZURE_COSMOS_DB_NAME"]
-    AZURE_DATABASE_ID = os.environ["AZURE_DATABASE_ID"]
-    AZURE_CONTAINER_ID = os.environ["AZURE_CONTAINER_ID"]
+    AZURE_FEEDBACK_DATABASE_ID = os.environ["AZURE_FEEDBACK_DATABASE_ID"]
+    AZURE_FEEDBACK_CONTAINER_ID = os.environ["AZURE_FEEDBACK_CONTAINER_ID"]
+    AZURE_LOGGING_DATABASE_ID = os.environ["AZURE_LOGGING_DATABASE_ID"]
+    AZURE_LOGGING_CONTAINER_ID = os.environ["AZURE_LOGGING_CONTAINER_ID"]
     AZURE_USERSTORAGE_ACCOUNT = os.environ.get("AZURE_USERSTORAGE_ACCOUNT")
     AZURE_USERSTORAGE_CONTAINER = os.environ.get("AZURE_USERSTORAGE_CONTAINER")
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
@@ -287,9 +290,13 @@ async def setup_clients():
     cosmos_client = CosmosClient(
         url=f"https://{AZURE_COSMOS_DB_NAME}.documents.azure.com:443/", credential=azure_credential
     )
-    feedback_database_client = cosmos_client.get_database_client(AZURE_DATABASE_ID)
-    feedback_container_client = feedback_database_client.get_container_client(AZURE_CONTAINER_ID)
+    feedback_database_client = cosmos_client.get_database_client(AZURE_FEEDBACK_DATABASE_ID)
+    feedback_container_client = feedback_database_client.get_container_client(AZURE_FEEDBACK_CONTAINER_ID)
     current_app.config[CONFIG_FEEDBACK_CONTAINER_CLIENT] = feedback_container_client
+
+    logging_database_client = cosmos_client.get_database_client(AZURE_LOGGING_DATABASE_ID)
+    logging_container_client = logging_database_client.get_container_client(AZURE_LOGGING_CONTAINER_ID)
+    current_app.config[CONFIG_LOGGING_CONTAINER_CLIENT] = logging_container_client
 
     # Set up authentication helper
     search_index = None
