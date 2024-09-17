@@ -86,6 +86,9 @@ from quart_cors import cors
 from speech.speech_to_text import SpeechToText
 from speech.text_to_speech import TextToSpeech
 
+configure_azure_monitor()
+
+
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
 mimetypes.add_type("application/javascript", ".js")
