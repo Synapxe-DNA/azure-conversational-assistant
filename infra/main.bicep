@@ -37,7 +37,10 @@ param cosmosDbResourceGroupName string = ''
 @description('Use Application Insights for monitoring and performance tracing')
 param useApplicationInsights bool // Set in main.parameters.json
 param applicationInsightsName string = ''
+param applicationInsightsForApimName string = ''
+param applicationInsightsDashboardName string = ''
 param logAnalyticsName string = ''
+param logAnalyticsForApimName string = ''
 
 // Azure Blob Storage
 param storageAccountName string = ''
@@ -84,7 +87,7 @@ param openAiApiOrganization string = ''
 @allowed([ 'gpt-35-turbo', 'gpt-4o', 'gpt-4o-mini' ])
 param chatGptModelName string // Set in main.parameters.json
 param chatGptDeploymentName string = ''
-param chatGptDeploymentCapacity int = 0
+param chatGptDeploymentCapacity int = 0 // Set in main.parameters.json
 var chatGptDeploymentVersions = {
   'gpt-35-turbo': '0301'
   'gpt-4o': '2024-05-13'
@@ -197,6 +200,9 @@ param cosmosDbName string = ''
 param cosmosDbLocation string // Set in main.parameters.json
 param cosmosDatabaseId string // Set in main.parameters.json
 param cosmosContainerId string // Set in main.parameters.json
+param cosmosDbReuse bool = false
+param existingCosmosDbResourceGroupName string = ''
+param existingCosmosDbAccountName string = ''
 
 // App Service Plan
 param appServicePlanName string = ''
@@ -217,9 +223,13 @@ var authenticationIssuerUri = '${environment().authentication.loginEndpoint}${te
 
 // Azure API Management
 param apimServiceName string = ''
+param apimServiceLocation string // Set in main.parameters.json
 param entraTenantId string = ''
 param entraClientId string = ''
 param entraAudience string = ''
+param apimReuse bool = false
+param existingApimResourceGroupName string = ''
+param existingApimAccountName string = ''
 
 // Data Ingestion
 @description('Use Built-in integrated Vectorization feature of AI Search to vectorize and ingest documents')
@@ -283,6 +293,29 @@ module monitoring 'core/monitor/monitoring.bicep' = if (useApplicationInsights) 
   }
 }
 
+
+module monitoringApim 'core/monitor/monitoring.bicep' = if (useApplicationInsights) {
+  name: 'monitoring-apim'
+  scope: resourceGroup
+  params: {
+    location: location
+    tags: tags
+    applicationInsightsName: !empty(applicationInsightsForApimName) ? applicationInsightsForApimName : '${abbrs.insightsComponents}${abbrs.apiManagementService}${resourceToken}'
+    logAnalyticsName: !empty(logAnalyticsForApimName) ? logAnalyticsForApimName : '${abbrs.operationalInsightsWorkspaces}${abbrs.apiManagementService}${resourceToken}'
+    publicNetworkAccess: publicNetworkAccess
+  }
+}
+
+module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicationInsights) {
+  name: 'application-insights-dashboard'
+  scope: resourceGroup
+  params: {
+    name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+    location: location
+    applicationInsightsName: useApplicationInsights ? monitoring.outputs.applicationInsightsName : ''
+  }
+}
+
 // Azure Blob Storage
 module storage 'core/storage/storage-account.bicep' = {
   name: 'storage'
@@ -310,26 +343,6 @@ module storage 'core/storage/storage-account.bicep' = {
 }
 
 // // Azure OpenAI Service
-// module openAi 'br/public:avm/res/cognitive-services/account:0.7.0' = if (isAzureOpenAiHost && deployAzureOpenAi) {
-//   name: 'openai'
-//   scope: openAiResourceGroup
-//   params: {
-//     name: !empty(openAiServiceName) ? openAiServiceName : '${abbrs.cognitiveServicesAccounts}${resourceToken}'
-//     location: openAiResourceGroupLocation
-//     tags: tags
-//     kind: 'OpenAI'
-//     customSubDomainName: !empty(openAiServiceName) ? openAiServiceName : '${abbrs.cognitiveServicesAccounts}${resourceToken}'
-//     publicNetworkAccess: publicNetworkAccess
-//     networkAcls: {
-//       defaultAction: 'Allow'
-//       bypass: bypass
-//     }
-//     sku: openAiSkuName
-//     deployments: openAiDeployments
-//     disableLocalAuth: true
-//     dynamicThrottlingEnabled: false
-//   }
-// }
 module openAis 'core/ai/cognitive-services.bicep' = [for (config, i) in items(openAiInstances): {
   name: 'openai-${i}'
   scope: resourceGroup
@@ -342,6 +355,8 @@ module openAis 'core/ai/cognitive-services.bicep' = [for (config, i) in items(op
       name: openAiSkuName
     }
     deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 30
+    disableLocalAuth: true
+    dynamicThrottlingEnabled: false
     deployments: openAiDeployments
   }
 }]
@@ -397,12 +412,15 @@ module cosmosDb 'core/database/cosmos.bicep' = {
   params: {
     principalId: principalId
     name: !empty(cosmosDbName) ? cosmosDbName : 'cosmos-${resourceToken}'
+    cosmosDbReuse: cosmosDbReuse
+    existingCosmosDbResourceGroupName: existingCosmosDbResourceGroupName
+    existingCosmosDbAccountName: existingCosmosDbAccountName
     databaseId: cosmosDatabaseId
     containerId: cosmosContainerId
     location: !empty(cosmosDbLocation) ? cosmosDbLocation : location
     tags: tags
     publicNetworkAccess: publicNetworkAccess
-    bypass: bypass
+    bypass: 'None'
     disableLocalAuth: true
   }
 }
@@ -442,12 +460,15 @@ module apim 'core/apim/apim.bicep' = {
   scope: resourceGroup
   params: {
     name: !empty(apimServiceName) ? apimServiceName : '${abbrs.apiManagementService}${resourceToken}'
-    location: location
+    location: !empty(apimServiceLocation) ? apimServiceLocation : location
+    apimReuse: apimReuse
+    existingApimResourceGroupName: existingApimResourceGroupName
+    existingApimAccountName: existingApimAccountName
     tags: tags
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    applicationInsightsName: monitoringApim.outputs.applicationInsightsName
     openAiUris: [for i in range(0, length(openAiInstances)): openAis[i].outputs.openAiEndpointUri]
     managedIdentityName: managedIdentity.outputs.managedIdentityName
-    entraAuth: useAuthentication
+    entraAuth: true  // keyless authentication
     clientAppId: useAuthentication ? entraClientId : null
     tenantId: useAuthentication ? entraTenantId : null
     audience: useAuthentication ? entraAudience : null
@@ -547,7 +568,8 @@ module backend 'core/host/appservice.bicep' = {
       USE_FEATURE_INT_VECTORIZATION :useIntegratedVectorization
       USE_LOCAL_PDF_PARSER: useLocalPdfParser
       USE_LOCAL_HTML_PARSER: useLocalHtmlParser
-      APPLICATION_INSIGHTS_CONNECTION_STRING: useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
+      APPLICATIONINSIGHTS_CONNECTION_STRING: useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
+      APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING: useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
     }
   }
 }
@@ -838,6 +860,7 @@ output AZURE_CONTAINER_ID string = !empty(cosmosContainerId) ? cosmosContainerId
 
 // Azure API Management
 output AZURE_APIM_SERVICE_NAME string = !empty(apimServiceName) ? apimServiceName : apim.outputs.apimName
+output AZURE_APIM_LOCATION string = apim.outputs.location
 output APIM_AOI_PATH string = apim.outputs.apimOpenAiApiPath
 output APIM_GATEWAY_URL string = apim.outputs.apimGatewayUrl
 output APIM_MANAGED_IDENTITY_PRINCIPAL_ID string = managedIdentity.outputs.managedIdentityPrincipalId
@@ -850,6 +873,10 @@ output AZURE_APP_SERVICE_SKU string = appServiceSkuName
 output USE_FEATURE_INT_VECTORIZATION bool = useIntegratedVectorization
 output USE_LOCAL_PDF_PARSER bool = useLocalPdfParser
 output USE_LOCAL_HTML_PARSER bool = useLocalHtmlParser
+
+// Logging
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
+output APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING string = useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
 
 output AZURE_USE_AUTHENTICATION bool = useAuthentication
 
