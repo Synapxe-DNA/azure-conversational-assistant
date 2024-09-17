@@ -17,7 +17,7 @@ def error_dict(error: Exception) -> dict:
         return {"error": ERROR_MESSAGE_FILTER}
     if isinstance(error, APIError) and error.code == "context_length_exceeded":
         return {"error": ERROR_MESSAGE_LENGTH}
-    return {"error": ERROR_MESSAGE.format(error_type=type(error))}
+    return {"error": str(error)}
 
 
 def error_response(error: Exception, route: str, status_code: int = 500):
