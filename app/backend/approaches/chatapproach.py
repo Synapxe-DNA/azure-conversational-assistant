@@ -89,7 +89,7 @@ class ChatApproach(Approach, ABC):
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> dict[str, Any]:
-        extra_info, chat_coroutine, citation_info = await self.run_until_final_call(
+        extra_info, chat_coroutine = await self.run_until_final_call(
             messages, profile, language, auth_claims, should_stream=False
         )
         chat_completion_response: ChatCompletion = await chat_coroutine
