@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { MainLayoutComponent } from "./layouts/main-layout/main-layout.component";
 import { CreateProfileComponent } from "./pages/create-profile/create-profile.component";
+import { EditProfileComponent } from "./pages/edit-profile/edit-profile.component";
 import { ChatComponent } from "./pages/chat/chat.component";
 
 export const routes: Routes = [
@@ -14,7 +15,10 @@ export const routes: Routes = [
         path: "create",
         component: CreateProfileComponent
       },
-
+      {
+        path: "edit-profile/:profileId",
+        component: EditProfileComponent
+      },
       {
         path: "chat",
         children: [

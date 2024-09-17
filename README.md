@@ -34,6 +34,12 @@
 
 3. Git clone this repository.
 
+4. Run the `azure_rag` pipeline in Kedro to get the articles data.
+
+5. Create a `data` folder in the `app` folder in this repository.
+
+6. Copy the Azure RAG data from `healthhub-content-optimization` repository under `03_primary` > `processed_articles` and paste it in `data` folder in the repository.
+
 ## Deploying
 
 Follow these steps to provision Azure resources and deploy the application code:
@@ -91,17 +97,29 @@ either you or they can follow these steps:
 
 5. Run `./scripts/roles.ps1` or `.scripts/roles.sh` to assign all of the necessary roles to the user. If they do not have the necessary permission to create roles in the subscription, then you may need to run this script for them. Once the script runs, they should be able to run the app locally.
 
-6. Manually set environment variables: Navigate to `app` folder and run `set-env`
-
 ## Running locally
 
-You can only run locally **after** having successfully run the `azd up` command. If you haven't yet, follow the [deploying](#deploying) steps above.
+You can only run locally **after** having successfully run the `azd up` command. If the deployment has been done previously, do **not** run `azd up`. Otherwise, follow the [deploying](#deploying) steps above.
 
 1. Run `azd auth login`
 2. Change dir to `app`
 3. Run `./start.ps1` or `./start.sh` or run the "VS Code Task: Start App" to start the project locally.
 
 See more tips in [the local development guide](docs/localdev.md).
+
+## Running webapp locally to test on other devices
+
+To test the webapp locally on other devices in the same network, follow the steps below:
+
+1. Navigate to the `app` folder
+2. Run this command `make ssl-cert` or `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes`
+3. Fill up the information however you like
+4. Run `./startwithssl.sh` or `./startwithssl.ps1`
+5. Access the webapp via `https://{ipv4 address of the machine running the webapp}:50505`
+
+> [!NOTE]
+>
+> To find ipv4 address of the machine, run `ipconfig` on Windows or `ifconfig` on Linux/MacOS
 
 ## Using the app
 
@@ -114,12 +132,9 @@ Once in the web app:
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
 
-## Running backend locally
+## Notebooks
 
-1. Navigate to the `app` folder
-2. Run `make run-local'
-3. To access the endpoints for, navigate to `https://0.0.0.0:8000/{route name}`
+1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
+2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
 
-> [!NOTE]
->
-> To send a request to the end point using Postman, use `http://0.0.0.0:8000/{route name}` instead as Postman rejects SSL certificate from localhost as it is self-signed.
+3. # `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index

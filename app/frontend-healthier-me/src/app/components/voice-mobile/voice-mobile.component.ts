@@ -55,7 +55,7 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
 })
 export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-  private recorder2: v2AudioRecorder | undefined;
+  private recorder: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   micState: MicState = MicState.PENDING;
@@ -68,12 +68,10 @@ export class VoiceMobileComponent {
 
   constructor(
     private preference: PreferenceService,
-    private audio: AudioService,
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService,
-    private audioPlayerService: AudioPlayerService
+    private chatMessageService: ChatMessageService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -114,8 +112,7 @@ export class VoiceMobileComponent {
   }
 
   private async initVoiceChat() {
-    // this.recorder = new AudioRecorder(await this.audio.getMicInput());
-    this.recorder2 = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {

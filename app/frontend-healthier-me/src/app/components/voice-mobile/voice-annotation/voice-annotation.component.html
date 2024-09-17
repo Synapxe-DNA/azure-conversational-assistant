@@ -4,109 +4,111 @@
   <p-button icon="pi pi-thumbs-down-fill" severity="secondary" (click)="showDialog(1)"> </p-button>
 </div>
 
-<!-- Feedback Modal -->
-<p-dialog [(visible)]="displayNegativeModal" [modal]="true" [closable]="true" header="Feedback">
-  <p>We apologise for the negative experience. Please let us know how we can improve by leaving your feedback below: </p>
+<p-dialog
+  [(visible)]="displayNegativeModal"
+  [modal]="true"
+  [closable]="true"
+  header="Feedback"
+  [style]="{ width: '90dvw', maxWidth: '80dvw', height: '60dvh', maxHeight: '80dvh' }"
+>
+  <p class="tw-text">We apologise for the negative experience. Please let us know how we can improve by leaving your feedback below:</p>
+
   <!-- Static Category Buttons -->
-  <div class="tw-flex tw-justify-between tw-mt-4 tw-gap-2 tw-mb-2">
+  <div class="tw-flex tw-flex-wrap tw-justify-between tw-mt-4 tw-gap-2 tw-mb-2">
     <p-button
       label="Outdated Sources"
       (click)="selectCategory('Outdated Sources')"
       [severity]="selectedCategory === 'Outdated Sources' ? 'success' : 'secondary'"
-    >
-    </p-button>
+    ></p-button>
     <p-button
       label="Not Factually Correct"
       (click)="selectCategory('Not Factually Correct')"
       [severity]="selectedCategory === 'Not Factually Correct' ? 'success' : 'secondary'"
-    >
-    </p-button>
+    ></p-button>
     <p-button
       label="Does Not Answer Question"
       (click)="selectCategory('Does Not Answer Question')"
       [severity]="selectedCategory === 'Does Not Answer Question' ? 'success' : 'secondary'"
-    >
-    </p-button>
+    ></p-button>
     <p-button
       label="Irrelevant Tone"
       (click)="selectCategory('Irrelevant Tone')"
       [severity]="selectedCategory === 'Irrelevant Tone' ? 'success' : 'secondary'"
-    >
-    </p-button>
-    <p-button label="Others" (click)="selectCategory('Others')" [severity]="selectedCategory === 'Others' ? 'success' : 'secondary'"> </p-button>
+    ></p-button>
+    <p-button label="Others" (click)="selectCategory('Others')" [severity]="selectedCategory === 'Others' ? 'success' : 'secondary'"></p-button>
   </div>
 
   <div class="field">
-    <label for="feedback">Remarks:</label>
+    <label for="feedback" class="tw-text">Remarks:</label>
     <textarea
       id="feedback"
       pInputTextarea
       [(ngModel)]="remarks"
-      placeholder="Please leave your feedback here. "
+      placeholder="Please leave your feedback here."
       rows="5"
       cols="30"
-      class="tw-w-full tw-p-2 tw-rounded-lg tw-border-2"
+      class="tw-w-full tw-p-[2dvw] tw-rounded-lg tw-border-2"
     ></textarea>
   </div>
 
-  <div class="tw-mt-3">
+  <div class="tw-mt-3 tw-flex tw-justify-center">
     <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
   </div>
 </p-dialog>
 
-<!-- Feedback Modal -->
-<p-dialog [(visible)]="displayPositiveModal" [modal]="true" [closable]="true" header="Feedback">
-  <p>We are happy that you had a good experience! Please tell us what we did well by leaving your feedback below: </p>
-  <!-- Static Category Buttons -->
-  <div class="tw-flex tw-justify-between tw-mt-4 tw-gap-2 tw-mb-2">
+<!-- Similar adjustments for Positive Modal -->
+<p-dialog
+  [(visible)]="displayPositiveModal"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  header="Feedback"
+  [style]="{ width: '90dvw', maxWidth: '80dvw', height: '60dvh', maxHeight: '80dvh' }"
+>
+  <p class="tw-text">We are happy that you had a good experience! Please tell us what we did well by leaving your feedback below:</p>
+
+  <div class="tw-flex tw-flex-wrap tw-justify-between tw-mt-4 tw-gap-2 tw-mb-2">
     <p-button
       label="Relevant Sources"
-      (click)="selectCategory('Outdated Sources')"
+      (click)="selectCategory('Relevant Sources')"
       [severity]="selectedCategory === 'Relevant Sources' ? 'success' : 'secondary'"
-    >
-    </p-button>
+    ></p-button>
     <p-button
       label="Factually Correct"
       (click)="selectCategory('Factually Correct')"
       [severity]="selectedCategory === 'Factually Correct' ? 'success' : 'secondary'"
-    >
-    </p-button>
+    ></p-button>
     <p-button
       label="Straightforward Answer"
       (click)="selectCategory('Straightforward Answer')"
       [severity]="selectedCategory === 'Straightforward Answer' ? 'success' : 'secondary'"
-    >
-    </p-button>
-
+    ></p-button>
     <p-button
-    label="Relevant Tone"
-    (click)="selectCategory('Relevant Tone')"
-    [severity]="selectedCategory === 'Relevant Tone' ? 'success' : 'secondary'"
-    >
-    </p-button>
-    <p-button label="Others" (click)="selectCategory('Others')" [severity]="selectedCategory === 'Others' ? 'success' : 'secondary'"> </p-button>
+      label="Relevant Tone"
+      (click)="selectCategory('Relevant Tone')"
+      [severity]="selectedCategory === 'Relevant Tone' ? 'success' : 'secondary'"
+    ></p-button>
+    <p-button label="Others" (click)="selectCategory('Others')" [severity]="selectedCategory === 'Others' ? 'success' : 'secondary'"></p-button>
   </div>
 
   <div class="field">
-    <label for="feedback">Remarks:</label>
+    <label for="feedback" class="tw-text">Remarks:</label>
     <textarea
       id="feedback"
       pInputTextarea
       [(ngModel)]="remarks"
-      placeholder="Please leave your feedback here. "
+      placeholder="Please leave your feedback here."
       rows="5"
       cols="30"
-      class="tw-w-full tw-p-2 tw-rounded-lg tw-border-2"
+      class="tw-w-full tw-p-[2dvw] tw-rounded-lg tw-border-2"
     ></textarea>
   </div>
 
-  <div class="tw-mt-3">
+  <div class="tw-mt-3 tw-flex tw-justify-center">
     <button pButton label="Submit" icon="pi pi-check" (click)="submitFeedback()"></button>
   </div>
 </p-dialog>
 
-<!-- Confirmation Modal -->
-<p-dialog [(visible)]="confirmationModal" [modal]="true" [closable]="true" header="Thank You">
-  <p>Your feedback has been submitted. Thank you!</p>
-  <div class="tw-mt-3"></div>
+<p-dialog class="responsive-modal" [(visible)]="confirmationModal" [modal]="true" [closable]="true" [draggable]="false" header="Thank You">
+  <p class="tw-text-center">Your feedback has been submitted. Thank you!</p>
 </p-dialog>
