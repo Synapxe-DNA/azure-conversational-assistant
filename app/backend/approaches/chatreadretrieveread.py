@@ -336,6 +336,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                     "Time taken",
                     end_time - start_time,
                 ),
+                ThoughtStep(
+                    "Original query",
+                    original_user_query,
+                ),
             ],
         }
 
