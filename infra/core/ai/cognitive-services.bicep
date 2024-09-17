@@ -8,6 +8,8 @@ param sku object = {
   name: 'S0'
 }
 param deploymentCapacity int = 2
+param disableLocalAuth bool
+param dynamicThrottlingEnabled bool
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: managedIdentityName
@@ -26,6 +28,8 @@ resource account 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   }
   properties: {
     customSubDomainName: name
+    disableLocalAuth: disableLocalAuth
+    dynamicThrottlingEnabled: dynamicThrottlingEnabled
   }
   sku: sku
 }

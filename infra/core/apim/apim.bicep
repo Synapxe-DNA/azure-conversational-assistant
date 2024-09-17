@@ -6,7 +6,7 @@ param tags object = {}
 param applicationInsightsName string
 param audience string = 'https://cognitiveservices.azure.com/.default'
 param clientAppId string = ' '
-param entraAuth bool = false
+param entraAuth bool = true
 param managedIdentityName string
 param openAiUris array
 @minLength(1)
@@ -22,6 +22,11 @@ param sku string = 'Developer'
 param skuCount int = 1
 param tenantId string = tenant().tenantId
 
+param apimReuse bool
+param existingApimResourceGroupName string
+param existingApimAccountName string
+param deployApim bool = true
+
 var openAiApiBackendId = 'openai-backend'
 var openAiApiUamiNamedValue = 'uami-client-id'
 var openAiApiEntraNamedValue = 'entra-auth'
@@ -35,6 +40,11 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' existing = {
   name: managedIdentityName
+}
+
+resource existingAccount 'Microsoft.ApiManagement/service@2023-09-01-preview' existing  = if (apimReuse && deployApim) {
+  scope: resourceGroup(existingApimResourceGroupName)
+  name: existingApimAccountName
 }
 
 resource apimService 'Microsoft.ApiManagement/service@2023-09-01-preview' = {
@@ -229,7 +239,10 @@ resource apimSubscription 'Microsoft.ApiManagement/service/subscriptions@2020-06
 }
 
 @description('The name of the deployed API Management service.')
-output apimName string = apimService.name
+output apimName string = !deployApim ? '' : apimReuse ? existingAccount.name : apimService.name
+
+@description('The location of the deployed API Management service.')
+output location string =  !deployApim ? '' : apimReuse ? existingAccount.location : apimService.location
 
 @description('The path for the OpenAI API in the deployed API Management service.')
 output apimOpenAiApiPath string = apimOpenAiApi.properties.path

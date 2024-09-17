@@ -10,7 +10,7 @@
                     // -------------------------------------------------
                     // ------- Explanation of backend properties -------
                     // -------------------------------------------------
-                    // "url":          Your backend url
+                    // "backend-id":          Your backend url
                     // "priority":     Lower value means higher priority over other backends.
                     //                 If you have more one or more Priority 1 backends, they will always be used instead
                     //                 of Priority 2 or higher. Higher values backends will only be used if your lower values (top priority) are all throttling.
@@ -29,7 +29,7 @@
                     backends.Add(new JObject()
                     {
                         { "backend-id", "https://cog-jisfkas7teqvm-001.openai.azure.com/" },
-                        { "priority", 1},
+                        { "priority", 2},
                         { "isThrottling", false },
                         { "retryAfter", DateTime.MinValue }
                     });
@@ -40,7 +40,7 @@
                 <cache-store-value key="@("listBackends-" + context.Api.Id)" value="@((JArray)context.Variables["listBackends"])" duration="60" />
             </when>
         </choose>
-        <authentication-managed-identity resource="https://cognitiveservices.azure.com" output-token-variable-name="msi-access-token" ignore-error="false" />
+        <authentication-managed-identity resource="https://cognitiveservices.azure.com" client-id="e26c6d5c-6e79-4549-b95d-5767747f5200" output-token-variable-name="msi-access-token" ignore-error="false" />
         <set-header name="Authorization" exists-action="override">
             <value>@("Bearer " + (string)context.Variables["msi-access-token"])</value>
         </set-header>
@@ -111,7 +111,7 @@
                     return 0;
                 }
                 }" />
-            <set-variable name="backendUrl" value="@(((JObject)((JArray)context.Variables["listBackends"])[(Int32)context.Variables["backendIndex"]]).Value<string>("url") + "/openai")" />
+            <set-variable name="backendUrl" value="@(((JObject)((JArray)context.Variables["listBackends"])[(Int32)context.Variables["backendIndex"]]).Value<string>("backend-id") + "/openai")" />
             <set-backend-service base-url="@((string)context.Variables["backendUrl"])" />
             <forward-request buffer-request-body="true" />
             <choose>
