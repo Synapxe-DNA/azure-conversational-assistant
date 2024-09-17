@@ -224,6 +224,7 @@ async def setup_clients():
     OPENAI_EMB_DIMENSIONS = int(os.getenv("AZURE_OPENAI_EMB_DIMENSIONS", 1536))
     # Used with Azure OpenAI deployments
     AZURE_OPENAI_SERVICE = os.getenv("AZURE_OPENAI_SERVICE")
+    APIM_GATEWAY_URL = os.getenv("APIM_GATEWAY_URL")
     AZURE_OPENAI_GPT4V_DEPLOYMENT = os.environ.get("AZURE_OPENAI_GPT4V_DEPLOYMENT")
     AZURE_OPENAI_GPT4V_MODEL = os.environ.get("AZURE_OPENAI_GPT4V_MODEL")
     AZURE_OPENAI_CHATGPT_DEPLOYMENT = (
@@ -378,9 +379,9 @@ async def setup_clients():
                 raise ValueError("AZURE_OPENAI_CUSTOM_URL must be set when OPENAI_HOST is azure_custom")
             endpoint = AZURE_OPENAI_CUSTOM_URL
         else:
-            if not AZURE_OPENAI_SERVICE:
-                raise ValueError("AZURE_OPENAI_SERVICE must be set when OPENAI_HOST is azure")
-            endpoint = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
+            if not APIM_GATEWAY_URL:
+                raise ValueError("APIM_GATEWAY_URL must be set when OPENAI_HOST is azure")
+            endpoint = APIM_GATEWAY_URL
 
         if api_key := os.getenv("AZURE_OPENAI_API_KEY"):
             openai_client = AsyncAzureOpenAI(api_version=api_version, azure_endpoint=endpoint, api_key=api_key)
