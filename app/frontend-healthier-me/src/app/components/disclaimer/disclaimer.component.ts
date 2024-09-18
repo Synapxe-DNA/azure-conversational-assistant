@@ -17,9 +17,9 @@ export class DisclaimerComponent implements OnInit {
   }
 
   checkDisclaimerStatus() {
-    const isFirstLoad = sessionStorage.getItem("isFirstLoad") === null;
+    const readDisclaimer = sessionStorage.getItem("readDisclaimer");
 
-    if (isFirstLoad) {
+    if (!readDisclaimer) {
       this.showDisclaimer();
     }
   }
@@ -30,6 +30,6 @@ export class DisclaimerComponent implements OnInit {
 
   closeDisclaimer() {
     this.isDisclaimerVisible = false;
-    sessionStorage.setItem("isFirstLoad", "false");
+    sessionStorage.setItem("readDisclaimer", "true");
   }
 }

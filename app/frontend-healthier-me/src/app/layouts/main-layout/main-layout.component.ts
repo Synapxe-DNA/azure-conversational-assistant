@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { NavbarComponent } from "../../components/navbar/navbar.component";
 import { NavbarMobileComponent } from "../../components/navbar-mobile/navbar-mobile.component";
-import { DisclaimerComponent } from "../../components/components/disclaimer/disclaimer.component";
+import { DisclaimerComponent } from "../../components/disclaimer/disclaimer.component";
 
 @Component({
   selector: "app-main-layout",
