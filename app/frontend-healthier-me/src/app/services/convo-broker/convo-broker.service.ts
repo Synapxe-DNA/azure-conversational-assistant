@@ -128,6 +128,15 @@ export class ConvoBrokerService {
   }
 
   /**
+   * Method to handle stopping audio playback
+   * @private
+   */
+  private handleStopPlaying() {
+    this.audioPlayer.stopAndClear();
+    this.$micState.next(MicState.PENDING);
+  }
+
+  /**
    * Method to convert string to blob and play the blob.
    * @param val {string} Base 64 encoding of an audio blob
    * @private
@@ -219,7 +228,14 @@ export class ConvoBrokerService {
         this.handleStopRecording();
         break;
       case MicState.PENDING:
-        this.handleStartRecording();
+        if (this.audioPlayer.$playing.value) {
+          this.handleStopPlaying();
+        } else {
+          this.handleStartRecording();
+        }
+        break;
+      default:
+        console.warn("Unhandled mic state:", this.$micState.value);
         break;
     }
   }
