@@ -9,7 +9,7 @@ import { DisclaimerComponent } from "../../components/components/disclaimer/disc
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, NavbarMobileComponent, DisclaimerComponent],
   templateUrl: "./main-layout.component.html",
-  styleUrls: ["./main-layout.component.css"]
+  styleUrl: "./main-layout.component.css"
 })
 export class MainLayoutComponent implements OnInit {
   isMobile?: boolean;

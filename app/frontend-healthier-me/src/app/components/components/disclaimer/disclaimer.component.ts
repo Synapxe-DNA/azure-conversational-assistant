@@ -17,24 +17,19 @@ export class DisclaimerComponent implements OnInit {
   }
 
   checkDisclaimerStatus() {
-    const isFirstLoad = sessionStorage.getItem("isFirstLoad");
+    const isFirstLoad = sessionStorage.getItem("isFirstLoad") === null;
 
-    if (isFirstLoad === null) {
-      console.log("First load detected, showing disclaimer.");
+    if (isFirstLoad) {
       this.showDisclaimer();
-    } else {
-      console.log("Disclaimer not shown, 'isFirstLoad' already set to: ", isFirstLoad);
     }
   }
 
   showDisclaimer() {
     this.isDisclaimerVisible = true;
-    console.log("Showing disclaimer...");
   }
 
   closeDisclaimer() {
     this.isDisclaimerVisible = false;
     sessionStorage.setItem("isFirstLoad", "false");
-    console.log("Disclaimer closed, 'isFirstLoad' set to false.");
   }
 }
