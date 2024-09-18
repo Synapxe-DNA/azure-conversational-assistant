@@ -202,6 +202,54 @@ resource openaiApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2023-09-
   ]
 }
 
+resource apimLoggerSettings 'Microsoft.ApiManagement/service/apis/diagnostics@2023-09-01-preview' = {
+  parent: apimOpenAiApi
+  name: 'applicationinsights'
+  properties: {
+    alwaysLog: 'allErrors'
+    httpCorrelationProtocol: 'W3C'
+    verbosity: 'information'
+    logClientIp: true
+    loggerId: apimLogger.id
+    sampling: {
+      samplingType: 'fixed'
+      percentage: 100
+    }
+    frontend: {
+      request: {
+        headers: [
+          'X-Forwarded-For'
+        ]
+        body: {
+          bytes: 8192
+        }
+      }
+      response: {
+        headers: [
+          'X-Forwarded-For'
+        ]
+        body: {
+          bytes: 8192
+        }
+      }
+    }
+    backend: {
+      request: {
+        headers: []
+        body: {
+          bytes: 0
+        }
+      }
+      response: {
+        headers: []
+        body: {
+          bytes: 0
+        }
+      }
+    }
+  }
+}
+
 resource apimLogger 'Microsoft.ApiManagement/service/loggers@2023-09-01-preview' = {
   name: 'appinsights-logger'
   parent: apimService

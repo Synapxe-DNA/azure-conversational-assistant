@@ -39,6 +39,7 @@ param useApplicationInsights bool // Set in main.parameters.json
 param applicationInsightsName string = ''
 param applicationInsightsForApimName string = ''
 param applicationInsightsDashboardName string = ''
+param applicationInsightsDashboardNameForApim string = ''
 param logAnalyticsName string = ''
 param logAnalyticsForApimName string = ''
 
@@ -289,7 +290,18 @@ module monitoring 'core/monitor/monitoring.bicep' = if (useApplicationInsights) 
     tags: tags
     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
+    applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
     publicNetworkAccess: publicNetworkAccess
+  }
+}
+
+module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicationInsights) {
+  name: 'application-insights-dashboard'
+  scope: resourceGroup
+  params: {
+    name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+    location: location
+    applicationInsightsName: useApplicationInsights ? monitoring.outputs.applicationInsightsName : ''
   }
 }
 
@@ -302,17 +314,18 @@ module monitoringApim 'core/monitor/monitoring.bicep' = if (useApplicationInsigh
     tags: tags
     applicationInsightsName: !empty(applicationInsightsForApimName) ? applicationInsightsForApimName : '${abbrs.insightsComponents}${abbrs.apiManagementService}${resourceToken}'
     logAnalyticsName: !empty(logAnalyticsForApimName) ? logAnalyticsForApimName : '${abbrs.operationalInsightsWorkspaces}${abbrs.apiManagementService}${resourceToken}'
+    applicationInsightsDashboardName: !empty(applicationInsightsDashboardNameForApim) ? applicationInsightsDashboardNameForApim : '${abbrs.portalDashboards}${abbrs.apiManagementService}${resourceToken}'
     publicNetworkAccess: publicNetworkAccess
   }
 }
 
-module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicationInsights) {
-  name: 'application-insights-dashboard'
+module applicationInsightsDashboardForApim 'backend-dashboard.bicep' = if (useApplicationInsights) {
+  name: 'application-insights-dashboard-apim'
   scope: resourceGroup
   params: {
-    name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+    name: !empty(applicationInsightsDashboardNameForApim) ? applicationInsightsDashboardNameForApim : '${abbrs.portalDashboards}${abbrs.apiManagementService}${resourceToken}'
     location: location
-    applicationInsightsName: useApplicationInsights ? monitoring.outputs.applicationInsightsName : ''
+    applicationInsightsName: useApplicationInsights ? monitoringApim.outputs.applicationInsightsName : ''
   }
 }
 
