@@ -13,11 +13,14 @@ import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bott
 import { TextLoadingComponent } from "../text/text-loading/text-loading.component";
 import { APP_CONSTANTS } from "../../constants";
 import { CommonModule } from "@angular/common";
+import { ChatMode } from "../../types/chat-mode.type";
+import { PreferenceService } from "../../services/preference/preference.service";
+import { Button } from "primeng/button";
 
 @Component({
   selector: "app-text-mobile",
   standalone: true,
-  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, TextLoadingComponent, StickyBottomDirective, CommonModule],
+  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, TextLoadingComponent, StickyBottomDirective, CommonModule, Button],
   templateUrl: "./text-mobile.component.html",
   styleUrl: "./text-mobile.component.css"
 })
@@ -27,6 +30,7 @@ export class TextMobileComponent implements OnInit {
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
+  chatMode?: ChatMode;
 
   messages: Message[] = [];
   loading: boolean = false;
@@ -36,8 +40,13 @@ export class TextMobileComponent implements OnInit {
   constructor(
     private chatMessageService: ChatMessageService,
     private profileService: ProfileService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute, 
+    private preferences: PreferenceService
+  ) {
+    this.preferences.$chatMode.subscribe(m => {
+      this.chatMode = m;
+    });
+  }
 
   ngOnInit(): void {
     this.route.paramMap
@@ -82,6 +91,17 @@ export class TextMobileComponent implements OnInit {
       this.loading = false; // Hide the loading indicator after processing
       this.showTimeoutMessage(); // Show timeout message if Assistant's message isn't received
     }, APP_CONSTANTS.TIMEOUT); // Adjust the timeout duration as needed
+  }
+
+  toggleChatMode() {
+    switch (this.chatMode) {
+      case ChatMode.Voice:
+        this.preferences.setChatMode(ChatMode.Text);
+        break;
+      case ChatMode.Text:
+        this.preferences.setChatMode(ChatMode.Voice);
+        break;
+    }
   }
 
   showTimeoutMessage() {

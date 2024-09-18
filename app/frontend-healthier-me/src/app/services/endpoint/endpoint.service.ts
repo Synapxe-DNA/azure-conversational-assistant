@@ -258,6 +258,11 @@ export class EndpointService {
                 return;
               }
   
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout);  // Clear timeout here
+              }
+  
               const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
               const jsonParsed = this.parseSendChat(currentResponseData);
               currentResponseMessage += jsonParsed[0]; // Append the current response message
@@ -274,7 +279,7 @@ export class EndpointService {
             }
   
             case HttpEventType.Response: {
-              clearTimeout(timeout); // Clear timeout when the response is completed
+              // No need to clear the timeout here since it's already done when the first chunk is received
               let latestData = responseBS.value;
               latestData!.status = ResponseStatus.Done;
               responseBS.next(latestData);
@@ -290,6 +295,7 @@ export class EndpointService {
   
     return responseBS;
   }
+  
   
 
   async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
