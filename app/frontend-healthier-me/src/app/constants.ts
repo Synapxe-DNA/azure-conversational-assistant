@@ -1,3 +1,3 @@
 export const APP_CONSTANTS = {
-    TIMEOUT: 10000,
-  };
+  TIMEOUT: 10000
+};

@@ -40,7 +40,7 @@ export class TextMobileComponent implements OnInit {
   constructor(
     private chatMessageService: ChatMessageService,
     private profileService: ProfileService,
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private preferences: PreferenceService
   ) {
     this.preferences.$chatMode.subscribe(m => {
@@ -49,14 +49,10 @@ export class TextMobileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        takeWhile(p => p.get("profileId") !== undefined, true)
-      )
-      .subscribe(p => {
-        this.profile = this.profileService.getProfile(p.get("profileId")!);
-      });
-  
+    this.route.paramMap.pipe(takeWhile(p => p.get("profileId") !== undefined, true)).subscribe(p => {
+      this.profile = this.profileService.getProfile(p.get("profileId")!);
+    });
+
     this.profile.subscribe(p => {
       if (!p) {
         return;
@@ -65,7 +61,7 @@ export class TextMobileComponent implements OnInit {
         m.subscribe(messages => {
           this.messages = messages;
           this.timeout = false;
-  
+
           // Check the most recent message (last element in the array)
           const mostRecentMessage = messages[messages.length - 1];
           if (mostRecentMessage && mostRecentMessage.role === MessageRole.Assistant) {

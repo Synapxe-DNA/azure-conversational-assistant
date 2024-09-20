@@ -209,19 +209,14 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of conversation for LLM context
    */
-  async sendChat(
-    message: Message,
-    profile: Profile,
-    history: Message[],
-    language: string
-  ): Promise<BehaviorSubject<ChatResponse | null>> {
+  async sendChat(message: Message, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
     const responseId = createId();
-  
+
     let lastResponseLength: number = 0;
     let currentResponseMessage: string = "";
     const currentSources: ApiSource[] = [];
-  
+
     const data: ApiChatRequest = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
@@ -231,7 +226,7 @@ export class EndpointService {
       },
       language: language.toLowerCase()
     };
-  
+
     // Timeout setup
     const timeout = setTimeout(() => {
       console.log("Timed Out");
@@ -242,7 +237,7 @@ export class EndpointService {
       });
       subscription.unsubscribe(); // Unsubscribe from the HTTP request
     }, APP_CONSTANTS.TIMEOUT);
-  
+
     // Subscription to the HttpClient request
     const subscription = this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
@@ -257,27 +252,27 @@ export class EndpointService {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-  
+
               // Clear the timeout once the first chunk is received
               if (lastResponseLength === 0) {
-                clearTimeout(timeout);  // Clear timeout here
+                clearTimeout(timeout); // Clear timeout here
               }
-  
+
               const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
               const jsonParsed = this.parseSendChat(currentResponseData);
               currentResponseMessage += jsonParsed[0]; // Append the current response message
               currentSources.push(...jsonParsed[1]); // Append sources
-  
+
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
                 sources: currentSources
               });
-  
+
               lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               break;
             }
-  
+
             case HttpEventType.Response: {
               // No need to clear the timeout here since it's already done when the first chunk is received
               let latestData = responseBS.value;
@@ -287,16 +282,14 @@ export class EndpointService {
             }
           }
         },
-        error: (err) => {
+        error: err => {
           clearTimeout(timeout); // Clear timeout if an error occurs
           console.error(err);
         }
       });
-  
+
     return responseBS;
   }
-  
-  
 
   async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
     const data: ApiFeedbackRequest = {
