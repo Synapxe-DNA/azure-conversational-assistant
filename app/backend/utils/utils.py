@@ -135,6 +135,9 @@ class Utils:
                         full_url=source.full_url,
                         content_category=source.content_category,
                         chunk=result["chunks"],
+                        category_description=source.category_description,
+                        pr_name=source.pr_name,
+                        date_modified=source.date_modified,
                     )
                     sources.append(src)
             chatHistory.sources = sources
@@ -253,6 +256,9 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]) -> List[Source
             cover_image_url=str(source.get("cover_image_url")),
             full_url=str(source.get("full_url")),
             content_category=str(source.get("content_category")),
+            category_description=str(source.get("category_description")),
+            pr_name=str(source.get("pr_name")),
+            date_modified=str(source.get("date_modified")),
         )
 
         if src_instance.full_url in [s.full_url for s in sources]:
@@ -281,6 +287,9 @@ def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) ->
             full_url=str(source.get("full_url")),
             content_category=str(source.get("content_category")),
             chunk=str(source.get("chunks")),
+            category_description=str(source.get("category_description")),
+            pr_name=str(source.get("pr_name")),
+            date_modified=str(source.get("date_modified")),
         )
         sources.append(src_instance)
 

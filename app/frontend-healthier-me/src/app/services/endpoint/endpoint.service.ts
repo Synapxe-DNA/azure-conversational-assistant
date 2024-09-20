@@ -18,7 +18,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 import { Feedback } from "../../types/feedback.type";
 import { ApiFeedbackRequest } from "../../types/api/requests/feedback-request.type";
-
+import { APP_CONSTANTS } from "../../constants";
 @Injectable({
   providedIn: "root"
 })
@@ -209,14 +209,19 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of conversation for LLM context
    */
-  async sendChat(message: Message, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<ChatResponse | null>> {
+  async sendChat(
+    message: Message,
+    profile: Profile,
+    history: Message[],
+    language: string
+  ): Promise<BehaviorSubject<ChatResponse | null>> {
     const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
     const responseId = createId();
-
+  
     let lastResponseLength: number = 0;
     let currentResponseMessage: string = "";
     const currentSources: ApiSource[] = [];
-
+  
     const data: ApiChatRequest = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
@@ -226,8 +231,20 @@ export class EndpointService {
       },
       language: language.toLowerCase()
     };
-
-    this.httpClient
+  
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        response: currentResponseMessage,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.TIMEOUT);
+  
+    // Subscription to the HttpClient request
+    const subscription = this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
         responseType: "text",
         reportProgress: true,
@@ -240,27 +257,29 @@ export class EndpointService {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-
-              // since response is re-emitted as a whole each time, we need to keep track of the
-              // last response length and slice to remove the last response from the current response
+  
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout);  // Clear timeout here
+              }
+  
               const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
-
-              // parses latest response into multiple json objects
               const jsonParsed = this.parseSendChat(currentResponseData);
-              currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
-              currentSources.push(...jsonParsed[1]);
-
+              currentResponseMessage += jsonParsed[0]; // Append the current response message
+              currentSources.push(...jsonParsed[1]); // Append sources
+  
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
                 sources: currentSources
               });
-
+  
               lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               break;
             }
-
+  
             case HttpEventType.Response: {
+              // No need to clear the timeout here since it's already done when the first chunk is received
               let latestData = responseBS.value;
               latestData!.status = ResponseStatus.Done;
               responseBS.next(latestData);
@@ -268,11 +287,16 @@ export class EndpointService {
             }
           }
         },
-        error: console.error
+        error: (err) => {
+          clearTimeout(timeout); // Clear timeout if an error occurs
+          console.error(err);
+        }
       });
-
+  
     return responseBS;
   }
+  
+  
 
   async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
     const data: ApiFeedbackRequest = {
