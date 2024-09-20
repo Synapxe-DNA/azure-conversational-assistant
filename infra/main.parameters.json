@@ -14,6 +14,9 @@
     "principalId": {
       "value": "${AZURE_PRINCIPAL_ID}"
     },
+    "groupPrincipalId": {
+      "value": "${AZURE_GROUP_PRINCIPAL_ID=ec479f24-9778-43b4-97e9-824dd1c53bfe}"
+    },
     "tenantId": {
       "value": "${AZURE_TENANT_ID}"
     },
@@ -175,6 +178,15 @@
     },
     "bypass": {
       "value": "${AZURE_NETWORK_BYPASS=AzureServices}"
+    },
+    "keyVaultServiceName": {
+      "value": "${AZURE_KEY_VAULT_NAME}"
+    },
+    "usernameName": {
+      "value": "${USERNAME_NAME=username}"
+    },
+    "passwordName": {
+      "value": "${PASSWORD_NAME=password}"
     }
   }
 }

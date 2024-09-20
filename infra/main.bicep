@@ -11,6 +11,8 @@ param location string
 
 @description('Id of the user or app to assign application roles')
 param principalId string = ''
+@description('Id of the group to assign application roles')
+param groupPrincipalId string // Set in main.parameters.json
 
 param tenantId string = tenant().tenantId
 param authTenantId string = ''
@@ -238,6 +240,18 @@ param useIntegratedVectorization bool // Set in main.parameters.json
 param useLocalPdfParser bool // Set in main.parameters.json
 param useLocalHtmlParser bool // Set in main.parameters.json
 
+// Azure Key Vault
+param keyVaultServiceName string = ''
+param keyVaultReuse bool = false
+param existingKeyVaultResourceGroupName string = ''
+param usernameName string = 'username'
+#disable-next-line secure-secrets-in-params
+param passwordName string = 'password'
+@secure()
+param usernameValue string
+@secure()
+param passwordValue string
+
 // Miscellaneous
 @description('Public network access value for all deployed resources')
 @allowed([ 'Enabled', 'Disabled' ])
@@ -290,7 +304,7 @@ module monitoring 'core/monitor/monitoring.bicep' = if (useApplicationInsights) 
     tags: tags
     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
-    applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+    // applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
     publicNetworkAccess: publicNetworkAccess
   }
 }
@@ -305,7 +319,6 @@ module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicati
   }
 }
 
-
 module monitoringApim 'core/monitor/monitoring.bicep' = if (useApplicationInsights) {
   name: 'monitoring-apim'
   scope: resourceGroup
@@ -314,7 +327,7 @@ module monitoringApim 'core/monitor/monitoring.bicep' = if (useApplicationInsigh
     tags: tags
     applicationInsightsName: !empty(applicationInsightsForApimName) ? applicationInsightsForApimName : '${abbrs.insightsComponents}${abbrs.apiManagementService}${resourceToken}'
     logAnalyticsName: !empty(logAnalyticsForApimName) ? logAnalyticsForApimName : '${abbrs.operationalInsightsWorkspaces}${abbrs.apiManagementService}${resourceToken}'
-    applicationInsightsDashboardName: !empty(applicationInsightsDashboardNameForApim) ? applicationInsightsDashboardNameForApim : '${abbrs.portalDashboards}${abbrs.apiManagementService}${resourceToken}'
+    // applicationInsightsDashboardName: !empty(applicationInsightsDashboardNameForApim) ? applicationInsightsDashboardNameForApim : '${abbrs.portalDashboards}${abbrs.apiManagementService}${resourceToken}'
     publicNetworkAccess: publicNetworkAccess
   }
 }
@@ -355,7 +368,7 @@ module storage 'core/storage/storage-account.bicep' = {
   }
 }
 
-// // Azure OpenAI Service
+// Azure OpenAI Service
 module openAis 'core/ai/cognitive-services.bicep' = [for (config, i) in items(openAiInstances): {
   name: 'openai-${i}'
   scope: resourceGroup
@@ -583,7 +596,30 @@ module backend 'core/host/appservice.bicep' = {
       USE_LOCAL_HTML_PARSER: useLocalHtmlParser
       APPLICATIONINSIGHTS_CONNECTION_STRING: useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
       APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING: useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
+      // Azure Key Vault
+      AZURE_KEY_VAULT_ID: keyVault.outputs.id
+      AZURE_KEY_VAULT_NAME: !empty(keyVaultServiceName) ? keyVaultServiceName : '${abbrs.keyVaultVaults}${resourceToken}'
+      AZURE_KEY_VAULT_ENDPOINT: keyVault.outputs.endpoint
     }
+  }
+}
+
+// Azure Key Vault
+module keyVault 'core/security/keyvault.bicep' = {
+  name: 'keyvault'
+  scope: resourceGroup
+  params: {
+    name: !empty(keyVaultServiceName) ? keyVaultServiceName : '${abbrs.keyVaultVaults}${resourceToken}'
+    location: location
+    keyVaultReuse: keyVaultReuse
+    existingKeyVaultResourceGroupName: existingKeyVaultResourceGroupName
+    publicNetworkAccess: publicNetworkAccess
+    tags: tags
+    principalId: principalId
+    usernameName: usernameName
+    passwordName: passwordName
+    usernameValue: usernameValue
+    passwordValue: passwordValue
   }
 }
 
@@ -776,6 +812,25 @@ module cognitiveServicesUserRoleAssignment 'core/security/role.bicep' = {
   }
 }
 
+// Azure Key Vault
+module backendKeyVaultAccess 'core/security/keyvault-access.bicep' = {
+  name: 'appservice-keyvault-access'
+  scope: resourceGroup
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: backend.outputs.identityPrincipalId
+  }
+}
+
+module groupKeyVaultAccess 'core/security/keyvault-access.bicep' = {
+  name: 'group-keyvault-access'
+  scope: resourceGroup
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: groupPrincipalId
+  }
+}
+
 // var environmentData = environment()
 
 // var openAiPrivateEndpointConnection = (isAzureOpenAiHost && deployAzureOpenAi) ? [{
@@ -821,6 +876,7 @@ module cognitiveServicesUserRoleAssignment 'core/security/role.bicep' = {
 
 output AZURE_LOCATION string = location
 output AZURE_PRINCIPAL_ID string = principalId
+output AZURE_GROUP_PRINCIPAL_ID string = groupPrincipalId
 output AZURE_TENANT_ID string = tenantId
 output AZURE_AUTH_TENANT_ID string = authTenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
@@ -890,6 +946,10 @@ output USE_LOCAL_HTML_PARSER bool = useLocalHtmlParser
 // Logging
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
 output APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING string = useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
+
+// Azure Key Vault
+output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
+output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
 
 output AZURE_USE_AUTHENTICATION bool = useAuthentication
 
