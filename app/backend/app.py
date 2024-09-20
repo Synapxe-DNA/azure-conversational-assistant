@@ -9,11 +9,11 @@ from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
-from azure.monitor.opentelemetry import configure_azure_monitor
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from blueprints.backend_blueprint.chat import chat
 from blueprints.backend_blueprint.feedback import feedback
+from blueprints.backend_blueprint.login import login
 from blueprints.backend_blueprint.speech import speech
 from blueprints.backend_blueprint.transcription import transcription
 from blueprints.backend_blueprint.voice import voice
@@ -21,6 +21,7 @@ from blueprints.frontend_blueprint.frontend import frontend
 from config import (
     CONFIG_ASK_APPROACH,
     CONFIG_AUTH_CLIENT,
+    CONFIG_AUTHENTICATOR,
     CONFIG_CHAT_APPROACH,
     CONFIG_CREDENTIAL,
     CONFIG_FEEDBACK_CONTAINER_CLIENT,
@@ -31,18 +32,17 @@ from config import (
     CONFIG_SPEECH_SERVICE_TOKEN,
     CONFIG_SPEECH_TO_TEXT_SERVICE,
     CONFIG_TEXT_TO_SPEECH_SERVICE,
+    CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
 from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
-from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
-from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
-from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 from quart import Blueprint, Quart, current_app, redirect
 from quart_cors import cors
 from speech.speech_to_text import SpeechToText
 from speech.text_to_speech import TextToSpeech
+from utils.authenticator import Authenticator
+from utils.user_database import UserDatabase
 
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
@@ -225,6 +225,9 @@ async def setup_clients():
     current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
     current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
 
+    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(os.getenv("USER_ACCOUNTS", ""))
+    current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
+
 
 @bp.after_app_serving
 async def close_clients():
@@ -240,18 +243,8 @@ def create_app():
     app.register_blueprint(speech)
     app.register_blueprint(feedback)
     app.register_blueprint(transcription)
+    app.register_blueprint(login)
     app = cors(app, allow_origin="*")  # For local testing
-
-    if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
-        configure_azure_monitor()
-        # This tracks HTTP requests made by aiohttp:
-        AioHttpClientInstrumentor().instrument()
-        # This tracks HTTP requests made by httpx:
-        HTTPXClientInstrumentor().instrument()
-        # This tracks OpenAI SDK requests:
-        OpenAIInstrumentor().instrument()
-        # This middleware tracks app route requests:
-        app.asgi_app = OpenTelemetryMiddleware(app.asgi_app)  # type: ignore[assignment]
 
     default_level = "INFO"  # In development, log more verbosely
     logging.basicConfig(level=os.getenv("APP_LOG_LEVEL", default_level))

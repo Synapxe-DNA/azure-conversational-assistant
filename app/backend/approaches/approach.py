@@ -36,6 +36,9 @@ class Document:
     cover_image_url: Optional[str]
     full_url: Optional[str]
     content_category: Optional[str]
+    category_description: Optional[str]
+    pr_name: Optional[str]
+    date_modified: Optional[str]
     chunks: Optional[str]
     embedding: Optional[List[float]]
     captions: List[QueryCaptionResult]
@@ -50,6 +53,9 @@ class Document:
             "cover_image_url": self.cover_image_url,
             "full_url": self.full_url,
             "content_category": self.content_category,
+            "category_description": self.category_description,
+            "pr_name": self.pr_name,
+            "date_modified": self.date_modified,
             "chunks": self.chunks,
             "embedding": Document.trim_embedding(self.embedding),
             "captions": (
@@ -172,6 +178,9 @@ class Approach(ABC):
                         cover_image_url=document.get("cover_image_url"),
                         full_url=document.get("full_url"),
                         content_category=document.get("content_category"),
+                        category_description=document.get("category_description"),
+                        pr_name=document.get("pr_name"),
+                        date_modified=document.get("date_modified"),
                         chunks=document.get("chunks"),
                         embedding=document.get("embedding"),
                         captions=cast(List[QueryCaptionResult], document.get("@search.captions")),
