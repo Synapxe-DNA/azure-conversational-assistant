@@ -274,8 +274,6 @@ export class ConvoBrokerService {
           role: MessageRole.Assistant,
           sources: d.sources
         });
-
-        // Plan to create follow_up indexDB here
       },
       error: console.error
     });
