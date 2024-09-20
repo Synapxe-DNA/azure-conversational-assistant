@@ -2,11 +2,11 @@ import logging
 from functools import wraps
 from typing import Any, Callable, Dict
 
+from authentication.authenticator import Authenticator
 from config import CONFIG_AUTH_CLIENT, CONFIG_AUTHENTICATOR, CONFIG_SEARCH_CLIENT
 from core.authentication import AuthError
 from error import error_response
 from quart import abort, current_app, jsonify, request
-from utils.authenticator import Authenticator
 
 
 def authenticated_path(route_fn: Callable[[str, Dict[str, Any]], Any]):

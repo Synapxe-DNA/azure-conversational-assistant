@@ -1,8 +1,8 @@
+from authentication.authenticator import Authenticator
 from config import CONFIG_AUTHENTICATOR, CONFIG_USER_DATABASE
+from database.user_database import UserDatabase
 from models.payload import Payload
 from quart import Blueprint, current_app, jsonify, request
-from utils.authenticator import Authenticator
-from utils.user_database import UserDatabase
 
 login = Blueprint("login", __name__, url_prefix="/login")
 
