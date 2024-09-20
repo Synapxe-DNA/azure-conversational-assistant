@@ -224,8 +224,9 @@ async def setup_clients():
     stt = await SpeechToText.create()
     current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
     current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
-
-    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(os.getenv("USER_ACCOUNTS", ""))
+    username = os.getenv("USERNAME", "")
+    password = os.getenv("PASSWORD", "")
+    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(username, password)
     current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
 
 
