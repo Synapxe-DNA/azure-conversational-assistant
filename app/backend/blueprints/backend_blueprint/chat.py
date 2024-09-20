@@ -54,7 +54,5 @@ async def chat_endpoint():
         response = Utils.construct_non_streaming_response(result)
 
         return response, 200
-        # else:
-        #     return {"error": "Invalid passkey"}, 401
     except Exception as error:
         return error_response(error, "/chat")

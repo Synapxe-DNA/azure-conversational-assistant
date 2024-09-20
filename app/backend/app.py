@@ -7,6 +7,7 @@ from typing import AsyncGenerator
 
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
+from authentication.authenticator import Authenticator
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.search.documents.aio import SearchClient
@@ -35,14 +36,13 @@ from config import (
     CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
+from database.user_database import UserDatabase
 from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from quart import Blueprint, Quart, current_app, redirect
 from quart_cors import cors
 from speech.speech_to_text import SpeechToText
 from speech.text_to_speech import TextToSpeech
-from utils.authenticator import Authenticator
-from utils.user_database import UserDatabase
 
 bp = Blueprint("routes", __name__, static_folder="static/browser")
 # Fix Windows registry issue with mimetypes
@@ -224,8 +224,9 @@ async def setup_clients():
     stt = await SpeechToText.create()
     current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
     current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
-
-    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(os.getenv("USER_ACCOUNTS", ""))
+    username = os.getenv("USERNAME", "")
+    password = os.getenv("PASSWORD", "")
+    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(username, password)
     current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
 
 
