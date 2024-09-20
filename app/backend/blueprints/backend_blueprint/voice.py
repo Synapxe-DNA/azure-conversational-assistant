@@ -18,7 +18,7 @@ async def voice_endpoint():
         # Receive data from the client
         data = await request.form
         # Extract data from the JSON message
-        voiceChatRequest = VoiceChatRequest(**Utils.form_request(data).model_dump())
+        voiceChatRequest = VoiceChatRequest(**Utils.form_formdata_request(data).model_dump())
 
         # Send transcribed text and data to LLM
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
