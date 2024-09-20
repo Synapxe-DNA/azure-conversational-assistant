@@ -9,6 +9,9 @@ class Source(BaseModel):
     cover_image_url: str
     full_url: str
     content_category: str
+    category_description: str
+    pr_name: str
+    date_modified: str
 
 
 class SourceWithChunk(BaseModel):
@@ -17,4 +20,7 @@ class SourceWithChunk(BaseModel):
     cover_image_url: str
     full_url: str
     content_category: str
+    category_description: str
+    pr_name: str
+    date_modified: str
     chunk: str

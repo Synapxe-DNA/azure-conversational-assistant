@@ -1,0 +1,18 @@
+<p-dialog [(visible)]="isDisclaimerVisible" header="Disclaimer" [modal]="true" [closable]="true" [style]="{ width: '50vw' }">
+  <div>
+    <ol class="disclaimer-list">
+      <li>
+        <strong>Informational Purposes Only:</strong> HealthierME is designed to provide general information and is not intended to serve as professional
+        medical advice.
+      </li>
+      <li>
+        <strong>Accuracy and Completeness:</strong> While efforts are made to ensure the information provided by HealthierME is accurate and up-to-date, we do
+        not guarantee the accuracy, completeness, or reliability of the information.
+      </li>
+      <li><strong>User Responsibility:</strong> Users are responsible for verifying the information obtained from HealthierME before relying on it.</li>
+    </ol>
+  </div>
+  <div class="disclaimer-button-container">
+    <button (click)="closeDisclaimer()" class="disclaimer-button">Get Started</button>
+  </div>
+</p-dialog>

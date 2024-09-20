@@ -2,17 +2,22 @@ from typing import cast
 
 from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH
+from decorators import require_authentication
 from error import error_response
 from models.chat import TextChatRequest
 from models.request_type import RequestType
 from quart import Blueprint, current_app, request
 from utils.utils import Utils
 
+# from utils.authenicator import generate_jwt, verify_jwt
+
+
 chat = Blueprint("chat", __name__, url_prefix="/chat")
 
 
 @chat.route("/stream", methods=["POST"])
 async def chat_stream_endpoint():
+    print(request.headers)
     try:
         # Receive data from the client
         data = await request.form
@@ -32,8 +37,8 @@ async def chat_stream_endpoint():
         return error_response(error, "/chat/stream")
 
 
-# Not in use
-@chat.route("/", methods=["POST"])
+@chat.route("", methods=["POST"])
+@require_authentication
 async def chat_endpoint():
     try:
         data = await request.get_json()
