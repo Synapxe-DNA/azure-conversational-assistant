@@ -18,6 +18,6 @@ async def login_endpoint():
 
     if user_database.verify_user(payload):
         token = authenticator.generate_jwt_token(payload)
-        return jsonify(token=token)
+        return jsonify(token=token, token_type="Bearer")
 
     return jsonify(error="Invalid credentials"), 401

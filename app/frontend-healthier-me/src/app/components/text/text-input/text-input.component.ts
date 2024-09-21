@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 import { MessageRole, MessageSource } from "../../../types/message.type";
 import { LucideAngularModule } from "lucide-angular";
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -24,6 +24,7 @@ import { ConvoBrokerService } from "../../../services/convo-broker/convo-broker.
 })
 export class TextInputComponent implements OnInit {
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
+  @Output() messageSent = new EventEmitter();
 
   questionForm = new FormGroup({
     question: new FormControl("")
@@ -56,6 +57,8 @@ export class TextInputComponent implements OnInit {
     if (!this.questionForm.value.question) {
       return;
     }
+
+    this.messageSent.emit();
 
     this.convoBroker
       .sendChat(this.questionForm.value.question, this.profile.value || GeneralProfile)
