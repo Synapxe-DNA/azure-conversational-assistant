@@ -152,14 +152,13 @@ export class EndpointService {
       language: language.toLowerCase()
     };
 
-
     // Timeout setup
     const timeout = setTimeout(() => {
       console.log("Timed Out");
       responseBS.next({
         status: ResponseStatus.Timeout,
         assistant_response: currentAssistantMessage,
-        assistant_response_audio: existingAudio, 
+        assistant_response_audio: existingAudio,
         sources: currentSources
       });
       subscription.unsubscribe(); // Unsubscribe from the HTTP request
@@ -181,7 +180,7 @@ export class EndpointService {
 
               // Clear the timeout once the first chunk is received
               if (lastResponseLength === 0) {
-                clearTimeout(timeout);  // Clear timeout here
+                clearTimeout(timeout); // Clear timeout here
               }
 
               const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
@@ -255,7 +254,7 @@ export class EndpointService {
       });
       subscription.unsubscribe(); // Unsubscribe from the HTTP request
     }, APP_CONSTANTS.TEXT_TIMEOUT);
-  
+
     // Subscription to the HttpClient request
     const subscription = this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
