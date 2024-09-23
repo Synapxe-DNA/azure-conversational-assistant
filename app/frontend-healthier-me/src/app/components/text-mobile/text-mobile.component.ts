@@ -90,7 +90,7 @@ export class TextMobileComponent implements OnInit {
     this.timeoutId = setTimeout(() => {
       this.loading = false; // Hide the loading indicator after processing
       this.showTimeoutMessage(); // Show timeout message if Assistant's message isn't received
-    }, APP_CONSTANTS.TIMEOUT); // Adjust the timeout duration as needed
+    }, APP_CONSTANTS.TEXT_TIMEOUT); // Adjust the timeout duration as needed
   }
 
   toggleChatMode() {
