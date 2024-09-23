@@ -1,3 +1,4 @@
 export const APP_CONSTANTS = {
-  TIMEOUT: 10000
-};
+    VOICE_TIMEOUT: 30000,
+    TEXT_TIMEOUT: 10000,
+  };
