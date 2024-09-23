@@ -140,16 +140,6 @@ Once in the web app:
 2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
 3. `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
 
-## Running webapp locally to test on other devices
-
-To test the webapp locally on other devices in the same network, follow the steps below:
-
-1. Navigate to the `app` folder
-2. Run this command `make ssl-cert` or `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes`
-3. Fill up the information however you like
-4. Run startwithssl.sh or startwithssl.ps1
-5. Access the webapp via `https://{ipv4 address of the machine running the webapp}:50505`
-
 > [!NOTE]
 >
 > To find ipv4 address of the machine, run `ipconfig` on Windows or `ifconfig` on Linux/MacOS
