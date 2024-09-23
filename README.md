@@ -34,11 +34,13 @@
 
 3. Git clone this repository.
 
-4. Run the `azure_rag` pipeline in Kedro to get the articles data.
+4. Run the `azure_rag` pipeline in Kedro to get the articles (approx 84 minutes).
 
 5. Create a `data` folder in the `app` folder in this repository.
 
-6. Copy the Azure RAG data from `healthhub-content-optimization` repository under `03_primary` > `processed_articles` and paste it in `data` folder in the repository.
+6. Copy the Azure RAG articles from `healthhub-content-optimization` repository under `content-optimization` > `data` > `03_primary` > `processed_articles` and paste it in `data` folder in this repository. 
+
+7. Copy the additional Azure RAG javascript articles from Google Drive `LLM Exploration` > `HealthHub` > `Data` > `Processed data for RAG` > `JSON files to be loaded for RAG` > `js_articles.zip` and paste it in `data` folder in this repository. 
 
 ## Deploying
 
@@ -134,8 +136,7 @@ Once in the web app:
 
 1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
 2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
-
-3. # `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index
+3. `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
 
 ## Running webapp locally to test on other devices
 
