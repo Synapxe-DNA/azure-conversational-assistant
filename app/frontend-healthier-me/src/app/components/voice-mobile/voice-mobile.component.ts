@@ -72,7 +72,7 @@ export class VoiceMobileComponent {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService, 
+    private chatMessageService: ChatMessageService,
     private preferences: PreferenceService
   ) {
     this.message = {

@@ -1,5 +1,5 @@
 .disclaimer-list {
-  @apply tw-list-decimal tw-pl-4 tw-space-y-2 tw-text-gray-700;
+  @apply tw-list-decimal tw-pl-4 tw-space-y-2 tw-text-gray-700 tw-text-sm;
 }
 
 .disclaimer-button-container {
