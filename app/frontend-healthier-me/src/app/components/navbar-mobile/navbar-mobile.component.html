@@ -1,17 +1,23 @@
-<div class="tw-w-full tw-h-fit tw-flex tw-flex-row tw-justify-between tw-gap-5 tw-bg-gray-100 tw-fixed tw-top-0 tw-left-0 tw-z-10">
-  <div class="tw-flex tw-items-center tw-justify-start tw-w-1/4">
-    <p-button icon="pi pi-bars" severity="secondary" (onClick)="toggleSidebar()" />
+<div class="tw-w-full tw-h-fit tw-flex tw-flex-col tw-bg-gray-100 tw-fixed tw-top-0 tw-left-0 tw-z-10">
+  <div class="tw-flex tw-flex-row tw-justify-between tw-items-center tw-gap-5">
+    <div class="tw-flex tw-items-center tw-justify-start tw-w-1/4">
+      <p-button icon="pi pi-bars" severity="secondary" (onClick)="toggleSidebar()" />
+    </div>
+
+    <div class="tw-flex tw-flex-col tw-text-center tw-font-bold">
+      <img src="" alt="" />
+      <p>HealthierME</p>
+      <p class="tw-bg-blue-500 tw-rounded tw-text-white tw-font-light tw-p-1 tw-w-fit tw-mx-auto tw-text-[clamp(8px,1.5vw,10px)]">Powered By Gen AI</p>
+    </div>
+
+    <div class="tw-flex tw-w-1/4"></div>
   </div>
-  <div class="tw-flex tw-flex-col tw-text-center tw-font-bold">
-    <img src="" alt="" />
-    <p>HealthierME</p>
-    <p class="tw-bg-blue-500 tw-text-xs tw-rounded tw-text-white tw-font-light tw-p-1 tw-w-fit tw-mx-auto">Powered By Gen AI</p>
-    <p class="tw-text-xs tw-text-red-600 tw-font-medium tw-mt-2 tw-italic">
+
+  <div class="tw-text-center tw-mt-2">
+    <p class="tw-text-red-600 tw-font-medium tw-italic tw-text-[clamp(7px,1.8vw,10px)]">
       Disclaimer: Responses from HealthierME should not be considered as professional medical advice.
     </p>
   </div>
-  <div class="tw-flex tw-w-1/4"></div>
-  <!-- <p-button icon="pi pi-comment" severity="secondary" (onClick)="toggleChatMode()" /> -->
 </div>
 
 <p-sidebar [(visible)]="sidebar">
