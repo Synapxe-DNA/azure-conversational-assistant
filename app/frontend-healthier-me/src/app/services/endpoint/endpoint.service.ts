@@ -18,7 +18,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
 import { Feedback } from "../../types/feedback.type";
 import { ApiFeedbackRequest } from "../../types/api/requests/feedback-request.type";
-
+import { APP_CONSTANTS } from "../../constants";
 @Injectable({
   providedIn: "root"
 })
@@ -227,7 +227,19 @@ export class EndpointService {
       language: language.toLowerCase()
     };
 
-    this.httpClient
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        response: currentResponseMessage,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.TIMEOUT);
+
+    // Subscription to the HttpClient request
+    const subscription = this.httpClient
       .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
         responseType: "text",
         reportProgress: true,
@@ -241,14 +253,15 @@ export class EndpointService {
                 return;
               }
 
-              // since response is re-emitted as a whole each time, we need to keep track of the
-              // last response length and slice to remove the last response from the current response
-              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout); // Clear timeout here
+              }
 
-              // parses latest response into multiple json objects
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
               const jsonParsed = this.parseSendChat(currentResponseData);
-              currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
-              currentSources.push(...jsonParsed[1]);
+              currentResponseMessage += jsonParsed[0]; // Append the current response message
+              currentSources.push(...jsonParsed[1]); // Append sources
 
               responseBS.next({
                 status: ResponseStatus.Pending,
@@ -261,6 +274,7 @@ export class EndpointService {
             }
 
             case HttpEventType.Response: {
+              // No need to clear the timeout here since it's already done when the first chunk is received
               let latestData = responseBS.value;
               latestData!.status = ResponseStatus.Done;
               responseBS.next(latestData);
@@ -268,7 +282,10 @@ export class EndpointService {
             }
           }
         },
-        error: console.error
+        error: err => {
+          clearTimeout(timeout); // Clear timeout if an error occurs
+          console.error(err);
+        }
       });
 
     return responseBS;

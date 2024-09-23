@@ -2,16 +2,18 @@ import { Component, OnInit, HostListener } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { NavbarComponent } from "../../components/navbar/navbar.component";
 import { NavbarMobileComponent } from "../../components/navbar-mobile/navbar-mobile.component";
+import { DisclaimerComponent } from "../../components/disclaimer/disclaimer.component";
 
 @Component({
   selector: "app-main-layout",
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, NavbarMobileComponent],
+  imports: [RouterOutlet, NavbarComponent, NavbarMobileComponent, DisclaimerComponent],
   templateUrl: "./main-layout.component.html",
   styleUrl: "./main-layout.component.css"
 })
 export class MainLayoutComponent implements OnInit {
   isMobile?: boolean;
+  isDisclaimerVisible: boolean = false;
 
   ngOnInit(): void {
     this.checkViewport();

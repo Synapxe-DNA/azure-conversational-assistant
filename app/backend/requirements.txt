@@ -44,6 +44,7 @@ azure-core-tracing-opentelemetry==1.0.0b11
 azure-cosmos==4.7.0
     # via azure-monitor-opentelemetry
 azure-identity==1.17.1
+azure-keyvault==4.2.0
     # via
     #   -r requirements.in
     #   msgraph-sdk
@@ -58,6 +59,7 @@ azure-storage-blob==12.21.0
     #   -r requirements.in
     #   azure-storage-file-datalake
 azure-storage-file-datalake==12.16.0
+bcrypt==4.2.0
     # via -r requirements.in
 beautifulsoup4==4.12.3
     # via -r requirements.in
@@ -444,5 +446,3 @@ wsproto==1.2.0
 yarl==1.9.4
     # via aiohttp
 zipp==3.19.2
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
