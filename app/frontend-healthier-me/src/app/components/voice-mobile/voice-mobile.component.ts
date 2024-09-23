@@ -60,6 +60,7 @@ export class VoiceMobileComponent {
 
   micState: MicState = MicState.PENDING;
   message?: Message;
+  chatMode?: ChatMode;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -71,7 +72,8 @@ export class VoiceMobileComponent {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private convoBroker: ConvoBrokerService,
-    private chatMessageService: ChatMessageService
+    private chatMessageService: ChatMessageService,
+    private preferences: PreferenceService
   ) {
     this.message = {
       role: MessageRole.Assistant,
@@ -81,6 +83,9 @@ export class VoiceMobileComponent {
       profile_id: "",
       message: ""
     };
+    this.preferences.$chatMode.subscribe(m => {
+      this.chatMode = m;
+    });
   }
 
   ngOnInit() {
@@ -133,5 +138,16 @@ export class VoiceMobileComponent {
 
   prefVoiceEnd(e: InputSwitchChangeEvent) {
     this.preference.setVoiceDetectEnd(e.checked);
+  }
+
+  toggleChatMode() {
+    switch (this.chatMode) {
+      case ChatMode.Voice:
+        this.preferences.setChatMode(ChatMode.Text);
+        break;
+      case ChatMode.Text:
+        this.preferences.setChatMode(ChatMode.Voice);
+        break;
+    }
   }
 }

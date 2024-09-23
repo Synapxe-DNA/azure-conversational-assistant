@@ -1,4 +1,4 @@
-*.csv
+data/*
 
 # Azure az webapp deployment details
 .azure
@@ -163,3 +163,6 @@ data/**/*.md5
 # SSL cert
 key.pem
 cert.pem
+
+# Database
+*.db
