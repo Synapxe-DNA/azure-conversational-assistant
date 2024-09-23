@@ -10,6 +10,7 @@ from approaches.retrievethenread import RetrieveThenReadApproach
 from authentication.authenticator import Authenticator
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+from azure.keyvault.secrets.aio import SecretClient
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from blueprints.backend_blueprint.chat import chat
@@ -26,6 +27,7 @@ from config import (
     CONFIG_CHAT_APPROACH,
     CONFIG_CREDENTIAL,
     CONFIG_FEEDBACK_CONTAINER_CLIENT,
+    CONFIG_KEYVAULT_CLIENT,
     CONFIG_OPENAI_CLIENT,
     CONFIG_SEARCH_CLIENT,
     CONFIG_SPEECH_SERVICE_ID,
@@ -114,6 +116,8 @@ async def setup_clients():
 
     AZURE_SPEECH_SERVICE_ID = os.getenv("AZURE_SPEECH_SERVICE_ID")
     AZURE_SPEECH_SERVICE_LOCATION = os.getenv("AZURE_SPEECH_SERVICE_LOCATION")
+
+    AZURE_KEY_VAULT_ENDPOINT = os.environ["AZURE_KEY_VAULT_ENDPOINT"]
 
     # Use the current user identity to authenticate with Azure OpenAI, AI Search and Blob Storage (no secrets needed,
     # just use 'az login' locally, and managed identity when deployed on Azure). If you need to use keys, use separate AzureKeyCredential instances with the
@@ -220,13 +224,17 @@ async def setup_clients():
         query_speller=AZURE_SEARCH_QUERY_SPELLER,
     )
 
+    # Create Speech services
     tts = await TextToSpeech.create()
     stt = await SpeechToText.create()
     current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE] = tts
     current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE] = stt
-    username = os.getenv("USERNAME", "")
-    password = os.getenv("PASSWORD", "")
-    current_app.config[CONFIG_USER_DATABASE] = UserDatabase(username, password)
+
+    # Setup for Authentication
+    current_app.config[CONFIG_KEYVAULT_CLIENT] = SecretClient(
+        vault_url=AZURE_KEY_VAULT_ENDPOINT, credential=azure_credential
+    )
+    current_app.config[CONFIG_USER_DATABASE] = await UserDatabase().setup()
     current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
 
 
