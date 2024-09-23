@@ -38,9 +38,9 @@
 
 5. Create a `data` folder in the `app` folder in this repository.
 
-6. Copy the Azure RAG articles from `healthhub-content-optimization` repository under `content-optimization` > `data` > `03_primary` > `processed_articles` and paste it in `data` folder in this repository. 
+6. Copy the Azure RAG articles from `healthhub-content-optimization` repository under `content-optimization` > `data` > `03_primary` > `processed_articles` and paste it in `data` folder in this repository.
 
-7. Copy the additional Azure RAG javascript articles from Google Drive `LLM Exploration` > `HealthHub` > `Data` > `Processed data for RAG` > `JSON files to be loaded for RAG` > `js_articles.zip` and paste it in `data` folder in this repository. 
+7. Copy the additional Azure RAG javascript articles from Google Drive `LLM Exploration` > `HealthHub` > `Data` > `Processed data for RAG` > `JSON files to be loaded for RAG` > `js_articles.zip` and paste it in `data` folder in this repository.
 
 ## Deploying
 
