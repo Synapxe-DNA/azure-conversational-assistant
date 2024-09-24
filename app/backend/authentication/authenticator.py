@@ -10,20 +10,22 @@ from quart import current_app, request
 
 
 class Authenticator:
-    def __init__(self) -> None:
+    def __init__(self, secret_key) -> None:
         self.ALGORITHM = "HS256"
         self.EXPIRATION_DELTA = datetime.timedelta(hours=1)
-        self.keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
+        self.SECRET_KEY = secret_key
 
-    async def setup(self):
+    @classmethod
+    async def setup(cls):
+        keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
         try:
-            secretKeyObj = await self.keyvault_client.get_secret("secretKey")
-            self.SECRET_KEY = secretKeyObj.value
+            secretKeyObj = await keyvault_client.get_secret("secretKey")
+            secret_key = secretKeyObj.value
             logging.info("Secret key has been retrieved from keyvault")
         except Exception as e:
-            self.SECRET_KEY = secrets.token_hex()
+            secret_key = secrets.token_hex()
             logging.warning(e)
-        return self
+        return cls(secret_key)
 
     def generate_jwt_token(self, payload: Payload) -> str:
         """
