@@ -17,7 +17,6 @@ chat = Blueprint("chat", __name__, url_prefix="/chat")
 
 @chat.route("/stream", methods=["POST"])
 async def chat_stream_endpoint():
-    print(request.headers)
     try:
         # Receive data from the client
         data = await request.form
