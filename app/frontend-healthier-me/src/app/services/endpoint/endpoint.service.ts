@@ -152,7 +152,19 @@ export class EndpointService {
       language: language.toLowerCase()
     };
 
-    this.httpClient
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        assistant_response: currentAssistantMessage,
+        assistant_response_audio: existingAudio,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.VOICE_TIMEOUT);
+
+    const subscription = this.httpClient
       .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
         responseType: "text",
         reportProgress: true,
@@ -164,6 +176,11 @@ export class EndpointService {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
+              }
+
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout); // Clear timeout here
               }
 
               const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
@@ -236,7 +253,7 @@ export class EndpointService {
         sources: currentSources
       });
       subscription.unsubscribe(); // Unsubscribe from the HTTP request
-    }, APP_CONSTANTS.TIMEOUT);
+    }, APP_CONSTANTS.TEXT_TIMEOUT);
 
     // Subscription to the HttpClient request
     const subscription = this.httpClient
