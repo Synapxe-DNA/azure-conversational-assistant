@@ -247,10 +247,14 @@ param existingKeyVaultResourceGroupName string = ''
 param usernameName string = 'username'
 #disable-next-line secure-secrets-in-params
 param passwordName string = 'password'
+#disable-next-line secure-secrets-in-params
+param secretKeyName string = 'secretKey'
 @secure()
 param usernameValue string
 @secure()
 param passwordValue string
+@secure()
+param secretKeyValue string
 
 // Miscellaneous
 @description('Public network access value for all deployed resources')
@@ -620,6 +624,8 @@ module keyVault 'core/security/keyvault.bicep' = {
     passwordName: passwordName
     usernameValue: usernameValue
     passwordValue: passwordValue
+    secretKeyName: secretKeyName
+    secretKeyValue: secretKeyValue
   }
 }
 

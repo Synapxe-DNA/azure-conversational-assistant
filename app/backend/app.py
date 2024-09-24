@@ -235,7 +235,7 @@ async def setup_clients():
         vault_url=AZURE_KEY_VAULT_ENDPOINT, credential=azure_credential
     )
     current_app.config[CONFIG_USER_DATABASE] = await UserDatabase().setup()
-    current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
+    current_app.config[CONFIG_AUTHENTICATOR] = await Authenticator().setup()
 
 
 @bp.after_app_serving

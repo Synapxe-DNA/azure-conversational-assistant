@@ -41,7 +41,7 @@ class UserDatabase:
             hashed_password = self.hash_password(password.value)
             add_account = "INSERT INTO authorised_users (username, password) VALUES (?, ?)"
             self.cursor.execute(add_account, (username.value, hashed_password))
-            logging.info("Username and password set in keyvault")
+            logging.info("Username and password has been retrieved from keyvault")
         except Exception as e:
             logging.warning(e)
         self.connection.commit()
