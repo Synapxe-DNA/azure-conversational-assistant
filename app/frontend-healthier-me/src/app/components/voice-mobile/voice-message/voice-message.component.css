@@ -6,7 +6,7 @@
   width: 150px;
 }
 
-input[type=range][orient=vertical] {
+input[type="range"][orient="vertical"] {
   writing-mode: vertical-lr;
   direction: rtl;
   appearance: slider-vertical;
