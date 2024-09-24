@@ -25,6 +25,7 @@ class Authenticator:
         except Exception as e:
             secret_key = secrets.token_hex()
             logging.warning(e)
+            logging.warning("Secret key will be generated randomly")
         return cls(secret_key)
 
     def generate_jwt_token(self, payload: Payload) -> str:

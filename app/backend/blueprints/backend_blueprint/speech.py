@@ -6,7 +6,7 @@ from quart import Blueprint, current_app, jsonify, request
 speech = Blueprint("speech", __name__, url_prefix="/speech")
 
 
-@speech.route("/stream", methods=["POST"])
+@speech.route("", methods=["POST"])
 async def speech_endpoint():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
@@ -18,5 +18,5 @@ async def speech_endpoint():
         audio_data = tts.readText(text, False)
         return audio_data, 200, {"Content-Type": "audio/mp3"}
     except Exception as e:
-        logging.exception("Exception in /speech")
+        logging.exception("Exception in /speech. ", e)
         return jsonify({"error": str(e)}), 500

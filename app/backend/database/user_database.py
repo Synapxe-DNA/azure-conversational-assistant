@@ -36,6 +36,7 @@ class UserDatabase:
             logging.info("Username and password has been retrieved from keyvault")
         except Exception as e:
             logging.warning(e)
+            logging.warning("Username and password will not be inserted")
         connection.commit()
         return cls(cursor)
 
