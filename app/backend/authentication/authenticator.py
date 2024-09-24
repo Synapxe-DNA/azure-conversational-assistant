@@ -5,6 +5,7 @@ import secrets
 import jwt
 from azure.keyvault.secrets.aio import SecretClient
 from config import CONFIG_KEYVAULT_CLIENT
+from models.account import Account
 from models.payload import Payload
 from quart import current_app, request
 
@@ -28,11 +29,12 @@ class Authenticator:
             logging.warning("Secret key will be generated randomly")
         return cls(secret_key)
 
-    def generate_jwt_token(self, payload: Payload) -> str:
+    def generate_jwt_token(self, account: Account) -> str:
         """
         Generate a JWT token for the authenticated user
         """
-        payload.exp = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
+        expiry = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
+        payload = Payload(username=account.username, exp=expiry)
         token = jwt.encode(payload.model_dump(), self.SECRET_KEY, algorithm=self.ALGORITHM)
         return token
 
