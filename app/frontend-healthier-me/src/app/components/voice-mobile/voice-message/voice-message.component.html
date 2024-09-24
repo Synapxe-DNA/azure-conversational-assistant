@@ -1,21 +1,22 @@
 <div class="tw-flex tw-space-x-4 tw-justify-center tw-items-start">
-  <!-- Box containing the message -->
-  <div #box class="tw-bg-gray-200 tw-w-[80dvw] tw-h-[60dvh] tw-rounded-lg tw-overflow-auto no-scrollbar box">
-    <p class="tw-px-4 tw-text-left tw-text-black" [ngStyle]="{ 'font-size.px': fontSize }">
-      <app-markdown [markdownContent]="message?.message"></app-markdown>
-    </p>
-  </div>
 
   <!-- Font size slider control -->
   <div class="tw-flex tw-flex-col tw-items-center tw-mb-4">
     <!-- Large label at the top -->
-    <span class="tw-mb-2 tw-font-bold tw-text-3xl">A</span>
+    <span class="tw-mb-2 tw-font-bold tw-text-3xl" style="color: white">A</span>
 
     <!-- Vertical slider -->
     <input type="range" orient="vertical" min="12" max="36" [(ngModel)]="fontSize" class="tw-h-[200px]" />
 
     <!-- Small label at the bottom -->
-    <span class="tw-mt-2 tw-text-base">A</span>
+    <span class="tw-mt-2 tw-text-base" style="color: white">A</span>
+  </div>
+
+  <!-- Box containing the message -->
+  <div #box class="tw-bg-gray-200 tw-w-[80dvw] tw-h-[60dvh] tw-rounded-lg tw-overflow-auto no-scrollbar box">
+    <p class="tw-px-4 tw-text-left tw-text-black" [ngStyle]="{ 'font-size.px': fontSize }">
+      <app-markdown [markdownContent]="message?.message"></app-markdown>
+    </p>
   </div>
 </div>
 
