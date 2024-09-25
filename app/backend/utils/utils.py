@@ -11,7 +11,6 @@ from models.chat import TextChatResponse, TextChatResponseWtihChunk
 from models.chat_history import ChatHistory
 from models.feedback import FeedbackRequest, FeedbackStore
 from models.language import LanguageSelected
-from models.logstore import LogStore
 from models.profile import Profile
 from models.request import Request
 from models.request_type import RequestType
@@ -41,7 +40,6 @@ class Utils:
 
             response_message = ""
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
-            # logStore = LogStore()
 
             async for res in format_as_ndjson(result):
                 # Extract sources
@@ -53,7 +51,6 @@ class Utils:
                     yield construct_error_response(error_msg, request_type, language)
                 elif not thoughts == []:
                     yield construct_source_response(thoughts, request_type)
-                    # logStore = extract_thoughts_for_logging(thoughts, logStore)
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
@@ -69,8 +66,6 @@ class Utils:
                             yield response.model_dump_json()
                             response_message = ""
                         break
-
-                    # logStore.response_message += text_response_chunk
 
                     if request_type == RequestType.CHAT:
                         response = TextChatResponse(
@@ -92,7 +87,6 @@ class Utils:
                             )
                             yield response.model_dump_json()
                             response_message = ""
-            # await Utils.send_log(logStore)
 
         return generator()
 
@@ -207,17 +201,6 @@ class Utils:
             language = str(language).split(".")[1].lower()  # get language name from enum
         return language
 
-    # @staticmethod
-    # async def send_log(logStore: LogStore):
-    #     logStore.date_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    #     containerClient = current_app.config[CONFIG_LOGGING_CONTAINER_CLIENT]
-    #     try:
-    #         await containerClient.create_item(logStore.model_dump(), enable_automatic_id_generation=True)
-    #         logging.info("Log sent successfully")
-    #     except Exception as error:
-    #         logging.error("Error while sending log", error)
-    #         pass
-
 
 # Helper functions
 
@@ -274,19 +257,6 @@ def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) ->
         sources.append(src_instance)
 
     return sources
-
-
-"""
-Utility function to extract time taken, user query and sources with chunks from the ThoughtStep returned by the LLM
-"""
-
-
-def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], logStore: LogStore) -> LogStore:
-    logStore.time_taken = thoughts[4].get("description", -1)  # thoughts[4] is time taken
-    logStore.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
-    logStore.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
-
-    return logStore
 
 
 """
