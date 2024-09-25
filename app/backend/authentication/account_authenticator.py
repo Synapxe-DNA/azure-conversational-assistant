@@ -7,7 +7,7 @@ from models.account import Account
 from quart import current_app
 
 
-class UserDatabase:
+class AccountAuthenticator:
 
     def __init__(self):
         self.keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]

@@ -7,7 +7,8 @@ from typing import AsyncGenerator
 
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
-from authentication.authenticator import Authenticator
+from authentication.account_authenticator import AccountAuthenticator
+from authentication.jwt_authenticator import JWTAuthenticator
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.keyvault.secrets.aio import SecretClient
@@ -38,7 +39,6 @@ from config import (
     CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
-from database.user_database import UserDatabase
 from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from quart import Blueprint, Quart, current_app, redirect
@@ -234,8 +234,8 @@ async def setup_clients():
     current_app.config[CONFIG_KEYVAULT_CLIENT] = SecretClient(
         vault_url=AZURE_KEY_VAULT_ENDPOINT, credential=azure_credential
     )
-    current_app.config[CONFIG_USER_DATABASE] = UserDatabase()
-    current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
+    current_app.config[CONFIG_USER_DATABASE] = AccountAuthenticator()
+    current_app.config[CONFIG_AUTHENTICATOR] = JWTAuthenticator()
 
 
 @bp.after_app_serving

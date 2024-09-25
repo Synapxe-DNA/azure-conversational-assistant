@@ -1,6 +1,6 @@
-from authentication.authenticator import Authenticator
+from authentication.account_authenticator import AccountAuthenticator
+from authentication.jwt_authenticator import JWTAuthenticator
 from config import CONFIG_AUTHENTICATOR, CONFIG_USER_DATABASE
-from database.user_database import UserDatabase
 from models.account import Account
 from quart import Blueprint, current_app, jsonify, request
 
@@ -13,8 +13,8 @@ async def login_endpoint():
 
     account = Account(username=data.get("username"), password=data.get("password"))
 
-    authenticator: Authenticator = current_app.config[CONFIG_AUTHENTICATOR]
-    user_database: UserDatabase = current_app.config[CONFIG_USER_DATABASE]
+    authenticator: JWTAuthenticator = current_app.config[CONFIG_AUTHENTICATOR]
+    user_database: AccountAuthenticator = current_app.config[CONFIG_USER_DATABASE]
 
     is_verified, message = await user_database.verify_user(account)
     if is_verified:
