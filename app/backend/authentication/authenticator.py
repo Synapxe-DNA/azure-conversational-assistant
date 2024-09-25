@@ -1,22 +1,40 @@
 import datetime
+import logging
 import secrets
 
 import jwt
+from azure.keyvault.secrets.aio import SecretClient
+from config import CONFIG_KEYVAULT_CLIENT
+from models.account import Account
 from models.payload import Payload
-from quart import request
+from quart import current_app, request
 
 
 class Authenticator:
-    def __init__(self) -> None:
-        self.SECRET_KEY = secrets.token_hex()
+    def __init__(self, secret_key) -> None:
         self.ALGORITHM = "HS256"
         self.EXPIRATION_DELTA = datetime.timedelta(hours=1)
+        self.SECRET_KEY = secret_key
 
-    def generate_jwt_token(self, payload: Payload) -> str:
+    @classmethod
+    async def setup(cls):
+        keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
+        try:
+            secretKeyObj = await keyvault_client.get_secret("secretKey")
+            secret_key = secretKeyObj.value
+            logging.info("Secret key has been retrieved from keyvault")
+        except Exception as e:
+            secret_key = secrets.token_hex()
+            logging.warning(e)
+            logging.warning("Secret key will be generated randomly")
+        return cls(secret_key)
+
+    def generate_jwt_token(self, account: Account) -> str:
         """
         Generate a JWT token for the authenticated user
         """
-        payload.exp = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
+        expiry = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
+        payload = Payload(username=account.username, exp=expiry)
         token = jwt.encode(payload.model_dump(), self.SECRET_KEY, algorithm=self.ALGORITHM)
         return token
 

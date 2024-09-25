@@ -1,3 +1,4 @@
+import logging
 from typing import cast
 
 from approaches.approach import Approach
@@ -16,9 +17,9 @@ async def voice_endpoint():
 
     try:
         # Receive data from the client
-        data = await request.form
+        data = await request.get_json()
         # Extract data from the JSON message
-        voiceChatRequest = VoiceChatRequest(**Utils.form_formdata_request(data).model_dump())
+        voiceChatRequest = VoiceChatRequest(**Utils.form_query_request(data).model_dump())
 
         # Send transcribed text and data to LLM
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
@@ -33,4 +34,5 @@ async def voice_endpoint():
         )
         return response, 200
     except Exception as error:
-        return error_response(error, "/voice")
+        logging.error("Exception in /voice/stream. ", error)
+        return error_response(error, "/voice/stream")

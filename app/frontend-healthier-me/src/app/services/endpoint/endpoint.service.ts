@@ -33,7 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient.post("/speech/stream", { text }, { responseType: "blob" }).toPromise();
+      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -152,8 +152,20 @@ export class EndpointService {
       language: language.toLowerCase()
     };
 
-    this.httpClient
-      .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        assistant_response: currentAssistantMessage,
+        assistant_response_audio: existingAudio,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.VOICE_TIMEOUT);
+
+    const subscription = this.httpClient
+      .post("/voice/stream", data, {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -164,6 +176,11 @@ export class EndpointService {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
+              }
+
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout); // Clear timeout here
               }
 
               const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
@@ -236,11 +253,11 @@ export class EndpointService {
         sources: currentSources
       });
       subscription.unsubscribe(); // Unsubscribe from the HTTP request
-    }, APP_CONSTANTS.TIMEOUT);
+    }, APP_CONSTANTS.TEXT_TIMEOUT);
 
     // Subscription to the HttpClient request
     const subscription = this.httpClient
-      .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
+      .post("/chat/stream", data, {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -303,7 +320,7 @@ export class EndpointService {
 
     console.log("Feedback data:", data);
 
-    this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+    this.httpClient.post("/feedback", data).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
       },
