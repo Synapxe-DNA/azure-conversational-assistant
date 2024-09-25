@@ -16,8 +16,12 @@ async def login_endpoint():
     authenticator: Authenticator = current_app.config[CONFIG_AUTHENTICATOR]
     user_database: UserDatabase = current_app.config[CONFIG_USER_DATABASE]
 
-    if user_database.verify_user(account):
-        token = authenticator.generate_jwt_token(account)
-        return jsonify(token=token, token_type="Bearer")
-
-    return jsonify(error="Invalid credentials"), 401
+    is_verified, message = await user_database.verify_user(account)
+    if is_verified:
+        try:
+            token = await authenticator.generate_jwt_token(account)
+            return jsonify(token=token, token_type="Bearer"), 200
+        except Exception as error:
+            return jsonify(error=str(error)), 500
+    else:
+        return jsonify(error=message), 401

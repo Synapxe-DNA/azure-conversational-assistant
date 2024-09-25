@@ -1,7 +1,6 @@
-import logging
-import sqlite3
+from typing import Tuple
 
-import bcrypt
+from azure.core.exceptions import ResourceNotFoundError
 from azure.keyvault.secrets.aio import SecretClient
 from config import CONFIG_KEYVAULT_CLIENT
 from models.account import Account
@@ -10,44 +9,25 @@ from quart import current_app
 
 class UserDatabase:
 
-    def __init__(self, cursor):
-        self.cursor = cursor
+    def __init__(self):
+        self.keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
 
-    @classmethod
-    async def setup(cls):
-
-        connection = sqlite3.connect("authorised_users.db")
-        cursor = connection.cursor()
-        cursor.execute("DROP TABLE IF EXISTS authorised_users")
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS authorised_users (
-                            username TEXT PRIMARY KEY,
-                            password BLOB)
-                            """
-        )
-
-        keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
+    async def verify_user(self, account: Account) -> Tuple[bool, str]:
         try:
-            username = await keyvault_client.get_secret("username")
-            password = await keyvault_client.get_secret("password")
-            hashed_password = UserDatabase.hash_password(password.value)
-            add_account = "INSERT INTO authorised_users (username, password) VALUES (?, ?)"
-            cursor.execute(add_account, (username.value, hashed_password))
-            logging.info("Username and password has been retrieved from keyvault")
-        except Exception as e:
-            logging.warning(e)
-            logging.warning("Username and password will not be inserted")
-        connection.commit()
-        return cls(cursor)
+            found_password = await self.check_secret("password", account.password)
+            found_username = await self.check_secret("username", account.username)
+            if found_password and found_username:
+                return True, "Login successful"
+            else:
+                return False, "Username or password is incorrect"
 
-    def verify_user(self, account: Account) -> bool:
-        password = account.password.encode("utf-8")
-        command = "SELECT password FROM authorised_users WHERE username = ? LIMIT 1"
-        self.cursor.execute(command, (account.username,))  # parameters must be tuple
-        result = self.cursor.fetchone()  # return type is tuple
-        return bcrypt.checkpw(password, result[0]) if result else False
+        except ResourceNotFoundError:
+            return False, "Username or password has not been set. Please contact the administrator."
 
-    @staticmethod
-    def hash_password(password: str) -> bytes:
-        hash_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-        return hash_password
+    async def check_secret(self, secret_name: str, expected_value: str) -> bool:
+        async for ver in self.keyvault_client.list_properties_of_secret_versions(secret_name):
+            if ver.enabled:
+                secret = await self.keyvault_client.get_secret(secret_name, ver.version)
+                if secret.value == expected_value:
+                    return True
+        return False

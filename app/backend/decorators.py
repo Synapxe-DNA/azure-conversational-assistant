@@ -66,7 +66,7 @@ def require_authentication(func):
         token = authenticator.get_jwt_from_request()
         if token:
             try:
-                authenticator.decode_jwt(token)
+                await authenticator.decode_jwt(token)
                 return await func()
             except ValueError as e:
                 return jsonify({"error": str(e)}), 401
