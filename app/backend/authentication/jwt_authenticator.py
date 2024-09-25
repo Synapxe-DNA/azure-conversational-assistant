@@ -10,14 +10,14 @@ from quart import current_app, request
 
 
 class JWTAuthenticator:
-    '''
+    """
     A JWT Authenticator that generates and decodes JWT tokens for the user
 
     Attributes:
         ALGORITHM (str): The algorithm used for encoding the JWT token
         EXPIRATION_DELTA (datetime.timedelta): The expiration time used when generating a JWT token
         keyvault_client (SecretClient): The keyvault client used to retrieve the secret key
-    '''
+    """
 
     def __init__(self) -> None:
         self.ALGORITHM = "HS256"
@@ -25,7 +25,7 @@ class JWTAuthenticator:
         self.keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
 
     async def get_secret_key(self) -> str:
-        '''
+        """
         Function to get the secret key from the keyvault
 
         Raises:
@@ -34,7 +34,7 @@ class JWTAuthenticator:
 
         Returns:
             secret_key (str): The secret key
-        '''
+        """
         try:
             secretKeyObj = await self.keyvault_client.get_secret("secretKey")  # Gets latest version
             secret_key = secretKeyObj.value
@@ -50,9 +50,9 @@ class JWTAuthenticator:
 
         Args:
             account (Account): The account object of the user
-        
+
         Returns:
-            token (str): The JWT token generated
+            str: The JWT token generated
         """
         secret_key = await self.get_secret_key()
         expiry = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
@@ -64,7 +64,7 @@ class JWTAuthenticator:
         """
         Retrieve the JWT token from the request header (Authorization)
 
-        Returns: 
+        Returns:
             token (str): The JWT token
         """
         auth_header = request.headers.get("Authorization", None)
@@ -82,7 +82,7 @@ class JWTAuthenticator:
         """
         Decode the JWT to get payload
 
-        Args: 
+        Args:
             token (str): The JWT token to decode
 
         Raises:
