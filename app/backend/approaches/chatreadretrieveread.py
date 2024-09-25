@@ -22,7 +22,11 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
-from openai_messages_token_helper import build_messages, get_token_limit
+from openai_messages_token_helper import (
+    build_messages,
+    count_tokens_for_message,
+    get_token_limit,
+)
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
@@ -109,6 +113,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         List[dict[str, Any]],
     ]:
         start_time = time.time()
+        total_tokens = 0
 
         seed = config.SEED
         temperature = config.TEMPERATURE
@@ -216,7 +221,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             tools=tools,
             seed=seed,
         )
-
+        total_tokens += chat_completion.usage.total_tokens
         query_text = self.get_search_query(chat_completion, original_user_query)
 
         ## STEP 2: LLM to check if the query is health-related
@@ -236,6 +241,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
             messages=query_check_messages,
         )
+        total_tokens += chat_completion.usage.total_tokens
 
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
@@ -281,6 +287,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         # data_points = {"text": sources_content}
         # print(f"data_points: {data_points}")
+        for message in messages:
+            total_tokens += count_tokens_for_message("gpt-4o", message)
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -340,6 +348,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                     "Original query",
                     original_user_query,
                 ),
+                ThoughtStep("Total tokens", total_tokens),
             ],
         }
 
