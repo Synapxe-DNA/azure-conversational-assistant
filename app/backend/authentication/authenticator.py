@@ -1,8 +1,7 @@
 import datetime
-import logging
-import secrets
 
 import jwt
+from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.keyvault.secrets.aio import SecretClient
 from config import CONFIG_KEYVAULT_CLIENT
 from models.account import Account
@@ -11,31 +10,29 @@ from quart import current_app, request
 
 
 class Authenticator:
-    def __init__(self, secret_key) -> None:
+    def __init__(self) -> None:
         self.ALGORITHM = "HS256"
         self.EXPIRATION_DELTA = datetime.timedelta(hours=1)
-        self.SECRET_KEY = secret_key
+        self.keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
 
-    @classmethod
-    async def setup(cls):
-        keyvault_client: SecretClient = current_app.config[CONFIG_KEYVAULT_CLIENT]
+    async def get_secret_key(self):
         try:
-            secretKeyObj = await keyvault_client.get_secret("secretKey")
+            secretKeyObj = await self.keyvault_client.get_secret("secretKey")  # Gets latest version
             secret_key = secretKeyObj.value
-            logging.info("Secret key has been retrieved from keyvault")
-        except Exception as e:
-            secret_key = secrets.token_hex()
-            logging.warning(e)
-            logging.warning("Secret key will be generated randomly")
-        return cls(secret_key)
+            return secret_key
+        except ResourceNotFoundError:
+            raise ValueError("Secret key has not been set. Please contact the administrator.")
+        except HttpResponseError:
+            raise ValueError("Secret key has been disabled. Please contact the administrator.")
 
-    def generate_jwt_token(self, account: Account) -> str:
+    async def generate_jwt_token(self, account: Account) -> str:
         """
         Generate a JWT token for the authenticated user
         """
+        secret_key = await self.get_secret_key()
         expiry = datetime.datetime.now(datetime.timezone.utc) + self.EXPIRATION_DELTA
         payload = Payload(username=account.username, exp=expiry)
-        token = jwt.encode(payload.model_dump(), self.SECRET_KEY, algorithm=self.ALGORITHM)
+        token = jwt.encode(payload.model_dump(), secret_key, algorithm=self.ALGORITHM)
         return token
 
     def get_jwt_from_request(self):
@@ -53,14 +50,16 @@ class Authenticator:
 
         return None
 
-    def decode_jwt(self, token):
+    async def decode_jwt(self, token) -> None:
         """
         Decode the JWT to get payload
         """
         try:
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            return Payload(**payload)
+            secret_key = await self.get_secret_key()
+            jwt.decode(token, secret_key, algorithms=[self.ALGORITHM])
         except jwt.exceptions.ExpiredSignatureError:
             raise ValueError("Token has expired")
         except jwt.exceptions.InvalidTokenError:
             raise ValueError("Invalid token")
+        except Exception as error:
+            raise (error)
