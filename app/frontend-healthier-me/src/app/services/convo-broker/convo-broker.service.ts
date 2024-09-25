@@ -175,6 +175,7 @@ export class ConvoBrokerService {
         if (!d) {
           return;
         }
+
         // upsert assistant message
         await this.chatMessageService.upsert({
           id: assistantMessageId,
@@ -189,6 +190,10 @@ export class ConvoBrokerService {
         if (nonNullAudio.length > audio_base64.length) {
           const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
           audio_base64 = nonNullAudio;
+
+          // set mic state to pending so the loading throbber is removed.  
+          this.$micState.next(MicState.PENDING);
+
           newAudioStr.forEach(a => {
             this.playAudioBase64(a);
           });

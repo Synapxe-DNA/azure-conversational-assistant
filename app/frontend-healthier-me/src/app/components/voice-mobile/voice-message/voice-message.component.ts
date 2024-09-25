@@ -7,11 +7,12 @@ import { MarkdownComponent } from "../../markdown/markdown.component";
 import { AudioPlayerService } from "../../../services/audio-player/audio-player.service";
 import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { LoadingComponent } from "../../loading/loading.component";
 
 @Component({
   selector: "app-voice-message",
   standalone: true,
-  imports: [MarkdownComponent, FormsModule, CommonModule],
+  imports: [MarkdownComponent, FormsModule, CommonModule, LoadingComponent],
   templateUrl: "./voice-message.component.html",
   styleUrl: "./voice-message.component.css"
 })
@@ -20,6 +21,7 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   @Input() state?: string;
   @Input() level?: number;
   @Input() fontSize: number = 16; // Default value
+  @Input() isLoading = false;
   audioAnalyser: AudioAnalyser | undefined;
   private animationFrameId: number | null = null;
   @ViewChild("box") box!: ElementRef<HTMLDivElement>;

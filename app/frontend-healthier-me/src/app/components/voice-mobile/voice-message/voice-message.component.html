@@ -1,5 +1,4 @@
 <div class="tw-flex tw-space-x-4 tw-justify-center tw-items-start">
-
   <!-- Font size slider control -->
   <div class="tw-flex tw-flex-col tw-items-center tw-mb-4">
     <!-- Large label at the top -->
@@ -12,9 +11,15 @@
     <span class="tw-mt-2 tw-text-base" style="color: white">A</span>
   </div>
 
-  <!-- Box containing the message -->
-  <div #box class="tw-bg-gray-200 tw-w-[80dvw] tw-h-[60dvh] tw-rounded-lg tw-overflow-auto no-scrollbar box">
-    <p class="tw-px-4 tw-text-left tw-text-black" [ngStyle]="{ 'font-size.px': fontSize }">
+  <!-- Box containing the message or loading icon -->
+  <div #box class="tw-bg-gray-200 tw-w-[80dvw] tw-h-[60dvh] tw-rounded-lg tw-overflow-auto no-scrollbar box relative">
+    <!-- Show the loading component when the message is empty -->
+    <div *ngIf="isLoading" class="voice-message-loading">
+      <app-loading></app-loading>
+    </div>
+
+    <!-- Show the message content when it's available -->
+    <p *ngIf="message?.message" class="tw-px-4 tw-text-left tw-text-black" [ngStyle]="{ 'font-size.px': fontSize }">
       <app-markdown [markdownContent]="message?.message"></app-markdown>
     </p>
   </div>
