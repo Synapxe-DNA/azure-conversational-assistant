@@ -4,7 +4,7 @@ import sqlite3
 import bcrypt
 from azure.keyvault.secrets.aio import SecretClient
 from config import CONFIG_KEYVAULT_CLIENT
-from models.payload import Payload
+from models.account import Account
 from quart import current_app
 
 
@@ -36,13 +36,14 @@ class UserDatabase:
             logging.info("Username and password has been retrieved from keyvault")
         except Exception as e:
             logging.warning(e)
+            logging.warning("Username and password will not be inserted")
         connection.commit()
         return cls(cursor)
 
-    def verify_user(self, payload: Payload) -> bool:
-        password = payload.password.encode("utf-8")
+    def verify_user(self, account: Account) -> bool:
+        password = account.password.encode("utf-8")
         command = "SELECT password FROM authorised_users WHERE username = ? LIMIT 1"
-        self.cursor.execute(command, (payload.username,))  # parameters must be tuple
+        self.cursor.execute(command, (account.username,))  # parameters must be tuple
         result = self.cursor.fetchone()  # return type is tuple
         return bcrypt.checkpw(password, result[0]) if result else False
 

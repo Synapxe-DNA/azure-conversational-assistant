@@ -19,7 +19,6 @@ from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
-from werkzeug.datastructures import MultiDict
 
 
 class Utils:
@@ -154,34 +153,16 @@ class Utils:
         return messages
 
     """
-    Utility function to form a Request object from formdata
-    """
-
-    @staticmethod
-    def form_formdata_request(data: MultiDict) -> Request:
-        print(f"CHOSEN LANGUAGE: {data['language']}")
-        language = (
-            Utils.get_language(data["query"]) if data["language"] == LanguageSelected.SPOKEN.value else data["language"]
-        )
-        print(f"DETECTED LANGUAGE: {language}")
-        request = Request(
-            chat_history=json.loads(data["chat_history"]),
-            profile=Profile(**json.loads(data["profile"])),
-            query=json.loads(data["query"]),
-            language=language,
-        )
-
-        return request
-
-    """
     Utility function to form a Request object from json
     """
 
     @staticmethod
-    def form_json_request(data: dict) -> Request:
+    def form_query_request(data: dict) -> Request:
         print(f"CHOSEN LANGUAGE: {data['language']}")
         language = (
-            Utils.get_language(data["query"]) if data["language"] == LanguageSelected.SPOKEN.value else data["language"]
+            Utils.get_language(data["query"]["content"])
+            if data["language"] == LanguageSelected.SPOKEN.value
+            else data["language"]
         )
         print(f"DETECTED LANGUAGE: {language}")
 
@@ -195,19 +176,18 @@ class Utils:
         return request
 
     """
-    Utility function to form a FeedbackRequest object from formdata
+    Utility function to form a FeedbackRequest object from json
     """
 
     @staticmethod
-    def form_feedback_request(data: MultiDict) -> FeedbackRequest:
-
+    def form_feedback_request(data: dict) -> FeedbackRequest:
         feedback_request = FeedbackRequest(
             date_time=data["date_time"],
             feedback_type=data["feedback_type"],
-            feedback_category=json.loads(data["feedback_category"]),
+            feedback_category=data["feedback_category"],
             feedback_remarks=data.get("feedback_remarks", ""),
-            user_profile=Profile(**json.loads(data["user_profile"])),
-            chat_history=json.loads(data["chat_history"]),
+            user_profile=Profile(**data["user_profile"]),
+            chat_history=data["chat_history"],
         )
         return feedback_request
 

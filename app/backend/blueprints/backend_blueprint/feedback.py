@@ -1,3 +1,5 @@
+import logging
+
 from azure.cosmos import ContainerProxy
 from config import CONFIG_FEEDBACK_CONTAINER_CLIENT
 from quart import Blueprint, current_app, jsonify, request
@@ -6,9 +8,9 @@ from utils.utils import Utils
 feedback = Blueprint("feedback", __name__, url_prefix="/feedback")
 
 
-@feedback.route("/stream", methods=["POST"])
+@feedback.route("", methods=["POST"])
 async def feedback_endpoint():
-    data = await request.form
+    data = await request.get_json()
     containerClient: ContainerProxy = current_app.config[CONFIG_FEEDBACK_CONTAINER_CLIENT]
 
     try:
@@ -18,4 +20,5 @@ async def feedback_endpoint():
         return jsonify({"message": "Feedback sent!"}), 200
 
     except Exception as error:
+        logging.exception("Exception in /feedback. ", error)
         return jsonify({"error": str(error)}), 500

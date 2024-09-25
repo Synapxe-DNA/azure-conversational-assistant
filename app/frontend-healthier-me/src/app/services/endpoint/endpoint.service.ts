@@ -33,7 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient.post("/speech/stream", { text }, { responseType: "blob" }).toPromise();
+      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -165,7 +165,7 @@ export class EndpointService {
     }, APP_CONSTANTS.VOICE_TIMEOUT);
 
     const subscription = this.httpClient
-      .post("/voice/stream", new TypedFormData<ApiVoiceRequest2>(data), {
+      .post("/voice/stream", data, {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -257,7 +257,7 @@ export class EndpointService {
 
     // Subscription to the HttpClient request
     const subscription = this.httpClient
-      .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
+      .post("/chat/stream", data, {
         responseType: "text",
         reportProgress: true,
         observe: "events"
@@ -320,7 +320,7 @@ export class EndpointService {
 
     console.log("Feedback data:", data);
 
-    this.httpClient.post("/feedback/stream", new TypedFormData<ApiFeedbackRequest>(data)).subscribe({
+    this.httpClient.post("/feedback", data).subscribe({
       next: () => {
         console.log("Feedback sent successfully");
       },
