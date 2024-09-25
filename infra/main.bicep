@@ -38,11 +38,11 @@ param cosmosDbResourceGroupName string = ''
 // Azure Log Analytics
 @description('Use Application Insights for monitoring and performance tracing')
 param useApplicationInsights bool // Set in main.parameters.json
-param applicationInsightsName string = ''
+// param applicationInsightsName string = ''
 param applicationInsightsForApimName string = ''
-param applicationInsightsDashboardName string = ''
+// param applicationInsightsDashboardName string = ''
 param applicationInsightsDashboardNameForApim string = ''
-param logAnalyticsName string = ''
+// param logAnalyticsName string = ''
 param logAnalyticsForApimName string = ''
 
 // Azure Blob Storage
@@ -300,28 +300,28 @@ resource cosmosDbResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' e
 }
 
 // Monitor application with Azure Monitor
-module monitoring 'core/monitor/monitoring.bicep' = if (useApplicationInsights) {
-  name: 'monitoring'
-  scope: resourceGroup
-  params: {
-    location: location
-    tags: tags
-    applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
-    logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
-    // applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
-    publicNetworkAccess: publicNetworkAccess
-  }
-}
+// module monitoring 'core/monitor/monitoring.bicep' = if (useApplicationInsights) {
+//   name: 'monitoring'
+//   scope: resourceGroup
+//   params: {
+//     location: location
+//     tags: tags
+//     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
+//     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
+//     // applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+//     publicNetworkAccess: publicNetworkAccess
+//   }
+// }
 
-module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicationInsights) {
-  name: 'application-insights-dashboard'
-  scope: resourceGroup
-  params: {
-    name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
-    location: location
-    applicationInsightsName: useApplicationInsights ? monitoring.outputs.applicationInsightsName : ''
-  }
-}
+// module applicationInsightsDashboard 'backend-dashboard.bicep' = if (useApplicationInsights) {
+//   name: 'application-insights-dashboard'
+//   scope: resourceGroup
+//   params: {
+//     name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+//     location: location
+//     applicationInsightsName: useApplicationInsights ? monitoring.outputs.applicationInsightsName : ''
+//   }
+// }
 
 module monitoringApim 'core/monitor/monitoring.bicep' = if (useApplicationInsights) {
   name: 'monitoring-apim'
@@ -409,14 +409,14 @@ module searchService 'core/search/search-services.bicep' = {
   }
 }
 
-module searchDiagnostics 'core/search/search-diagnostics.bicep' = if (useApplicationInsights) {
-  name: 'search-diagnostics'
-  scope: searchServiceResourceGroup
-  params: {
-    searchServiceName: searchService.outputs.name
-    workspaceId: useApplicationInsights ? monitoring.outputs.logAnalyticsWorkspaceId : ''
-  }
-}
+// module searchDiagnostics 'core/search/search-diagnostics.bicep' = if (useApplicationInsights) {
+//   name: 'search-diagnostics'
+//   scope: searchServiceResourceGroup
+//   params: {
+//     searchServiceName: searchService.outputs.name
+//     workspaceId: useApplicationInsights ? monitoring.outputs.logAnalyticsWorkspaceId : ''
+//   }
+// }
 
 // Azure Speech Service
 module speech 'br/public:avm/res/cognitive-services/account:0.7.0' = if (useSpeechOutputAzure) {
@@ -598,7 +598,7 @@ module backend 'core/host/appservice.bicep' = {
       USE_FEATURE_INT_VECTORIZATION :useIntegratedVectorization
       USE_LOCAL_PDF_PARSER: useLocalPdfParser
       USE_LOCAL_HTML_PARSER: useLocalHtmlParser
-      APPLICATIONINSIGHTS_CONNECTION_STRING: useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
+      // APPLICATIONINSIGHTS_CONNECTION_STRING: useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
       APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING: useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
       // Azure Key Vault
       AZURE_KEY_VAULT_ID: keyVault.outputs.id
@@ -950,7 +950,7 @@ output USE_LOCAL_PDF_PARSER bool = useLocalPdfParser
 output USE_LOCAL_HTML_PARSER bool = useLocalHtmlParser
 
 // Logging
-output APPLICATIONINSIGHTS_CONNECTION_STRING string = useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
+// output APPLICATIONINSIGHTS_CONNECTION_STRING string = useApplicationInsights ? monitoring.outputs.applicationInsightsConnectionString : ''
 output APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING string = useApplicationInsights ? monitoringApim.outputs.applicationInsightsConnectionString : ''
 
 // Azure Key Vault
