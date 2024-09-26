@@ -248,7 +248,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 tools=tools,
                 seed=seed,
             )
-
+            total_tokens += chat_completion.usage.total_tokens
             query_text = self.get_search_query(chat_completion, original_user_query)
 
             vectors: list[VectorQuery] = []
