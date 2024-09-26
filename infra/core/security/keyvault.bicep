@@ -86,7 +86,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = if (!keyVault
     }
     enableSoftDelete: true
     publicNetworkAccess: publicNetworkAccess
-    enablePurgeProtection: true
+    enablePurgeProtection: true  // Should have been set to false; this is permanent
     accessPolicies: !empty(principalId) ? [
       {
         objectId: principalId

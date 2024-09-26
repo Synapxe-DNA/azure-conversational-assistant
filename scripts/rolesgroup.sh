@@ -8,7 +8,6 @@ done <<< "$output"
 
 echo "Environment variables set."
 
-# TODO: Add for Cosmos DB
 roles=(
     "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd" # Cognitive Services OpenAI User
     "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" # Storage Blob Data Reader
@@ -26,7 +25,7 @@ fi
 for role in "${roles[@]}"; do
     az role assignment create \
         --role "$role" \
-        --assignee-object-id "$AZURE_PRINCIPAL_ID" \
+        --assignee-object-id "$AZURE_GROUP_PRINCIPAL_ID" \
         --scope /subscriptions/"$AZURE_SUBSCRIPTION_ID"/resourceGroups/"$AZURE_RESOURCE_GROUP" \
         --assignee-principal-type Group
 done
@@ -35,5 +34,5 @@ az cosmosdb sql role assignment create \
 	--account-name "$AZURE_COSMOS_DB_NAME" \
 	--resource-group "$AZURE_RESOURCE_GROUP" \
 	--scope /subscriptions/"$AZURE_SUBSCRIPTION_ID"/resourceGroups/"$AZURE_RESOURCE_GROUP"/providers/Microsoft.DocumentDB/databaseAccounts/"$AZURE_COSMOS_DB_NAME" \
-	--principal-id "$AZURE_PRINCIPAL_ID" \
+	--principal-id "$AZURE_GROUP_PRINCIPAL_ID" \
 	--role-definition-id "70dead90-615e-4a87-9241-93931570e7d9"

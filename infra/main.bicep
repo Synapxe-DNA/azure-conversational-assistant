@@ -79,7 +79,25 @@ param openAiServiceName string = ''
     type: 'location'
   }
 })
-param openAiResourceGroupLocation string
+param openAiMainResourceGroupLocation string
+@allowed([
+  'canadaeast'
+  'eastus'
+  'eastus2'
+  'francecentral'
+  'switzerlandnorth'
+  'uksouth'
+  'japaneast'
+  'northcentralus'
+  'australiaeast'
+  'swedencentral'
+])
+@metadata({
+  azd: {
+    type: 'location'
+  }
+})
+param openAiAlternativeResourceGroupLocation string
 param openAiSkuName string // Set in main.parameters.json
 
 @secure()
@@ -130,12 +148,12 @@ var embedding = {
 param openAiInstances object = {
   openAi1: {
     name: openAiServiceName
-    location: openAiResourceGroupLocation  // Main location
+    location: openAiMainResourceGroupLocation  // Main location
     version: '-000' // Increment
   }
   openAi2: {
     name: 'openai2' // Annoyingly this must be a different value from all items in this object; can be any string
-    location: 'eastus2'
+    location: openAiAlternativeResourceGroupLocation
     version: '-001'
   }
   // openAi3: {
@@ -449,6 +467,7 @@ module cosmosDb 'core/database/cosmos.bicep' = {
     containerId: cosmosContainerId
     location: !empty(cosmosDbLocation) ? cosmosDbLocation : location
     tags: tags
+    enableFreeTier: false
     publicNetworkAccess: publicNetworkAccess
     bypass: 'None'
     disableLocalAuth: true
@@ -895,7 +914,8 @@ output AZURE_STORAGE_SKU string = storageSkuName
 
 // Azure OpenAI Service
 output OPENAI_HOST string = openAiHost
-output AZURE_OPENAI_LOCATION string = openAiResourceGroupLocation
+output AZURE_OPENAI_MAIN_LOCATION string = openAiMainResourceGroupLocation
+output AZURE_OPENAI_ALTERNATIVE_LOCATION string = openAiAlternativeResourceGroupLocation
 output AZURE_OPENAI_CHATGPT_MODEL string = chatGpt.modelName
 output AZURE_OPENAI_CHATGPT_DEPLOYMENT string = isAzureOpenAiHost ? chatGpt.deploymentName : ''
 output AZURE_OPENAI_CHATGPT_DEPLOYMENT_VERSION string = chatGpt.deploymentVersion
