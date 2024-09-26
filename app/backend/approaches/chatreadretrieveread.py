@@ -241,7 +241,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
             messages=query_check_messages,
         )
-        total_tokens += chat_completion.usage.total_tokens
+        total_tokens += query_check_response.usage.total_tokens
 
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
