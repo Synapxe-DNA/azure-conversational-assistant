@@ -1,3 +1,4 @@
+import os
 import time
 from typing import Any, Coroutine, List, Literal, Optional, Union, overload
 
@@ -126,6 +127,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
         query_response_token_limit = config.QUERY_RESPONSE_MAX_TOKENS
+        llm_model = os.environ["AZURE_OPENAI_CHATGPT_MODEL"]
 
         selected_language = language.upper()
         print(f"Selected language: {selected_language}")
@@ -279,9 +281,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             new_user_content=original_user_query + "\n\nSources:\n" + content,
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
-        
+
         for message in messages:
-            total_tokens += count_tokens_for_message("gpt-4o", message)
+            total_tokens += count_tokens_for_message(llm_model, message)
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
