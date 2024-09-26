@@ -14,6 +14,9 @@
     "principalId": {
       "value": "${AZURE_PRINCIPAL_ID}"
     },
+    "groupPrincipalId": {
+      "value": "${AZURE_GROUP_PRINCIPAL_ID=ec479f24-9778-43b4-97e9-824dd1c53bfe}"
+    },
     "tenantId": {
       "value": "${AZURE_TENANT_ID}"
     },
@@ -54,7 +57,7 @@
       "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT}"
     },
     "chatGptDeploymentCapacity": {
-      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_CAPACITY}"
+      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_CAPACITY=150}"
     },
     "embeddingModelName": {
       "value": "${AZURE_OPENAI_EMB_MODEL_NAME=text-embedding-3-small}"
@@ -63,7 +66,7 @@
       "value": "${AZURE_OPENAI_EMB_DEPLOYMENT}"
     },
     "embeddingDeploymentCapacity": {
-      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY}"
+      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY=350}"
     },
     "embeddingDimensions": {
       "value": "${AZURE_OPENAI_EMB_DIMENSIONS}"
@@ -134,6 +137,9 @@
     "apimServiceName": {
       "value": "${AZURE_APIM_SERVICE_PLAN}"
     },
+    "apimServiceLocation": {
+      "value": "${AZURE_APIM_LOCATION=eastasia}"
+    },
     "appServicePlanName": {
       "value": "${AZURE_APP_SERVICE_PLAN}"
     },
@@ -172,6 +178,18 @@
     },
     "bypass": {
       "value": "${AZURE_NETWORK_BYPASS=AzureServices}"
+    },
+    "keyVaultServiceName": {
+      "value": "${AZURE_KEY_VAULT_NAME}"
+    },
+    "usernameName": {
+      "value": "${USERNAME_NAME=username}"
+    },
+    "passwordName": {
+      "value": "${PASSWORD_NAME=password}"
+    },
+    "secretKeyName": {
+      "value": "${SECRET_KEY_NAME=secretKey}"
     }
   }
 }

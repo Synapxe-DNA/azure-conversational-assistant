@@ -24,7 +24,7 @@ param consistencyPolicy object = {
 param databaseId string
 param databaseAccountOfferType string = 'Standard'
 param defaultIdentity string = 'FirstPartyIdentity'
-param disableKeyBasedMetadataWriteAccess bool = false
+param disableKeyBasedMetadataWriteAccess bool = false // true
 param disableLocalAuth bool
 param enableAnalyticalStorage bool = false
 param enableAutomaticFailover bool = false
@@ -46,6 +46,15 @@ param throughput int = 400
 param totalThroughputLimit int = 4000
 param virtualNetworkRules array = []
 
+param cosmosDbReuse bool
+param existingCosmosDbResourceGroupName string
+param existingCosmosDbAccountName string
+param deployCosmosDb bool = true
+
+resource existingAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing  = if (cosmosDbReuse && deployCosmosDb) {
+  scope: resourceGroup(existingCosmosDbResourceGroupName)
+  name: existingCosmosDbAccountName
+}
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: name
@@ -223,8 +232,7 @@ resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/container
   }
 }
 
-
-output name string = cosmos.name
-output location string = cosmos.location
+output name string =  !deployCosmosDb ? '' : cosmosDbReuse ? existingAccount.name : cosmos.name
+output location string =  !deployCosmosDb ? '' : cosmosDbReuse ? existingAccount.location : cosmos.location
 output containerId string = container.id
 output databaseId string = database.id

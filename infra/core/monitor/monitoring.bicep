@@ -8,7 +8,7 @@ param tags object = {}
 param publicNetworkAccess string = 'Enabled'
 
 module logAnalytics 'br/public:avm/res/operational-insights/workspace:0.4.0' = {
-  name: 'loganalytics'
+  name: logAnalyticsName
   params: {
     name: logAnalyticsName
     location: location
@@ -22,7 +22,7 @@ module logAnalytics 'br/public:avm/res/operational-insights/workspace:0.4.0' = {
 }
 
 module applicationInsights 'br/public:avm/res/insights/component:0.3.1' = {
-  name: 'applicationinsights'
+  name: applicationInsightsName
   params: {
     name: applicationInsightsName
     location: location
@@ -34,7 +34,7 @@ module applicationInsights 'br/public:avm/res/insights/component:0.3.1' = {
 }
 
 module applicationInsightsDashboard 'applicationinsights-dashboard.bicep' = if (!empty(applicationInsightsDashboardName)) {
-  name: 'application-insights-dashboard'
+  name: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName: 'application-insights-dashboard'
   params: {
     name: applicationInsightsDashboardName
     location: location

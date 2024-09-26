@@ -2,10 +2,11 @@ import logging
 from functools import wraps
 from typing import Any, Callable, Dict
 
-from config import CONFIG_AUTH_CLIENT, CONFIG_SEARCH_CLIENT
+from authentication.authenticator import Authenticator
+from config import CONFIG_AUTH_CLIENT, CONFIG_AUTHENTICATOR, CONFIG_SEARCH_CLIENT
 from core.authentication import AuthError
 from error import error_response
-from quart import abort, current_app, request
+from quart import abort, current_app, jsonify, request
 
 
 def authenticated_path(route_fn: Callable[[str, Dict[str, Any]], Any]):
@@ -52,3 +53,24 @@ def authenticated(route_fn: Callable[[Dict[str, Any]], Any]):
         return await route_fn(auth_claims)
 
     return auth_handler
+
+
+def require_authentication(func):
+    """
+    Decorator for routes that require authentication
+    """
+
+    @wraps(func)
+    async def verify():
+        authenticator: Authenticator = current_app.config[CONFIG_AUTHENTICATOR]
+        token = authenticator.get_jwt_from_request()
+        if token:
+            try:
+                await authenticator.decode_jwt(token)
+                return await func()
+            except ValueError as e:
+                return jsonify({"error": str(e)}), 401
+        else:
+            return jsonify({"error": "Access token required"}), 401
+
+    return verify
