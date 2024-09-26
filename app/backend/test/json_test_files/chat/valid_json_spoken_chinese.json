@@ -1,0 +1,17 @@
+{
+    "language": "spoken",
+    "chat_history": [
+        {"role":"user","content":"你好！"},
+        {"role":"assistant", "content":"你好！"}
+    ],
+    "profile":{
+        "profile_type": "general",
+        "user_age": -1,
+        "user_gender": "male",
+        "user_condition": ""
+    },
+    "query": {
+        "role":"user",
+        "content":"如何睡得更好？"
+    }
+}
