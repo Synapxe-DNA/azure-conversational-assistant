@@ -1,3 +1,4 @@
+import os
 import time
 from typing import Any, Coroutine, List, Literal, Optional, Union, overload
 
@@ -22,7 +23,11 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
-from openai_messages_token_helper import build_messages, get_token_limit
+from openai_messages_token_helper import (
+    build_messages,
+    count_tokens_for_message,
+    get_token_limit,
+)
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
@@ -109,6 +114,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         List[dict[str, Any]],
     ]:
         start_time = time.time()
+        total_tokens = 0
 
         seed = config.SEED
         temperature = config.TEMPERATURE
@@ -121,6 +127,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
         query_response_token_limit = config.QUERY_RESPONSE_MAX_TOKENS
+        llm_model = os.environ["AZURE_OPENAI_CHATGPT_MODEL"]
 
         selected_language = language.upper()
         print(f"Selected language: {selected_language}")
@@ -209,6 +216,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
             messages=query_check_messages,
         )
+        total_tokens += query_check_response.usage.total_tokens
 
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
@@ -265,7 +273,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             content = "\n".join(sources_content)
 
         # STEP 3: Generate a contextual and content specific answer using the search results and chat history
-
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
@@ -274,6 +281,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             new_user_content=original_user_query + "\n\nSources:\n" + content,
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
+
+        for message in messages:
+            total_tokens += count_tokens_for_message(llm_model, message)
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -333,6 +343,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                     "Original query",
                     original_user_query,
                 ),
+                ThoughtStep("Total tokens", total_tokens),
             ],
         }
 
