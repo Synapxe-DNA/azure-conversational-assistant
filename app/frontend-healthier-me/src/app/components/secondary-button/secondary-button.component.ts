@@ -6,7 +6,7 @@ import { LucideAngularModule } from "lucide-angular";
   standalone: true,
   imports: [LucideAngularModule],
   templateUrl: "./secondary-button.component.html",
-  styleUrl: "./secondary-button.component.css",
+  styleUrl: "./secondary-button.component.css"
 })
 export class SecondaryButtonComponent {
   @Input() type: "chat" | "profile" = "profile";

@@ -9,50 +9,47 @@ export class v2AudioRecorder {
   socket?: WebSocket;
   audioContext?: AudioContext;
   processor?: ScriptProcessorNode;
+  pcmData?: Int16Array;
+  pcmDataList?: Int16Array[];
 
   userMessageId: string = "";
-  private activeProfile: BehaviorSubject<Profile | undefined> =
-    new BehaviorSubject<Profile | undefined>(undefined);
+  private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
   finalText: string = "";
+  isFinal: boolean = false;
   requestTime: number = 0;
 
   constructor(
     private chatMessageService: ChatMessageService,
-    private profileService: ProfileService,
+    private profileService: ProfileService
   ) {
-    this.profileService.$currentProfileInUrl.subscribe((p) => {
+    this.profileService.$currentProfileInUrl.subscribe(p => {
       this.activeProfile = this.profileService.getProfile(p);
     });
   }
 
   setupWebSocket() {
     this.socket = new WebSocket("/ws/transcribe");
-
     this.socket.onopen = () => {
       console.log("WebSocket connection opened");
       this.resetFields();
-      this.startAudioCapture();
     };
 
-    this.socket.onerror = (error) => {
+    this.socket.onerror = error => {
       console.error("WebSocket error:", error);
     };
 
     this.socket.onclose = () => {
       console.log("WebSocket connection closed");
-      this.stopAudioCapture();
+      this.socket = undefined;
     };
 
-    this.socket.onmessage = (event) => {
+    this.socket.onmessage = event => {
       try {
         const data = JSON.parse(event.data);
         if (data.text) {
-          if (data.is_final) {
-            this.finalText = data.text;
-          }
-
-          // upsert user message
-          this.upsert(data.text);
+          this.finalText = data.text;
+          this.upsert(this.finalText);
+          this.isFinal = data.is_final;
         } else if (data.error) {
           console.error("Error:", data.error);
         }
@@ -62,11 +59,21 @@ export class v2AudioRecorder {
     };
   }
 
+  closeWebSocket() {
+    this.socket?.close();
+    this.socket = undefined;
+  }
+
   startAudioCapture() {
+    if (this.socket === undefined) {
+      this.setupWebSocket();
+    }
+    this.resetFields();
     navigator.mediaDevices
       .getUserMedia({ audio: true })
-      .then((stream) => {
+      .then(stream => {
         this.audioContext = new AudioContext();
+        this.pcmDataList = [];
         const source = this.audioContext.createMediaStreamSource(stream);
         this.processor = this.audioContext.createScriptProcessor(1024, 1, 1);
 
@@ -77,11 +84,9 @@ export class v2AudioRecorder {
 
         let sampleCounter = 0;
 
-        this.processor.onaudioprocess = (e) => {
+        this.processor.onaudioprocess = e => {
           const inputBuffer = e.inputBuffer.getChannelData(0);
-          const outputBuffer = new Float32Array(
-            Math.floor(inputBuffer.length / downsampleFactor),
-          );
+          const outputBuffer = new Float32Array(Math.floor(inputBuffer.length / downsampleFactor));
 
           for (let i = 0; i < outputBuffer.length; i++) {
             sampleCounter += downsampleFactor;
@@ -91,24 +96,27 @@ export class v2AudioRecorder {
           sampleCounter = sampleCounter % 1;
 
           /// convert to 16-bit PCM
-          const pcmData = new Int16Array(outputBuffer.length);
+          this.pcmData = new Int16Array(outputBuffer.length);
           for (let i = 0; i < outputBuffer.length; i++) {
-            pcmData[i] = Math.max(-1, Math.min(1, outputBuffer[i])) * 0x7fff;
+            this.pcmData[i] = Math.max(-1, Math.min(1, outputBuffer[i])) * 0x7fff;
           }
 
           // Send pcmData to backend
           if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(pcmData.buffer);
+            this.sendAllPcmData();
+          } else {
+            this.pcmDataList!.push(this.pcmData);
           }
+          this.pcmData = new Int16Array(0); // Clear the buffer
         };
       })
-      .catch((error) => {
+      .catch(error => {
         console.error("Error accessing microphone:", error);
       });
   }
 
   stopAudioCapture(): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (this.processor) {
         this.processor.disconnect();
         this.processor = undefined;
@@ -117,14 +125,44 @@ export class v2AudioRecorder {
         this.audioContext.close();
         this.audioContext = undefined;
       }
-      resolve(this.finalText);
+
+      const checkBufferInterval = setInterval(() => {
+        console.log("Clearing all PCM buffer");
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          this.sendAllPcmData();
+          clearInterval(checkBufferInterval); // Stop checking once the buffer is empty
+          this.socket?.send("completed"); // Send completed message to backend
+        }
+      }, 100);
+
+      const checkInterval = setInterval(() => {
+        if (this.isFinal) {
+          clearInterval(checkInterval); // Stop checking once the socket is closed
+          this.upsert(this.finalText); // Final upsert to ensure final text is displayed
+          console.log("Speech transcribed successfully");
+          resolve(this.finalText);
+        }
+      }, 100);
     });
   }
 
   resetFields() {
     this.userMessageId = createId();
     this.finalText = "";
+    this.isFinal = false;
     this.requestTime = new Date().getTime();
+  }
+
+  sendAllPcmData() {
+    while (this.pcmDataList!.length > 0) {
+      const data = this.pcmDataList!.shift(); // Pop the first item
+      if (data) {
+        this.socket!.send(data.buffer);
+      }
+    }
+    if (this.pcmData!.length > 0) {
+      this.socket!.send(this.pcmData!.buffer);
+    }
   }
 
   async upsert(finalText: string) {
@@ -134,7 +172,7 @@ export class v2AudioRecorder {
       role: MessageRole.User,
       message: finalText,
       timestamp: this.requestTime,
-      sources: [],
+      sources: []
     });
   }
 }

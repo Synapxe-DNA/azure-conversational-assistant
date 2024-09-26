@@ -10,10 +10,10 @@ import { ProfileService } from "./services/profile/profile.service";
   imports: [RouterOutlet, ToastModule],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
-  providers: [MessageService],
+  providers: [MessageService]
 })
 export class AppComponent {
-  title = "frontend";
+  title = "HealthierME";
 
   constructor() {}
 }

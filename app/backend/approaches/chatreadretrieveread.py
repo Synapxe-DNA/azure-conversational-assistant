@@ -9,6 +9,7 @@ from approaches.prompts import (
     general_query_prompt,
     profile_prompt,
     profile_query_prompt,
+    query_check_prompt,
 )
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
@@ -22,8 +23,6 @@ from openai.types.chat import (
     ChatCompletionToolParam,
 )
 from openai_messages_token_helper import build_messages, get_token_limit
-
-# from lingua import Language, LanguageDetectorBuilder
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
@@ -122,7 +121,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
 
-        selected_language = language
+        selected_language = language.upper()
         print(f"Selected language: {selected_language}")
         print(f"Profile Type: {profile.profile_type}")
 
@@ -148,7 +147,14 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         if profile.profile_type == "general":
             user_query_request = "Generate search query for: " + original_user_query
         else:
-            user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
+            stripped_text_check = original_user_query.replace(" ", "")  # check if user input is an empty string
+            if not stripped_text_check:
+                user_query_request = "Generate search query for: " + original_user_query
+            else:
+                user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
+
+        print(f"original_user_query: {original_user_query}")
+        print(f"user_query_request: {user_query_request}")
 
         tools: List[ChatCompletionToolParam] = [
             {
@@ -170,15 +176,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             }
         ]
 
-        # # identify language if selected_language is default
-        # languages = [Language.ENGLISH, Language.CHINESE, Language.MALAY, Language.TAMIL]
-        # if selected_language == "default":
-        #     detected_language = detector.detect_language_of(original_user_query)
-        #     selected_language = detected_language.name
-
         if profile.profile_type == "general":
             query_prompt = general_query_prompt
-            answer_generation_prompt = general_prompt.format(selected_language=selected_language)
+            answer_generation_prompt = general_prompt.format(language=selected_language)
         else:
             query_prompt = profile_query_prompt.format(
                 gender=profile.user_gender,
@@ -187,7 +187,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
             answer_generation_prompt = profile_prompt.format(
-                selected_language=selected_language,
+                language=selected_language,
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -219,33 +219,57 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
         query_text = self.get_search_query(chat_completion, original_user_query)
 
-        # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
+        ## STEP 2: LLM to check if the query is health-related
+        # previous_system_reply = messages[-2]
+        # print(f"previous_system_reply: {previous_system_reply}")
 
-        # If retrieval mode includes vectors, compute an embedding for the query
-        vectors: list[VectorQuery] = []
-        if use_vector_search:
-            vectors.append(await self.compute_text_embedding(query_text))
-
-        results = await self.search(
-            top,
-            query_text,
-            None,
-            vectors,
-            use_text_search,
-            use_vector_search,
-            use_semantic_ranker,
-            use_semantic_captions,
-            minimum_search_score,
-            minimum_reranker_score,
+        query_check_messages = build_messages(
+            model=self.chatgpt_model,
+            system_prompt=query_check_prompt,
+            new_user_content=original_user_query,
+            past_messages=messages[:-1],
+            max_tokens=self.chatgpt_token_limit - query_response_token_limit,
         )
 
-        sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
+        query_check_response = await self.openai_client.chat.completions.create(
+            # Azure OpenAI takes the deployment name as the model name
+            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
+            messages=query_check_messages,
+        )
 
-        content = "\n".join(sources_content)
+        query_check_output = query_check_response.choices[0].message.content
+        print(f"query_check_output: {query_check_output}")
 
-        # STEP 3: Generate a contextual and content specific answer using the search results and chat history
+        # STEP 3: Retrieve relevant documents from the search index with the GPT optimized query
+        if query_check_output == "False":
+            sources_content = ""
+            content = ""
+            results = ""
+        else:
+            # If retrieval mode includes vectors, compute an embedding for the query
+            vectors: list[VectorQuery] = []
+            if use_vector_search:
+                vectors.append(await self.compute_text_embedding(query_text))
 
-        # response_token_limit = 1024
+            results = await self.search(
+                top,
+                query_text,
+                None,
+                vectors,
+                use_text_search,
+                use_vector_search,
+                use_semantic_ranker,
+                use_semantic_captions,
+                minimum_search_score,
+                minimum_reranker_score,
+            )
+
+            sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
+
+            content = "\n".join(sources_content)
+
+        # STEP 4: Generate a contextual and content specific answer using the search results and chat history
+
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
@@ -256,6 +280,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         # data_points = {"text": sources_content}
+        # print(f"data_points: {data_points}")
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -310,6 +335,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 ThoughtStep(
                     "Time taken",
                     end_time - start_time,
+                ),
+                ThoughtStep(
+                    "Original query",
+                    original_user_query,
                 ),
             ],
         }

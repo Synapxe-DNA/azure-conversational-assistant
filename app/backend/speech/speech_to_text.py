@@ -1,3 +1,5 @@
+import logging
+import queue
 import time
 
 import azure.cognitiveservices.speech as speechsdk
@@ -23,13 +25,7 @@ class SpeechToText:
         self.auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
             languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
         )
-        self.stream = speechsdk.audio.PushAudioInputStream()
-        audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
-        self.speech_recognizer = speechsdk.SpeechRecognizer(
-            speech_config=self.speech_config,
-            audio_config=audio_config,
-            auto_detect_source_language_config=self.auto_detect_source_language_config,
-        )
+        self.setup()
 
     @classmethod
     async def create(cls):
@@ -55,7 +51,13 @@ class SpeechToText:
     def getStream(self):
         return self.stream
 
-    def resetStream(self):
+    def getQueue(self):
+        return self.result_queue
+
+    def reset(self):
+        self.setup()
+
+    def setup(self):
         self.stream = speechsdk.audio.PushAudioInputStream()
         audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
         self.speech_recognizer = speechsdk.SpeechRecognizer(
@@ -63,3 +65,27 @@ class SpeechToText:
             audio_config=audio_config,
             auto_detect_source_language_config=self.auto_detect_source_language_config,
         )
+
+        # Connect callbacks
+        self.speech_recognizer.recognizing.connect(self.recognizing_cb)
+        self.speech_recognizer.recognized.connect(self.recognized_cb)
+        self.speech_recognizer.canceled.connect(self.canceled_cb)
+        self.result_queue = queue.Queue()
+        self.all_result = ""
+        self.finished_recognising = False
+
+    # Set up callbacks
+    def recognizing_cb(self, evt):
+        self.finished_recognising = False
+        logging.info(f"Recognizing: {evt.result.text}")
+        self.result_queue.put({"text": self.all_result + evt.result.text, "is_final": False})
+
+    def recognized_cb(self, evt):
+        self.finished_recognising = True
+        self.all_result += evt.result.text + " "
+        logging.info(f"Recognized: {evt.result.text}")
+        self.result_queue.put({"text": self.all_result, "is_final": True})
+
+    def canceled_cb(self, evt):
+        logging.warning(f"Recognition canceled: {evt.result.reason}")
+        # self.result_queue.put({"error": f"Recognition canceled: {evt.result.reason}"})

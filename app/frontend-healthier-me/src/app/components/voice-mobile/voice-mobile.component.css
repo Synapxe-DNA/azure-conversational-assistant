@@ -21,3 +21,12 @@
 .footer-text {
   @apply tw-text-center tw-text-xs tw-text-white tw-pb-[2vh];
 }
+
+.tw-relative {
+  transition: background-color 0.1s ease-in-out;
+}
+
+.custom-border .p-button {
+  border-color: white; /* Replace with your desired color */
+  border-width: 2px; /* Optional: Adjust the border width */
+}

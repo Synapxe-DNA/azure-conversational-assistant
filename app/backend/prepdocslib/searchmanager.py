@@ -20,7 +20,6 @@ from azure.search.documents.indexes.models import (
     VectorSearchVectorizer,
 )
 
-from .blobmanager import BlobManager
 from .embeddings import OpenAIEmbeddings
 from .listfilestrategy import File
 from .strategy import SearchInfo
@@ -68,73 +67,86 @@ class SearchManager:
         logger.info("Ensuring search index %s exists", self.search_info.index_name)
 
         async with self.search_info.create_search_index_client() as search_index_client:
-            fields = [
-                (
-                    SimpleField(name="id", type="Edm.String", key=True)
-                    if not self.use_int_vectorization
-                    else SearchField(
+            fields = []
+
+            if self.use_int_vectorization:
+                fields.append(SearchableField(name="parent_id", type=SearchFieldDataType.String, filterable=True))
+                fields.append(
+                    SearchField(
                         name="id",
-                        type="Edm.String",
+                        type=SearchFieldDataType.String,
                         key=True,
                         sortable=True,
                         filterable=True,
                         facetable=True,
                         analyzer_name="keyword",
                     )
-                ),
-                SearchableField(
-                    name="content",
-                    type="Edm.String",
-                    analyzer_name=self.search_analyzer_name,
-                ),
-                SearchField(
-                    name="embedding",
-                    type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
-                    hidden=False,
-                    searchable=True,
-                    filterable=False,
-                    sortable=False,
-                    facetable=False,
-                    vector_search_dimensions=self.embedding_dimensions,
-                    vector_search_profile_name="embedding_config",
-                ),
-                SimpleField(name="category", type="Edm.String", filterable=True, facetable=True),
-                SimpleField(
-                    name="sourcePage",
-                    type="Edm.String",
-                    filterable=True,
-                    facetable=True,
-                ),
-                SimpleField(
-                    name="sourceFile",
-                    type="Edm.String",
-                    filterable=True,
-                    facetable=True,
-                ),
-                SimpleField(
-                    name="storageUrl",
-                    type="Edm.String",
-                    filterable=True,
-                    facetable=False,
-                ),
-            ]
+                )
+            else:
+                fields.append(SimpleField(name="id", type=SearchFieldDataType.String, key=True))
+
+            fields.extend(
+                [
+                    SearchableField(
+                        name="title",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                    ),
+                    SimpleField(name="cover_image_url", type=SearchFieldDataType.String),
+                    SimpleField(name="full_url", type=SearchFieldDataType.String),
+                    SearchableField(
+                        name="content_category",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                        filterable=True,
+                    ),
+                    SearchableField(
+                        name="category_description",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                    ),
+                    SimpleField(name="pr_name", type=SearchFieldDataType.String),
+                    SimpleField(name="date_modified", type=SearchFieldDataType.String),
+                    # SearchableField(
+                    #     name="content",
+                    #     type=SearchFieldDataType.String,
+                    #     analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name
+                    #     ),
+                    SearchableField(
+                        name="chunks",
+                        type=SearchFieldDataType.String,
+                        analyzer_name="en.lucene" if self.search_analyzer_name is None else self.search_analyzer_name,
+                    ),
+                    SearchField(
+                        name="embedding",
+                        type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                        hidden=False,
+                        searchable=True,
+                        filterable=False,
+                        sortable=False,
+                        facetable=False,
+                        vector_search_dimensions=self.embedding_dimensions,
+                        vector_search_profile_name="embedding_config",
+                    ),
+                ]
+            )
+
             if self.use_acls:
-                fields.append(
-                    SimpleField(
-                        name="oids",
-                        type=SearchFieldDataType.Collection(SearchFieldDataType.String),
-                        filterable=True,
-                    )
+                fields.extend(
+                    [
+                        SimpleField(
+                            name="oids",
+                            type=SearchFieldDataType.Collection(SearchFieldDataType.String),
+                            filterable=True,
+                        ),
+                        SimpleField(
+                            name="groups",
+                            type=SearchFieldDataType.Collection(SearchFieldDataType.String),
+                            filterable=True,
+                        ),
+                    ]
                 )
-                fields.append(
-                    SimpleField(
-                        name="groups",
-                        type=SearchFieldDataType.Collection(SearchFieldDataType.String),
-                        filterable=True,
-                    )
-                )
-            if self.use_int_vectorization:
-                fields.append(SearchableField(name="parent_id", type="Edm.String", filterable=True))
+
             if self.search_images:
                 fields.append(
                     SearchField(
@@ -158,15 +170,22 @@ class SearchManager:
                         SemanticConfiguration(
                             name="default",
                             prioritized_fields=SemanticPrioritizedFields(
-                                title_field=None, content_fields=[SemanticField(field_name="content")]
+                                title_field=SemanticField(field_name="title"),
+                                content_fields=[
+                                    SemanticField(field_name="chunks"),
+                                ],  # This is where the caption is, can create a new metadata field for this. The order of the field indicates the priority of the search.
                             ),
                         )
                     ]
                 ),
                 vector_search=VectorSearch(
+                    # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchalgorithmconfiguration?view=azure-python
+                    # Algorithm used for vector search
                     algorithms=[
                         HnswAlgorithmConfiguration(name="hnsw_config", parameters=HnswParameters(metric="cosine"))
                     ],
+                    # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchprofile?view=azure-python
+                    # Specify the profiles for the vector search and computing the embeddings
                     profiles=[
                         VectorSearchProfile(
                             name="embedding_config",
@@ -176,26 +195,19 @@ class SearchManager:
                             ),
                         ),
                     ],
+                    # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.vectorsearchvectorizer?view=azure-python
+                    # See: https://learn.microsoft.com/en-us/azure/search/vector-search-vectorizer-azure-open-ai
                     vectorizers=vectorizers,
                 ),
             )
+
             if self.search_info.index_name not in [name async for name in search_index_client.list_index_names()]:
                 logger.info("Creating %s search index", self.search_info.index_name)
                 await search_index_client.create_index(index)
             else:
                 logger.info("Search index %s already exists", self.search_info.index_name)
                 index_definition = await search_index_client.get_index(self.search_info.index_name)
-                if not any(field.name == "storageUrl" for field in index_definition.fields):
-                    logger.info("Adding storageUrl field to index %s", self.search_info.index_name)
-                    index_definition.fields.append(
-                        SimpleField(
-                            name="storageUrl",
-                            type="Edm.String",
-                            filterable=True,
-                            facetable=False,
-                        ),
-                    )
-                    await search_index_client.create_or_update_index(index_definition)
+                await search_index_client.create_or_update_index(index_definition)
 
     async def update_content(
         self, sections: List[Section], image_embeddings: Optional[List[List[float]]] = None, url: Optional[str] = None
@@ -208,21 +220,14 @@ class SearchManager:
                 documents = [
                     {
                         "id": f"{section.content.filename_to_id()}-page-{section_index + batch_index * MAX_BATCH_SIZE}",
-                        "content": section.split_page.text,
-                        "category": section.category,
-                        "sourcePage": (
-                            BlobManager.blob_image_name_from_file_page(
-                                filename=section.content.filename(),
-                                page=section.split_page.page_num,
-                            )
-                            if image_embeddings
-                            else BlobManager.sourcepage_from_file_page(
-                                filename=section.content.filename(),
-                                page=section.split_page.page_num,
-                            )
-                        ),
-                        "sourceFile": section.content.filename(),
-                        **section.content.acls,
+                        "title": section.title,  # Using 'title' for the title
+                        "cover_image_url": section.cover_image_url,  # Adding a placeholder for cover image URL
+                        "full_url": section.full_url,  # Adding a placeholder for the full URL
+                        "content_category": section.category,  # Using 'content_category' for the section category
+                        "category_description": section.category_description,  # Adding a placeholder for category description
+                        "pr_name": section.category_description,  # Adding a placeholder for category description
+                        "date_modified": section.category_description,  # Adding a placeholder for category description
+                        "chunks": section.split_page.text,  # Using 'chunks' for the split page text content
                     }
                     for section_index, section in enumerate(batch)
                 ]

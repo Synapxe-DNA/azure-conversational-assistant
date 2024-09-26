@@ -1,11 +1,6 @@
-<div
-  class="tw-w-full tw-h-full tw-flex tw-flex-col tw-justify-center tw-items-center tw-bg-emerald-200"
->
+<div class="tw-w-[100dvw] tw-h-[100dvh] tw-flex tw-flex-col tw-justify-center tw-items-center tw-bg-emerald-200">
   <p-card header="Create your profile">
-    <form
-      [formGroup]="profileForm"
-      class="tw-w-[60ch] tw-grid tw-grid-cols-1 tw-gap-4"
-    >
+    <form [formGroup]="profileForm" class="tw-w-[60dvw] tw-grid tw-grid-cols-1 tw-gap-4">
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-type">This profile is for</label>
         <p-selectButton
@@ -17,36 +12,28 @@
           optionValue="value"
         />
       </div>
+
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-name">Profile name</label>
         <input pInputText id="profile-name" formControlName="name" />
       </div>
 
       <div class="tw-flex tw-flex-col tw-gap-2">
-        <label for="user-age">Gender</label>
-        <p-dropdown
-          styleClass="tw-w-full"
-          id="user-age"
-          [options]="profileGenderOptions"
-          placeholder="Gender"
-          formControlName="gender"
-        />
+        <label for="user-gender">Gender</label>
+        <p-dropdown styleClass="tw-w-full" id="user-gender" [options]="profileGenderOptions" placeholder="Gender" formControlName="gender" />
       </div>
+
+      <!-- Age Input with Error Display -->
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-age">Age</label>
-        <p-inputNumber
-          id="profile-age"
-          formControlName="age"
-          styleClass="tw-w-full"
-          [min]="0"
-        />
+        <p-inputNumber id="profile-age" formControlName="age" styleClass="tw-w-full" [min]="0"></p-inputNumber>
+        <div *ngIf="profileForm.get('age')?.hasError('invalidAge')" class="tw-text-red-500">Invalid age, must be less than or equal to 100.</div>
       </div>
+
       <div class="tw-flex tw-flex-col tw-gap-2">
-        <label for="profile-preexist"
-          >Do
-          {{ profileForm.value?.profile_type !== "OTHERS" ? "you" : "they" }}
-          have any of these pre-existing conditions?</label
-        >
+        <label for="profile-preexist">
+          Do {{ profileForm.value?.profile_type !== "OTHERS" ? "you" : "they" }} have any of these pre-existing conditions?
+        </label>
         <p-multiSelect
           styleClass="tw-w-full"
           display="chip"
@@ -54,14 +41,10 @@
           [options]="profileConditionOptions"
           formControlName="existing_condition"
           placeholder="Conditions"
-        />
+        ></p-multiSelect>
       </div>
-      <p-button
-        (click)="createProfile()"
-        class="tw-w-full tw-mt-4"
-        styleClass="tw-w-full"
-        label="Create profile"
-      />
+
+      <p-button (click)="createProfile()" class="tw-w-full tw-mt-4" styleClass="tw-w-full" label="Create profile"></p-button>
     </form>
   </p-card>
 </div>

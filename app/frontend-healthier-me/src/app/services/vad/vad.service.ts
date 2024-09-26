@@ -4,7 +4,7 @@ import { VoiceActivity } from "../../types/voice-activity.type";
 import { AudioService } from "../audio/audio.service";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class VadService {
   private endTimeout: number = 0;
@@ -60,7 +60,7 @@ export class VadService {
     const vadState = new BehaviorSubject<VoiceActivity>(VoiceActivity.End);
 
     this.$speech.subscribe({
-      next: (res) => {
+      next: res => {
         if (vadState.value !== VoiceActivity.Start) {
           // User has started talking
           vadState.next(VoiceActivity.Start);
@@ -77,7 +77,7 @@ export class VadService {
       },
       complete: () => {
         console.log("done");
-      },
+      }
     });
 
     return vadState.asObservable();

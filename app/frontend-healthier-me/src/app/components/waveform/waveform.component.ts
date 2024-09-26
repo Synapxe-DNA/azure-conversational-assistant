@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-} from "@angular/core";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { AudioService } from "../../services/audio/audio.service";
 import { AudioAnalyser } from "../../utils/audio-analyser";
@@ -18,7 +9,7 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
   standalone: true,
   imports: [CommonModule],
   templateUrl: "./waveform.component.html",
-  styleUrl: "./waveform.component.css",
+  styleUrl: "./waveform.component.css"
 })
 export class WaveformComponent implements AfterViewInit {
   @Input() bars: number = 8;
@@ -31,13 +22,15 @@ export class WaveformComponent implements AfterViewInit {
   @ViewChild("container") container!: ElementRef;
   @ViewChildren("bar") levelBars!: QueryList<ElementRef>;
 
+  @Output() audioLevelChange = new EventEmitter<number>();
+
   barHeights: number[] = [];
 
   audioAnalyser: AudioAnalyser | undefined;
 
   constructor(
     private audioService: AudioService,
-    private audioPlayerService: AudioPlayerService,
+    private audioPlayerService: AudioPlayerService
   ) {}
 
   ngAfterViewInit() {
@@ -50,14 +43,10 @@ export class WaveformComponent implements AfterViewInit {
   }
 
   async startAnalyser() {
-    this.audioPlayerService.getAudioStream().subscribe((v) => {
+    this.audioPlayerService.getAudioStream().subscribe(v => {
       if (v) {
         // One more bar is added so that the "highest" frequency bar is attainable with regular voice
-        this.audioAnalyser = new AudioAnalyser(
-          v as MediaStream,
-          this.bars + 1,
-          0.3,
-        );
+        this.audioAnalyser = new AudioAnalyser(v as MediaStream, this.bars + 1, 0.3);
       }
     });
   }
@@ -66,14 +55,17 @@ export class WaveformComponent implements AfterViewInit {
     try {
       if (this.audioAnalyser) {
         const barHeights = this.audioAnalyser.getFrequency();
+        let averageHeight = 0;
+
         this.levelBars.forEach((b, index) => {
-          // Scale height of bar based on audio levels.
-          // Scaled for higher mid-tones
-          const heightMultiplier =
-            this.heightScalingFactor *
-            (1 + Math.sin((index / barHeights.length) * Math.PI));
-          b.nativeElement.style.height = `${barHeights[index] * heightMultiplier * this.container.nativeElement.clientHeight}px`;
+          const heightMultiplier = this.heightScalingFactor * (1 + Math.sin((index / barHeights.length) * Math.PI));
+          const barHeight = barHeights[index] * heightMultiplier * this.container.nativeElement.clientHeight;
+          b.nativeElement.style.height = `${barHeight}px`;
+          averageHeight += barHeight;
         });
+
+        averageHeight /= this.bars;
+        this.audioLevelChange.emit(averageHeight);
       }
     } catch (e) {
       console.error(e);

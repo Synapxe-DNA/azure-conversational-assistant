@@ -12,6 +12,8 @@ import { PreferenceService } from "../../services/preference/preference.service"
 import { ChatMode } from "../../types/chat-mode.type";
 import { SidebarModule } from "primeng/sidebar";
 import { NavbarComponent } from "../navbar/navbar.component";
+import { LucideAngularModule } from "lucide-angular";
+import { TagModule } from "primeng/tag";
 
 @Component({
   selector: "app-navbar-mobile",
@@ -23,12 +25,14 @@ import { NavbarComponent } from "../navbar/navbar.component";
     NavbarProfileCreateComponent,
     NavbarLanguageComponent,
     NavbarComponent,
-    Button,
     CommonModule,
     SidebarModule,
+    LucideAngularModule,
+    Button,
+    TagModule
   ],
   templateUrl: "./navbar-mobile.component.html",
-  styleUrl: "./navbar-mobile.component.css",
+  styleUrl: "./navbar-mobile.component.css"
 })
 export class NavbarMobileComponent implements OnInit {
   chatMode?: ChatMode;
@@ -39,15 +43,15 @@ export class NavbarMobileComponent implements OnInit {
   constructor(
     private profileService: ProfileService,
     private cdr: ChangeDetectorRef,
-    private preferences: PreferenceService,
+    private preferences: PreferenceService
   ) {
-    this.preferences.$chatMode.subscribe((m) => {
+    this.preferences.$chatMode.subscribe(m => {
       this.chatMode = m;
     });
   }
 
   ngOnInit() {
-    this.profileService.getProfiles().subscribe((v) => {
+    this.profileService.getProfiles().subscribe(v => {
       this.profiles = v;
       this.cdr.markForCheck();
     });
@@ -74,4 +78,5 @@ export class NavbarMobileComponent implements OnInit {
   }
 
   protected readonly GeneralProfile = GeneralProfile;
+  protected readonly ChatMode = ChatMode;
 }

@@ -8,7 +8,7 @@ describe("TextClipboardComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextClipboardComponent],
+      imports: [TextClipboardComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextClipboardComponent);

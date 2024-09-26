@@ -6,7 +6,7 @@ interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
 }
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class AudioPlayerService {
   /**
@@ -16,13 +16,11 @@ export class AudioPlayerService {
    * - Only one audio can be played at one time.
    */
 
-  private audioElement: HTMLMediaElementWithCaptureStream =
-    new Audio() as HTMLMediaElementWithCaptureStream;
+  private audioElement: HTMLMediaElementWithCaptureStream = new Audio() as HTMLMediaElementWithCaptureStream;
 
   private queue: Blob[] = [];
 
-  $stream: BehaviorSubject<MediaStream | null> =
-    new BehaviorSubject<MediaStream | null>(null);
+  $stream: BehaviorSubject<MediaStream | null> = new BehaviorSubject<MediaStream | null>(null);
   $playing: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor() {
@@ -38,6 +36,7 @@ export class AudioPlayerService {
 
   private playNextInQueue() {
     this.$playing.next(true);
+
     const blob = this.queue.shift()!;
     this.audioElement.src = URL.createObjectURL(blob);
     this.audioElement.play().then(() => {
@@ -57,7 +56,9 @@ export class AudioPlayerService {
    * @param blob {Blob}
    */
   play(...blob: Blob[]): void {
-    blob.forEach((b) => this.queue.push(b));
+    blob.forEach(b => {
+      this.queue.push(b);
+    });
     if (!this.$playing.value) {
       this.playNextInQueue();
     }
@@ -76,5 +77,15 @@ export class AudioPlayerService {
     this.queue = [];
     this.audioElement.pause();
     this.$playing.next(false);
+  }
+
+  playStartVoiceAudio(): void {
+    this.audioElement.src = "assets/startvoice.mp3";
+    this.audioElement.play();
+  }
+
+  playStopVoiceAudio(): void {
+    this.audioElement.src = "assets/stopvoice.mp3";
+    this.audioElement.play();
   }
 }

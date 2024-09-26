@@ -6,19 +6,17 @@ import { MessageService } from "primeng/api";
 import { ActivatedRoute } from "@angular/router";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class ProfileService {
   $profiles: BehaviorSubject<Profile[]> = new BehaviorSubject<Profile[]>([]);
-  $currentProfileInUrl: BehaviorSubject<string> = new BehaviorSubject<string>(
-    "",
-  );
+  $currentProfileInUrl: BehaviorSubject<string> = new BehaviorSubject<string>("");
 
   constructor(
     private dbService: NgxIndexedDBService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {
-    this.dbService.getAll<Profile>("profiles").subscribe((v) => {
+    this.dbService.getAll<Profile>("profiles").subscribe(v => {
       this.$profiles.next(v);
     });
   }
@@ -51,8 +49,8 @@ export class ProfileService {
   getProfile(profileId: string): BehaviorSubject<Profile | undefined> {
     const returnProfile = new BehaviorSubject<Profile | undefined>(undefined);
 
-    this.$profiles.subscribe((profiles) => {
-      const filtered = profiles.filter((p) => p.id === profileId);
+    this.$profiles.subscribe(profiles => {
+      const filtered = profiles.filter(p => p.id === profileId);
 
       if (filtered.length) {
         returnProfile.next(filtered[0]);
@@ -66,12 +64,32 @@ export class ProfileService {
     return returnProfile;
   }
 
+  updateProfile(updatedProfile: Profile) {
+    const index = this.$profiles.value.findIndex(m => m.id === updatedProfile.id);
+
+    if (index !== -1) {
+      this.dbService.update("profiles", updatedProfile).subscribe({
+        next: () => {
+          const updatedProfiles = [...this.$profiles.value];
+          updatedProfiles[index] = updatedProfile;
+          this.$profiles.next(updatedProfiles);
+          console.log("Profile updated: ", this.$profiles.value);
+        },
+        error: err => {
+          console.error("Failed to update profile:", err);
+        }
+      });
+    } else {
+      console.error("Profile not found:", updatedProfile.id);
+    }
+  }
+
   /**
    * Method to delete a profile by ID
    * @param id {string}
    */
   deleteProfile(id: string) {
     this.dbService.delete<Profile>("profiles", id).subscribe();
-    this.$profiles.next(this.$profiles.value.filter((p) => p.id !== id));
+    this.$profiles.next(this.$profiles.value.filter(p => p.id !== id));
   }
 }

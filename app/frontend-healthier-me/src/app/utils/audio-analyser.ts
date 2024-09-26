@@ -8,11 +8,7 @@ export class AudioAnalyser {
    * @param numBars The number of frequency bars to return.
    * @param smoothing Smoothing Time Constant
    */
-  constructor(
-    stream: MediaStream,
-    numBars: number = 8,
-    smoothing: number = 0.75,
-  ) {
+  constructor(stream: MediaStream, numBars: number = 8, smoothing: number = 0.75) {
     this.numBars = numBars;
 
     // Initialize audio context and analyser

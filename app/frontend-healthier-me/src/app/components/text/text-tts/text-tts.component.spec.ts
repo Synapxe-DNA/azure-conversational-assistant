@@ -8,7 +8,7 @@ describe("TextTtsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TextTtsComponent],
+      imports: [TextTtsComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextTtsComponent);

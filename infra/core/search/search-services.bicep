@@ -4,7 +4,7 @@ param location string = resourceGroup().location
 param tags object = {}
 
 param sku object = {
-  name: 'standard'
+  name: 'basic'
 }
 
 param authOptions object = {}
@@ -30,14 +30,13 @@ param replicaCount int = 1
   'standard'
 ])
 param semanticSearch string = 'disabled'
-
 param sharedPrivateLinkStorageAccounts array = []
 
 var searchIdentityProvider = (sku.name == 'free') ? null : {
   type: 'SystemAssigned'
 }
 
-resource search 'Microsoft.Search/searchServices@2023-11-01' = {
+resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
   name: name
   location: location
   tags: tags
@@ -55,7 +54,7 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = {
   }
   sku: sku
 
-  resource sharedPrivateLinkResource 'sharedPrivateLinkResources@2023-11-01' = [for (resourceId, i) in sharedPrivateLinkStorageAccounts: {
+  resource sharedPrivateLinkResource 'sharedPrivateLinkResources@2024-06-01-preview' = [for (resourceId, i) in sharedPrivateLinkStorageAccounts: {
     name: 'search-shared-private-link-${i}'
     properties: {
       groupId: 'blob'
@@ -70,4 +69,5 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = {
 output id string = search.id
 output endpoint string = 'https://${name}.search.windows.net/'
 output name string = search.name
+output location string = search.location
 output principalId string = !empty(searchIdentityProvider) ? search.identity.principalId : ''

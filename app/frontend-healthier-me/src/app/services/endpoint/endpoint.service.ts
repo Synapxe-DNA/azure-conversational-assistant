@@ -5,31 +5,22 @@ import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
 import { Message, MessageRole } from "../../types/message.type";
 import { ChatResponse } from "../../types/responses/chat-response.type";
-import {
-  HttpClient,
-  HttpDownloadProgressEvent,
-  HttpEventType,
-} from "@angular/common/http";
+import { HttpClient, HttpDownloadProgressEvent, HttpEventType } from "@angular/common/http";
 import { TypedFormData } from "../../utils/typed-form-data";
-import {
-  ApiVoiceRequest,
-  ApiVoiceRequest2,
-} from "../../types/api/requests/voice-request.type";
-import { ApiChatHistory } from "../../types/api/api-chat-history.type";
-import {
-  ApiProfile,
-  ApiProfileGender,
-  ApiProfileType,
-} from "../../types/api/api-profile.type";
+import { ApiVoiceRequest, ApiVoiceRequest2 } from "../../types/api/requests/voice-request.type";
+import { ApiChatHistory, ApiChatHistorywithSources } from "../../types/api/api-chat-history.type";
+import { ApiProfile, ApiProfileGender, ApiProfileType } from "../../types/api/api-profile.type";
 import { ApiVoiceResponse } from "../../types/api/response/api-voice-response.type";
 import { ApiSource } from "../../types/api/api-source.type";
 import { ResponseStatus } from "../../types/responses/response-status.type";
 import { ApiChatRequest } from "../../types/api/requests/chat-request.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ApiChatResponse } from "../../types/api/response/api-chat-response.type";
-
+import { Feedback } from "../../types/feedback.type";
+import { ApiFeedbackRequest } from "../../types/api/requests/feedback-request.type";
+import { APP_CONSTANTS } from "../../constants";
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class EndpointService {
   constructor(private httpClient: HttpClient) {}
@@ -42,9 +33,7 @@ export class EndpointService {
     const audioSubject = new BehaviorSubject<Blob | null>(null);
 
     try {
-      const blob = await this.httpClient
-        .post("/speech", { text }, { responseType: "blob" })
-        .toPromise();
+      const blob = await this.httpClient.post("/speech", { text }, { responseType: "blob" }).toPromise();
 
       if (blob instanceof Blob) {
         audioSubject.next(blob);
@@ -66,7 +55,25 @@ export class EndpointService {
    * @private
    */
   private messageToApiChatHistory(messages: Message[]): ApiChatHistory[] {
-    return messages.map((m) => {
+    return messages.map(m => {
+      const role = () => {
+        switch (m.role) {
+          case MessageRole.User:
+            return "user";
+          case MessageRole.Assistant:
+            return "assistant";
+        }
+      };
+
+      return {
+        role: role(),
+        content: m.message
+      };
+    });
+  }
+
+  private messageToApiChatHistoryWithSources(messages: Message[]): ApiChatHistorywithSources[] {
+    return messages.map(m => {
       const role = () => {
         switch (m.role) {
           case MessageRole.User:
@@ -79,6 +86,7 @@ export class EndpointService {
       return {
         role: role(),
         content: m.message,
+        sources: m.sources
       };
     });
   }
@@ -116,95 +124,8 @@ export class EndpointService {
       profile_type: profileType(),
       user_age: profile.age || -1,
       user_condition: profile.existing_conditions,
-      user_gender: profileGender(),
+      user_gender: profileGender()
     };
-  }
-
-  /**
-   * Method to send voice blob to the endpoint for LLM generation
-   * @param recording {Blob} Audio file with user recording
-   * @param profile {Profile}
-   * @param history {Message[]} history of chat to be used for LLM context
-   */
-  async sendVoice(
-    recording: Blob,
-    profile: Profile,
-    history: Message[],
-  ): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> =
-      new BehaviorSubject<VoiceResponse | null>(null);
-
-    let lastResponseLength: number = 0;
-    let currentAssistantMessage: string = "";
-    let currentQueryMessage: string = "";
-    let existingAudio: string[] = [];
-
-    const data: ApiVoiceRequest = {
-      chat_history: this.messageToApiChatHistory(history),
-      profile: this.profileToApiProfile(profile),
-      query: recording,
-    };
-
-    this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest>(data), {
-        responseType: "text",
-        reportProgress: true,
-        observe: "events",
-      })
-      .subscribe({
-        next: (e) => {
-          switch (e.type) {
-            case HttpEventType.DownloadProgress: {
-              if (!(e as HttpDownloadProgressEvent).partialText) {
-                return;
-              }
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiVoiceResponse;
-
-              if (responseData.audio_base64) {
-                existingAudio.push(responseData.audio_base64);
-              }
-
-              if (responseData.response_message) {
-                currentAssistantMessage =
-                  currentAssistantMessage + responseData.response_message;
-              }
-
-              if (responseData.query_message) {
-                currentQueryMessage =
-                  currentQueryMessage + responseData.query_message;
-              }
-
-              responseBS.next({
-                status: ResponseStatus.Pending,
-                user_transcript: currentQueryMessage,
-                assistant_response: currentAssistantMessage,
-                assistant_response_audio: existingAudio,
-                additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
-                ],
-                sources: responseData.sources,
-              });
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
-              return;
-            }
-            case HttpEventType.Response: {
-              let existingData = responseBS.value!;
-              existingData.status = ResponseStatus.Done;
-              responseBS.next(existingData);
-              return;
-            }
-          }
-        },
-        error: console.error,
-      });
-
-    return responseBS;
   }
 
   /**
@@ -213,96 +134,87 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of chat to be used for LLM context
    */
-  async sendVoice2(
-    message: string,
-    profile: Profile,
-    history: Message[],
-    language: string,
-  ): Promise<BehaviorSubject<VoiceResponse | null>> {
-    const responseBS: BehaviorSubject<VoiceResponse | null> =
-      new BehaviorSubject<VoiceResponse | null>(null);
+  async sendVoice(message: string, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<VoiceResponse | null>> {
+    const responseBS: BehaviorSubject<VoiceResponse | null> = new BehaviorSubject<VoiceResponse | null>(null);
 
     let lastResponseLength: number = 0;
     let currentAssistantMessage: string = "";
-    let currentQueryMessage: string = "";
-    let existingAudio: string[] = [];
-    let currentSources: ApiSource[] = [];
+    const existingAudio: string[] = [];
+    const currentSources: ApiSource[] = [];
 
     const data: ApiVoiceRequest2 = {
       chat_history: this.messageToApiChatHistory(history),
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        content: message,
+        content: message
       },
-      language: language.toLowerCase(),
+      language: language.toLowerCase()
     };
 
-    console.log("sendvoice", language);
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        assistant_response: currentAssistantMessage,
+        assistant_response_audio: existingAudio,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.VOICE_TIMEOUT);
 
-    this.httpClient
-      .post("/voice", new TypedFormData<ApiVoiceRequest2>(data), {
+    const subscription = this.httpClient
+      .post("/voice/stream", data, {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
-              const responseData = JSON.parse(
-                (e as HttpDownloadProgressEvent).partialText!.slice(
-                  lastResponseLength,
-                ),
-              ) as ApiVoiceResponse;
 
-              console.log("responseData", responseData);
-
-              if (responseData.audio_base64) {
-                existingAudio.push(responseData.audio_base64);
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout); // Clear timeout here
               }
 
-              if (responseData.response_message) {
-                currentAssistantMessage =
-                  currentAssistantMessage + responseData.response_message;
-              }
+              const data = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
+              const matches = data.match(/}/g);
+              if (matches) {
+                const lastIndex = data.lastIndexOf("}");
+                const jsonString = data.substring(0, lastIndex + 1);
+                const jsonParsed = this.parseSendVoice(jsonString);
 
-              if (responseData.query_message) {
-                currentQueryMessage =
-                  currentQueryMessage + responseData.query_message;
-              }
+                currentAssistantMessage = currentAssistantMessage + jsonParsed[0];
+                currentSources.push(...jsonParsed[1]);
+                existingAudio.push(...jsonParsed[2]);
 
-              if (responseData.sources) {
-                currentSources.push(...responseData.sources);
+                responseBS.next({
+                  status: ResponseStatus.Pending,
+                  assistant_response: currentAssistantMessage,
+                  assistant_response_audio: existingAudio,
+                  sources: currentSources
+                });
+                lastResponseLength += lastIndex + 1 || 0;
+                return;
+              } else {
+                return;
               }
-
-              responseBS.next({
-                status: ResponseStatus.Pending,
-                user_transcript: currentQueryMessage,
-                assistant_response: currentAssistantMessage,
-                assistant_response_audio: existingAudio,
-                additional_questions: [
-                  responseData.additional_question_1,
-                  responseData.additional_question_2,
-                ],
-                sources: currentSources,
-              });
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
-              return;
             }
             case HttpEventType.Response: {
-              let existingData = responseBS.value!;
-              existingData.status = ResponseStatus.Done;
+              let existingData = responseBS.value;
+              existingData!.status = ResponseStatus.Done;
               responseBS.next(existingData);
               return;
             }
           }
         },
-        error: console.error,
+        error: console.error
       });
 
     return responseBS;
@@ -314,14 +226,8 @@ export class EndpointService {
    * @param profile {Profile}
    * @param history {Message[]} history of conversation for LLM context
    */
-  async sendChat(
-    message: Message,
-    profile: Profile,
-    history: Message[],
-    language: string,
-  ): Promise<BehaviorSubject<ChatResponse | null>> {
-    const responseBS: BehaviorSubject<ChatResponse | null> =
-      new BehaviorSubject<ChatResponse | null>(null);
+  async sendChat(message: Message, profile: Profile, history: Message[], language: string): Promise<BehaviorSubject<ChatResponse | null>> {
+    const responseBS: BehaviorSubject<ChatResponse | null> = new BehaviorSubject<ChatResponse | null>(null);
     const responseId = createId();
 
     let lastResponseLength: number = 0;
@@ -333,57 +239,59 @@ export class EndpointService {
       profile: this.profileToApiProfile(profile),
       query: {
         role: "user",
-        content: message.message,
+        content: message.message
       },
-      language: language.toLowerCase(),
+      language: language.toLowerCase()
     };
 
-    console.log("sendChat", language);
+    // Timeout setup
+    const timeout = setTimeout(() => {
+      console.log("Timed Out");
+      responseBS.next({
+        status: ResponseStatus.Timeout,
+        response: currentResponseMessage,
+        sources: currentSources
+      });
+      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+    }, APP_CONSTANTS.TEXT_TIMEOUT);
 
-    this.httpClient
-      .post("/chat/stream", new TypedFormData<ApiChatRequest>(data), {
+    // Subscription to the HttpClient request
+    const subscription = this.httpClient
+      .post("/chat/stream", data, {
         responseType: "text",
         reportProgress: true,
-        observe: "events",
+        observe: "events"
       })
       .subscribe({
-        next: (e) => {
+        next: e => {
           switch (e.type) {
             case HttpEventType.DownloadProgress: {
               if (!(e as HttpDownloadProgressEvent).partialText) {
                 return;
               }
 
-              const currentResponseData = (
-                e as HttpDownloadProgressEvent
-              ).partialText!.slice(lastResponseLength); //splits response into chunks
+              // Clear the timeout once the first chunk is received
+              if (lastResponseLength === 0) {
+                clearTimeout(timeout); // Clear timeout here
+              }
 
-              // console.log(currentResponseData)
-
-              // parse chunks into multiple json objects
-
+              const currentResponseData = (e as HttpDownloadProgressEvent).partialText!.slice(lastResponseLength);
               const jsonParsed = this.parseSendChat(currentResponseData);
-
-              //adds response_message to local variable
-              currentResponseMessage += jsonParsed[0]; //currentResponseMessage should contain concated response
-              currentSources.push(...jsonParsed[1]);
+              currentResponseMessage += jsonParsed[0]; // Append the current response message
+              currentSources.push(...jsonParsed[1]); // Append sources
 
               responseBS.next({
                 status: ResponseStatus.Pending,
                 response: currentResponseMessage,
-                additional_questions: [
-                  // responseData.additional_question_1,
-                  // responseData.additional_question_2,
-                ],
-                sources: currentSources,
+                sources: currentSources
               });
 
-              lastResponseLength =
-                (e as HttpDownloadProgressEvent).partialText?.length || 0;
+              lastResponseLength = (e as HttpDownloadProgressEvent).partialText?.length || 0;
               break;
             }
 
             case HttpEventType.Response: {
+              // No need to clear the timeout here since it's already done when the first chunk is received
               let latestData = responseBS.value;
               latestData!.status = ResponseStatus.Done;
               responseBS.next(latestData);
@@ -391,10 +299,33 @@ export class EndpointService {
             }
           }
         },
-        error: console.error,
+        error: err => {
+          clearTimeout(timeout); // Clear timeout if an error occurs
+          console.error(err);
+        }
       });
 
     return responseBS;
+  }
+
+  async sendFeedback(feedback: Feedback, profile: Profile): Promise<void> {
+    const data: ApiFeedbackRequest = {
+      date_time: feedback.datetime,
+      feedback_type: feedback.label,
+      feedback_category: feedback.category,
+      feedback_remarks: feedback.remarks,
+      user_profile: this.profileToApiProfile(profile),
+      chat_history: this.messageToApiChatHistoryWithSources(feedback.chat_history)
+    };
+
+    console.log("Feedback data:", data);
+
+    this.httpClient.post("/feedback", data).subscribe({
+      next: () => {
+        console.log("Feedback sent successfully");
+      },
+      error: console.error
+    });
   }
 
   // Function to extract individual JSON objects from a concatenated raw JSON string
@@ -430,6 +361,7 @@ export class EndpointService {
         // Extract and append the response message
         const responseMessage: string = data.response_message || "";
         const sources: [] = data.sources || [];
+
         aggregatedResponseMessage += responseMessage;
         aggregatedSources.push(...sources);
       } catch (error) {
@@ -437,5 +369,34 @@ export class EndpointService {
       }
     }
     return [aggregatedResponseMessage, aggregatedSources];
+  }
+
+  private parseSendVoice(rawJsonString: string): any[] {
+    let aggregatedResponseMessage: string = "";
+    let aggregatedSources: [] = [];
+    let aggregatedAudio: string[] = [];
+
+    // Extract individual JSON objects
+    const jsonObjects = this.extractJsonObjects(rawJsonString);
+    // Process each JSON object
+    for (const jsonObject of jsonObjects) {
+      try {
+        // Parse the JSON object
+        const data = JSON.parse(jsonObject);
+
+        // Extract and append the response message
+        const responseMessage: string = data.response_message || "";
+        const audioMessage: string = data.audio_base64 || "";
+        const sources: [] = data.sources || [];
+        aggregatedResponseMessage += responseMessage;
+        aggregatedSources.push(...sources);
+        if (audioMessage != "") {
+          aggregatedAudio.push(audioMessage);
+        }
+      } catch (error) {
+        console.error("Error decoding JSON:", error);
+      }
+    }
+    return [aggregatedResponseMessage, aggregatedSources, aggregatedAudio];
   }
 }

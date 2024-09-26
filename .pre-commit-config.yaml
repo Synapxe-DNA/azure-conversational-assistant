@@ -8,6 +8,7 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: check-added-large-files
+        args: ["--maxkb=100000"] # Set the maximum file size to 2048 KB (2 MB)
       - id: end-of-file-fixer
       - id: requirements-txt-fixer
       - id: trailing-whitespace
@@ -66,7 +67,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        args: [--write]
+        args: [--write, --config, app/frontend-healthier-me/.prettierrc.json]
         types_or: [css, json, javascript, ts, tsx, html]
         additional_dependencies:
-          - prettier@3.2.5
+          - prettier@3.3.3

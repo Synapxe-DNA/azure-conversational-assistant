@@ -12,19 +12,12 @@ describe("ChatComponent", () => {
 
   beforeEach(async () => {
     const activatedRouteMock = {
-      snapshot: { paramMap: { get: () => "1234" } },
+      snapshot: { paramMap: { get: () => "1234" } }
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        ChatComponent,
-        LucideAngularModule.pick(icons),
-        NgxIndexedDBModule.forRoot(NgxIndexedDbConfig),
-      ],
-      providers: [
-        NgxIndexedDBService,
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-      ],
+      imports: [ChatComponent, LucideAngularModule.pick(icons), NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)],
+      providers: [NgxIndexedDBService, { provide: ActivatedRoute, useValue: activatedRouteMock }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChatComponent);

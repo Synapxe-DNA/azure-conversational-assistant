@@ -11,14 +11,6 @@ tw-transform-gpu
 {{ buttonStateClasses() }}
 "
 >
-  <lucide-icon
-    *ngIf="state !== MicState.DISABLED"
-    name="mic"
-    size="48"
-  ></lucide-icon>
-  <lucide-icon
-    *ngIf="state === MicState.DISABLED"
-    name="mic-off"
-    size="48"
-  ></lucide-icon>
+  <lucide-icon *ngIf="state !== MicState.DISABLED" name="mic" size="48"></lucide-icon>
+  <lucide-icon *ngIf="state === MicState.DISABLED" name="mic-off" size="48"></lucide-icon>
 </button>

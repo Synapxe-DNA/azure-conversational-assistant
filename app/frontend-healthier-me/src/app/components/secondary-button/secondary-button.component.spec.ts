@@ -9,7 +9,7 @@ describe("SecondaryButtonComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SecondaryButtonComponent, LucideAngularModule.pick(icons)],
+      imports: [SecondaryButtonComponent, LucideAngularModule.pick(icons)]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SecondaryButtonComponent);

@@ -12,7 +12,7 @@ describe("NavbarProfileCreateComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavbarProfileCreateComponent, LucideAngularModule.pick(icons)],
-      providers: [NgxIndexedDBService, ProfileService],
+      providers: [NgxIndexedDBService, ProfileService]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarProfileCreateComponent);

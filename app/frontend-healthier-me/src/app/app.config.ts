@@ -1,9 +1,4 @@
-import {
-  ApplicationConfig,
-  importProvidersFrom,
-  provideZoneChangeDetection,
-  isDevMode,
-} from "@angular/core";
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, isDevMode } from "@angular/core";
 import { provideRouter } from "@angular/router";
 
 import { routes } from "./app.routes";
@@ -11,22 +6,12 @@ import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxIndexedDBModule } from "ngx-indexed-db";
 import { NgxIndexedDbConfig } from "./configs/ngx-indexed-db/ngx-indexed-db.config";
-import {
-  LucideAngularModule,
-  MessageSquare,
-  Mic,
-  MicOff,
-  Settings,
-  User,
-  UserRoundPlus,
-  Send,
-  StopCircle,
-  Copy,
-} from "lucide-angular";
+import { LucideAngularModule, MessageSquare, Mic, MicOff, Settings, User, UserRoundPlus, Send, StopCircle, Copy } from "lucide-angular";
 import { ToastModule } from "primeng/toast";
-import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideHttpClient, withFetch, withInterceptors } from "@angular/common/http";
 import { provideServiceWorker } from "@angular/service-worker";
 import { provideMarkdown } from "ngx-markdown";
+import { httpInterceptor } from "./utils/http-interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -35,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     importProvidersFrom(BrowserModule),
     importProvidersFrom(BrowserAnimationsModule),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([httpInterceptor])),
     importProvidersFrom(NgxIndexedDBModule.forRoot(NgxIndexedDbConfig)),
     importProvidersFrom(
       LucideAngularModule.pick({
@@ -47,17 +32,13 @@ export const appConfig: ApplicationConfig = {
         Settings,
         Send,
         StopCircle,
-        Copy,
-      }),
+        Copy
+      })
     ),
     importProvidersFrom(ToastModule),
     provideServiceWorker("ngsw-worker.js", {
       enabled: !isDevMode(),
-      registrationStrategy: "registerWhenStable:30000",
-    }),
-    provideServiceWorker("ngsw-worker.js", {
-      enabled: !isDevMode(),
-      registrationStrategy: "registerWhenStable:30000",
-    }),
-  ],
+      registrationStrategy: "registerWhenStable:30000"
+    })
+  ]
 };

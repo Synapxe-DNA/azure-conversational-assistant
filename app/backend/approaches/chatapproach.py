@@ -14,6 +14,8 @@ class ChatApproach(Approach, ABC):
         {"role": "assistant", "content": "Provide a list of common flu symptoms"},
         {"role": "user", "content": "How can I manage high blood pressure?"},
         {"role": "assistant", "content": "Suggest ways to manage high blood pressure"},
+        {"role": "user", "content": " "},
+        {"role": "assistant", "content": ""},
     ]
     NO_RESPONSE = "0"
 
@@ -87,7 +89,7 @@ class ChatApproach(Approach, ABC):
         auth_claims: dict[str, Any],
         session_state: Any = None,
     ) -> dict[str, Any]:
-        extra_info, chat_coroutine, citation_info = await self.run_until_final_call(
+        extra_info, chat_coroutine = await self.run_until_final_call(
             messages, profile, language, auth_claims, should_stream=False
         )
         chat_completion_response: ChatCompletion = await chat_coroutine

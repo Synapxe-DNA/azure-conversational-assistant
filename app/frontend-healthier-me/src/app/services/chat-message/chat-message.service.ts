@@ -1,15 +1,13 @@
 import { Injectable } from "@angular/core";
 import { NgxIndexedDBService } from "ngx-indexed-db";
 import { BehaviorSubject, firstValueFrom } from "rxjs";
-import { Message } from "../../types/message.type";
+import { Message, MessageRole } from "../../types/message.type";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: "root"
 })
 export class ChatMessageService {
-  private $messages: BehaviorSubject<Message[]> = new BehaviorSubject<
-    Message[]
-  >([]);
+  private $messages: BehaviorSubject<Message[]> = new BehaviorSubject<Message[]>([]);
   private $currentProfileId: BehaviorSubject<string> = new BehaviorSubject("");
 
   constructor(private indexedStore: NgxIndexedDBService) {}
@@ -26,28 +24,31 @@ export class ChatMessageService {
   async load(profileId: string): Promise<BehaviorSubject<Message[]>> {
     this.$currentProfileId.next(profileId);
 
-    const messages = await firstValueFrom<Message[] | undefined>(
-      this.indexedStore.getAllByIndex(
-        "messages",
-        "profile_id",
-        IDBKeyRange.only(profileId),
-      ),
-    );
-    this.$messages = new BehaviorSubject<Message[]>(
-      messages?.sort((a, b) => a.timestamp - b.timestamp) || [],
-    );
+    const introMessage: Message = {
+      id: "intro-message", // Assign a unique ID for the intro message
+      profile_id: profileId,
+      role: MessageRole.Assistant,
+      message:
+        "Hello! I’m HealthierME, a friendly conversational assistant to help you learn more about health information and programmes in Singapore. Tap the voice button to ask a question!",
+      timestamp: Date.now(),
+      sources: []
+    };
+
+    const messages = await firstValueFrom<Message[] | undefined>(this.indexedStore.getAllByIndex("messages", "profile_id", IDBKeyRange.only(profileId)));
+    // if no messages exist, put in intro message into array without updating the store
+    if (!messages || messages.length === 0) {
+      this.$messages = new BehaviorSubject<Message[]>([introMessage]);
+      return this.$messages;
+    }
+
+    this.$messages = new BehaviorSubject<Message[]>(messages?.sort((a, b) => a.timestamp - b.timestamp) || []);
 
     return this.$messages;
   }
 
   async staticLoad(profileId: string): Promise<Message[]> {
-    const messages = await firstValueFrom<Message[]>(
-      this.indexedStore.getAllByIndex(
-        "messages",
-        "profile_id",
-        IDBKeyRange.only(profileId),
-      ),
-    );
+    const messages = await firstValueFrom<Message[]>(this.indexedStore.getAllByIndex("messages", "profile_id", IDBKeyRange.only(profileId)));
+    console.log("Messages loaded: ", messages);
     return messages?.sort((a, b) => a.timestamp - b.timestamp) || [];
   }
 
@@ -57,18 +58,16 @@ export class ChatMessageService {
    */
   insert(message: Message): Promise<void> {
     if (message.profile_id !== this.$currentProfileId.value) {
-      console.warn(
-        "[ChatMessageService] Attempting to insert message that does not match current profile ID!",
-      );
+      console.warn("[ChatMessageService] Attempting to insert message that does not match current profile ID!");
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.indexedStore.add("messages", message).subscribe({
         next: () => {
           this.$messages.next([...this.$messages.value, message]);
           resolve();
         },
-        error: console.error,
+        error: console.error
       });
     });
   }
@@ -79,22 +78,21 @@ export class ChatMessageService {
    */
   upsert(message: Message): Promise<void> {
     // Checks if message is in current memory
-    const index = this.$messages.value.findIndex((m) => m.id === message.id);
+    const index = this.$messages.value.findIndex(m => m.id === message.id);
 
     // If message exists
     if (index >= 0) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         this.indexedStore.update<Message>("messages", message).subscribe({
           next: () => {
             let arr = this.$messages.value;
             arr[index] = message;
             this.$messages.next(arr);
             resolve();
-          },
+          }
         });
       });
     }
-
     return this.insert(message);
   }
 }

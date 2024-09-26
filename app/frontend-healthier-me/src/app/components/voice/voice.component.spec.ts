@@ -11,7 +11,7 @@ describe("VoiceComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [VoiceComponent, LucideAngularModule.pick(icons)],
-      providers: [PreferenceService],
+      providers: [PreferenceService]
     }).compileComponents();
 
     fixture = TestBed.createComponent(VoiceComponent);

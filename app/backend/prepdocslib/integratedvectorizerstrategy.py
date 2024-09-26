@@ -1,14 +1,13 @@
 import logging
 from typing import Optional
 
-from azure.search.documents.indexes._generated.models import (
-    NativeBlobSoftDeleteDeletionDetectionPolicy,
-)
+# from azure.search.documents.indexes._generated.models import NativeBlobSoftDeleteDeletionDetectionPolicy
 from azure.search.documents.indexes.models import (
     AzureOpenAIEmbeddingSkill,
     AzureOpenAIParameters,
     AzureOpenAIVectorizer,
-    FieldMapping,
+    IndexingParameters,
+    IndexingParametersConfiguration,
     IndexProjectionMode,
     InputFieldMappingEntry,
     OutputFieldMappingEntry,
@@ -66,15 +65,20 @@ class IntegratedVectorizerStrategy(Strategy):
     async def create_embedding_skill(self, index_name: str):
         skillset_name = f"{index_name}-skillset"
 
+        # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.splitskill?view=azure-python
         split_skill = SplitSkill(
+            # See: https://learn.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit#example-for-chunking-and-vectorization
             description="Split skill to chunk documents",
-            text_split_mode="pages",
-            context="/document",
-            maximum_page_length=2048,
-            page_overlap_length=20,
-            inputs=[
-                InputFieldMappingEntry(name="text", source="/document/content"),
-            ],
+            # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.textsplitmode?view=azure-python
+            text_split_mode="pages",  # or sentences
+            context="/document/content",  # the path to the field to split
+            maximum_page_length=5000,
+            page_overlap_length=200,  # number of characters/tokens
+            # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.inputfieldmappingentry?view=azure-python
+            # InputFieldMapping
+            inputs=[InputFieldMappingEntry(name="text", source="/document/content")],
+            # See: https://learn.microsoft.com/en-us/python/api/azure-search-documents/azure.search.documents.indexes.models.outputfieldmappingentry?view=azure-python
+            # OutputFieldMapping
             outputs=[OutputFieldMappingEntry(name="textItems", target_name="pages")],
         )
 
@@ -83,10 +87,10 @@ class IntegratedVectorizerStrategy(Strategy):
 
         embedding_skill = AzureOpenAIEmbeddingSkill(
             description="Skill to generate embeddings via Azure OpenAI",
-            context="/document/pages/*",
+            context="/document/content/pages/*",
             resource_uri=f"https://{self.embeddings.open_ai_service}.openai.azure.com",
             deployment_id=self.embeddings.open_ai_deployment,
-            inputs=[InputFieldMappingEntry(name="text", source="/document/pages/*")],
+            inputs=[InputFieldMappingEntry(name="text", source="/document/content/pages/*")],
             outputs=[OutputFieldMappingEntry(name="embedding", target_name="vector")],
         )
 
@@ -95,13 +99,22 @@ class IntegratedVectorizerStrategy(Strategy):
                 SearchIndexerIndexProjectionSelector(
                     target_index_name=index_name,
                     parent_key_field_name="parent_id",
-                    source_context="/document/pages/*",
+                    source_context="/document/content/pages/*",
                     mappings=[
-                        InputFieldMappingEntry(name="content", source="/document/pages/*"),
-                        InputFieldMappingEntry(name="embedding", source="/document/pages/*/vector"),
-                        InputFieldMappingEntry(name="sourcePage", source="/document/metadata_storage_name"),
+                        # Maps the outputs from the indexer to the fields in the index (this is where the data is populated in the index, you must have a field in the index for it to match, the "name" is the name of the input field in the index)
+                        # InputFieldMappingEntry(name="id", source="/document/id"), # the parent_id field in the index which is needed for the indexing process will prevent this field from being mapped
+                        InputFieldMappingEntry(name="title", source="/document/title"),
+                        InputFieldMappingEntry(name="cover_image_url", source="/document/cover_image_url"),
+                        InputFieldMappingEntry(name="full_url", source="/document/full_url"),
+                        InputFieldMappingEntry(name="content_category", source="/document/content_category"),
+                        InputFieldMappingEntry(name="category_description", source="/document/category_description"),
+                        InputFieldMappingEntry(name="pr_name", source="/document/category_description"),
+                        InputFieldMappingEntry(name="date_modified", source="/document/category_description"),
+                        # InputFieldMappingEntry(name="content", source="/document/content"), # only the parent document will have this field, we took it out to prevent content overlap in the search
+                        InputFieldMappingEntry(name="chunks", source="/document/content/pages/*"),
+                        InputFieldMappingEntry(name="embedding", source="/document/content/pages/*/vector"),
                     ],
-                ),
+                )
             ],
             parameters=SearchIndexerIndexProjectionsParameters(
                 projection_mode=IndexProjectionMode.SKIP_INDEXING_PARENT_DOCUMENTS
@@ -151,7 +164,8 @@ class IntegratedVectorizerStrategy(Strategy):
             type="azureblob",
             connection_string=self.blob_manager.get_managedidentity_connectionstring(),
             container=ds_container,
-            data_deletion_detection_policy=NativeBlobSoftDeleteDeletionDetectionPolicy(),
+            # data_deletion_detection_policy=NativeBlobSoftDeleteDeletionDetectionPolicy(),
+            data_deletion_detection_policy=None,
         )
 
         await ds_client.create_or_update_data_source_connection(data_source_connection)
@@ -186,8 +200,10 @@ class IntegratedVectorizerStrategy(Strategy):
             skillset_name=f"{self.search_info.index_name}-skillset",
             target_index_name=self.search_info.index_name,
             data_source_name=f"{self.search_info.index_name}-blob",
-            # Map the metadata_storage_name field to the title field in the index to display the PDF title in the search results
-            field_mappings=[FieldMapping(source_field_name="metadata_storage_name", target_field_name="title")],
+            # See: https://learn.microsoft.com/en-us/azure/search/search-howto-index-json-blobs
+            parameters=IndexingParameters(
+                configuration=IndexingParametersConfiguration(parsing_mode="jsonArray", query_timeout=None)
+            ),
         )
 
         indexer_client = self.search_info.create_search_indexer_client()

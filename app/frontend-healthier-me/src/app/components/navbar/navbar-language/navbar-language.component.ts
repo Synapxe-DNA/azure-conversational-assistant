@@ -3,48 +3,46 @@ import { Component, OnInit, Input } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { DropdownModule } from "primeng/dropdown";
 import { PreferenceService } from "../../../services/preference/preference.service";
-import { Language } from "../../../types/language.type";
+import { Language, languageMap } from "../../../types/language.type";
 
 @Component({
   selector: "app-navbar-language",
   standalone: true,
   imports: [DropdownModule, FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: "./navbar-language.component.html",
-  styleUrl: "./navbar-language.component.css",
+  styleUrl: "./navbar-language.component.css"
 })
 export class NavbarLanguageComponent implements OnInit {
-  languageOptions!: string[];
+  languageMap: any;
   chosenLanguage: string;
 
   constructor(private preference: PreferenceService) {
     this.chosenLanguage = preference.$language.value.valueOf();
-    console.log("chosen language init " + this.chosenLanguage);
   }
 
   ngOnInit(): void {
-    this.languageOptions = Object.values(Language);
+    this.languageMap = languageMap;
   }
 
   setLanguage(chosenLanguage: string) {
-    console.log("setLanguage", chosenLanguage);
     switch (chosenLanguage) {
-      case "ENGLISH":
+      case "English":
         this.preference.setLanguage(Language.English);
         break;
 
-      case "SPOKEN":
+      case "Spoken":
         this.preference.setLanguage(Language.Spoken);
         break;
 
-      case "CHINESE":
+      case "Chinese":
         this.preference.setLanguage(Language.Chinese);
         break;
 
-      case "MALAY":
+      case "Malay":
         this.preference.setLanguage(Language.Malay);
         break;
 
-      case "TAMIL":
+      case "Tamil":
         this.preference.setLanguage(Language.Tamil);
         break;
       default:

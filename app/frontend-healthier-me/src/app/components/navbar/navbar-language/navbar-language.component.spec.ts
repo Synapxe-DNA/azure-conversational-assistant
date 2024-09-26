@@ -8,7 +8,7 @@ describe("NavbarLanguageComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarLanguageComponent],
+      imports: [NavbarLanguageComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarLanguageComponent);
