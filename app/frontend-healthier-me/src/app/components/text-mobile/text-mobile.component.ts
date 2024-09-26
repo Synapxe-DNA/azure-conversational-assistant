@@ -10,7 +10,7 @@ import { TextUserComponent } from "../text/text-user/text-user.component";
 import { TextSystemComponent } from "../text/text-system/text-system.component";
 import { TextInputComponent } from "../text/text-input/text-input.component";
 import { StickyBottomDirective } from "../../directives/stick-bottom/sticky-bottom.directive";
-import { TextLoadingComponent } from "../text/text-loading/text-loading.component";
+import { LoadingComponent } from "../loading/loading.component";
 import { APP_CONSTANTS } from "../../constants";
 import { CommonModule } from "@angular/common";
 import { ChatMode } from "../../types/chat-mode.type";
@@ -20,7 +20,7 @@ import { Button } from "primeng/button";
 @Component({
   selector: "app-text-mobile",
   standalone: true,
-  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, TextLoadingComponent, StickyBottomDirective, CommonModule, Button],
+  imports: [TextUserComponent, TextSystemComponent, TextInputComponent, LoadingComponent, StickyBottomDirective, CommonModule, Button],
   templateUrl: "./text-mobile.component.html",
   styleUrl: "./text-mobile.component.css"
 })

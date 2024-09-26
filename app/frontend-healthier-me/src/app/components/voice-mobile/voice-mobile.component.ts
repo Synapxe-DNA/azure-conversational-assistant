@@ -61,6 +61,8 @@ export class VoiceMobileComponent {
   micState: MicState = MicState.PENDING;
   message?: Message;
   chatMode?: ChatMode;
+  isLoading: boolean = false; 
+  sendTimedOut: boolean = false;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -97,7 +99,12 @@ export class VoiceMobileComponent {
     this.preference.$voiceDetectStart.subscribe(v => (this.voiceDetectStart = v));
     this.preference.$voiceDetectEnd.subscribe(v => (this.voiceDetectEnd = v));
     this.preference.$showLiveTranscription.subscribe(v => (this.showLiveTranscription = v));
-    this.convoBroker.$micState.subscribe(v => (this.micState = v));
+    this.convoBroker.$micState.subscribe(v => {
+      this.micState = v;
+      this.isLoading = (v === MicState.DISABLED);
+      console.log(this.micState);
+      console.log(this.isLoading);
+    });
   }
 
   ngAfterViewInit() {
