@@ -1,8 +1,9 @@
+import json
+import os
+
 import pytest
 import pytest_asyncio
 import requests
-import json
-import os
 
 """
 File paths
@@ -63,22 +64,23 @@ async def test_valid_json_general_profile_request(chat_endpointURL):
 
     response = requests.post(chat_endpointURL, json=data, stream=True)
 
-    response_file_path = os.path.join(response_folder_path,os.path.basename(json_request.name))
-    
+    response_file_path = os.path.join(response_folder_path, os.path.basename(json_request.name))
+
     await save_streaming_response(response_file_path, response)
 
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
 
-'''
+"""
 Helper function
-'''
+"""
+
 
 async def merge_streaming_response(response):
     combined_json = {}
     for chunk in response.iter_content(chunk_size=8192):
         if chunk:
-            json_object = json.loads(chunk.decode('utf-8'))
+            json_object = json.loads(chunk.decode("utf-8"))
 
             for key, value in json_object.items():
                 if key in combined_json:
@@ -89,6 +91,7 @@ async def merge_streaming_response(response):
                 else:
                     combined_json[key] = value
     return combined_json
+
 
 async def save_streaming_response(response_file_path, response):
     if not os.path.exists(response_folder_path):
