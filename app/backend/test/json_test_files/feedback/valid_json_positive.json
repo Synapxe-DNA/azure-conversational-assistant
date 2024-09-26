@@ -1,43 +1,44 @@
 {
-    "date_time": "24/09/2024, 18:28:19",
-    "feedback_type": "positive",
-    "feedback_category": [
-        "Straightforward Answer"
-    ],
-    "feedback_remarks": "Generated from testing",
-    "user_profile": {
-        "profile_type": "others",
-        "user_age": 24,
-        "user_gender": "female",
-        "user_condition": "Diabetes, High Cholesterol"
-    },
-    "language": "spoken",
-    "chat_history": [
-        {"role":"user","content":"Hello!", "sources":[]},
-        {"role":"assistant", "content":"Hello", "sources":[]},
-        {"role":"user","content":"How to cure diabetes?", "sources":[]},
-        {"role": "assistant",
-        "content": "Currently, there is no cure for diabetes, but it can be effectively managed. Here are some actionable steps:\n\n1. **Monitor Blood Sugar**: Regularly check your blood sugar levels using a glucometer.\n2. **Healthy Eating**: Follow a balanced diet with whole grains, lean proteins, and healthy fats. Limit sugar and refined carbs.\n3. **Physical Activity**: Aim for at least 150-300 minutes of moderate-intensity aerobic activity weekly.\n",
-        "sources": [
-            {"ids": ["aefb57a933df_1435317_content_content_pages_0"],
-            "title": "Diabetes Hub: Guide to Managing Diabetes",
-            "cover_image_url": "None",
-            "full_url": "https://www.healthhub.sg/programmes/diabetes-hub/diabetes-management/monitoring/",
-            "content_category": "program-sub-pages",
-            "category_description": "National Diabetes Reference Materials - An initiative under the War on Diabetes",
-            "pr_name": "Ministry of Health",
-            "date_modified": "None"}
-            ]
+  "date_time": "24/09/2024, 18:28:19",
+  "feedback_type": "positive",
+  "feedback_category": ["Straightforward Answer"],
+  "feedback_remarks": "Generated from testing",
+  "user_profile": {
+    "profile_type": "others",
+    "user_age": 24,
+    "user_gender": "female",
+    "user_condition": "Diabetes, High Cholesterol"
+  },
+  "language": "spoken",
+  "chat_history": [
+    { "role": "user", "content": "Hello!", "sources": [] },
+    { "role": "assistant", "content": "Hello", "sources": [] },
+    { "role": "user", "content": "How to cure diabetes?", "sources": [] },
+    {
+      "role": "assistant",
+      "content": "Currently, there is no cure for diabetes, but it can be effectively managed. Here are some actionable steps:\n\n1. **Monitor Blood Sugar**: Regularly check your blood sugar levels using a glucometer.\n2. **Healthy Eating**: Follow a balanced diet with whole grains, lean proteins, and healthy fats. Limit sugar and refined carbs.\n3. **Physical Activity**: Aim for at least 150-300 minutes of moderate-intensity aerobic activity weekly.\n",
+      "sources": [
+        {
+          "ids": ["aefb57a933df_1435317_content_content_pages_0"],
+          "title": "Diabetes Hub: Guide to Managing Diabetes",
+          "cover_image_url": "None",
+          "full_url": "https://www.healthhub.sg/programmes/diabetes-hub/diabetes-management/monitoring/",
+          "content_category": "program-sub-pages",
+          "category_description": "National Diabetes Reference Materials - An initiative under the War on Diabetes",
+          "pr_name": "Ministry of Health",
+          "date_modified": "None"
         }
-    ],
-    "profile":{
-        "profile_type": "general",
-        "user_age": 20,
-        "user_gender": "male",
-        "user_condition": ""
-    },
-    "query": {
-        "role":"user",
-        "content":"How to sleep better?"
+      ]
     }
+  ],
+  "profile": {
+    "profile_type": "general",
+    "user_age": 20,
+    "user_gender": "male",
+    "user_condition": ""
+  },
+  "query": {
+    "role": "user",
+    "content": "How to sleep better?"
+  }
 }
