@@ -11,7 +11,6 @@ from models.chat import TextChatResponse, TextChatResponseWtihChunk
 from models.chat_history import ChatHistory
 from models.feedback import FeedbackRequest, FeedbackStore
 from models.language import LanguageSelected
-from models.logstore import LogStore
 from models.profile import Profile
 from models.request import Request
 from models.request_type import RequestType
@@ -19,7 +18,6 @@ from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
-from werkzeug.datastructures import MultiDict
 
 
 class Utils:
@@ -42,7 +40,6 @@ class Utils:
 
             response_message = ""
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
-            # logStore = LogStore()
 
             async for res in format_as_ndjson(result):
                 # Extract sources
@@ -54,7 +51,6 @@ class Utils:
                     yield construct_error_response(error_msg, request_type, language)
                 elif not thoughts == []:
                     yield construct_source_response(thoughts, request_type)
-                    # logStore = extract_thoughts_for_logging(thoughts, logStore)
                 else:
                     # Extract text response
                     text_response_chunk = res.get("delta", {}).get("content", "")
@@ -70,8 +66,6 @@ class Utils:
                             yield response.model_dump_json()
                             response_message = ""
                         break
-
-                    # logStore.response_message += text_response_chunk
 
                     if request_type == RequestType.CHAT:
                         response = TextChatResponse(
@@ -93,7 +87,6 @@ class Utils:
                             )
                             yield response.model_dump_json()
                             response_message = ""
-            # await Utils.send_log(logStore)
 
         return generator()
 
@@ -154,34 +147,16 @@ class Utils:
         return messages
 
     """
-    Utility function to form a Request object from formdata
-    """
-
-    @staticmethod
-    def form_formdata_request(data: MultiDict) -> Request:
-        print(f"CHOSEN LANGUAGE: {data['language']}")
-        language = (
-            Utils.get_language(data["query"]) if data["language"] == LanguageSelected.SPOKEN.value else data["language"]
-        )
-        print(f"DETECTED LANGUAGE: {language}")
-        request = Request(
-            chat_history=json.loads(data["chat_history"]),
-            profile=Profile(**json.loads(data["profile"])),
-            query=json.loads(data["query"]),
-            language=language,
-        )
-
-        return request
-
-    """
     Utility function to form a Request object from json
     """
 
     @staticmethod
-    def form_json_request(data: dict) -> Request:
+    def form_query_request(data: dict) -> Request:
         print(f"CHOSEN LANGUAGE: {data['language']}")
         language = (
-            Utils.get_language(data["query"]) if data["language"] == LanguageSelected.SPOKEN.value else data["language"]
+            Utils.get_language(data["query"]["content"])
+            if data["language"] == LanguageSelected.SPOKEN.value
+            else data["language"]
         )
         print(f"DETECTED LANGUAGE: {language}")
 
@@ -195,19 +170,18 @@ class Utils:
         return request
 
     """
-    Utility function to form a FeedbackRequest object from formdata
+    Utility function to form a FeedbackRequest object from json
     """
 
     @staticmethod
-    def form_feedback_request(data: MultiDict) -> FeedbackRequest:
-
+    def form_feedback_request(data: dict) -> FeedbackRequest:
         feedback_request = FeedbackRequest(
             date_time=data["date_time"],
             feedback_type=data["feedback_type"],
-            feedback_category=json.loads(data["feedback_category"]),
+            feedback_category=data["feedback_category"],
             feedback_remarks=data.get("feedback_remarks", ""),
-            user_profile=Profile(**json.loads(data["user_profile"])),
-            chat_history=json.loads(data["chat_history"]),
+            user_profile=Profile(**data["user_profile"]),
+            chat_history=data["chat_history"],
         )
         return feedback_request
 
@@ -226,17 +200,6 @@ class Utils:
         else:
             language = str(language).split(".")[1].lower()  # get language name from enum
         return language
-
-    # @staticmethod
-    # async def send_log(logStore: LogStore):
-    #     logStore.date_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    #     containerClient = current_app.config[CONFIG_LOGGING_CONTAINER_CLIENT]
-    #     try:
-    #         await containerClient.create_item(logStore.model_dump(), enable_automatic_id_generation=True)
-    #         logging.info("Log sent successfully")
-    #     except Exception as error:
-    #         logging.error("Error while sending log", error)
-    #         pass
 
 
 # Helper functions
@@ -294,19 +257,6 @@ def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) ->
         sources.append(src_instance)
 
     return sources
-
-
-"""
-Utility function to extract time taken, user query and sources with chunks from the ThoughtStep returned by the LLM
-"""
-
-
-def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], logStore: LogStore) -> LogStore:
-    logStore.time_taken = thoughts[4].get("description", -1)  # thoughts[4] is time taken
-    logStore.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
-    logStore.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
-
-    return logStore
 
 
 """
