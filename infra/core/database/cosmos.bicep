@@ -42,8 +42,8 @@ param principalId string
   'Disabled'
 ])
 param publicNetworkAccess string
-param throughput int = 400
-param totalThroughputLimit int = 4000
+// param throughput int = 400
+// param totalThroughputLimit int = 4000
 param virtualNetworkRules array = []
 
 param cosmosDbReuse bool
@@ -90,13 +90,17 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     ]
     cors: []
-    capabilities: []
+    capabilities: [
+      {
+        name: 'EnableServerless' // Serverless
+      }
+    ]
     ipRules: []
     backupPolicy: backupPolicy
     networkAclBypassResourceIds: []
-    capacity: {
-      totalThroughputLimit: totalThroughputLimit
-    }
+    // capacity: {
+    //   totalThroughputLimit: totalThroughputLimit
+    // }
   }
 
   resource cosmosDbBuiltInDataReader 'sqlRoleDefinitions' = {
@@ -222,14 +226,14 @@ resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/container
     }
   }
 
-  resource containerThroughput 'throughputSettings' = {
-    name: 'default'
-    properties: {
-      resource: {
-        throughput: throughput
-      }
-    }
-  }
+  // resource containerThroughput 'throughputSettings' = {
+  //   name: 'default'
+  //   properties: {
+  //     resource: {
+  //       throughput: throughput
+  //     }
+  //   }
+  // }
 }
 
 output name string =  !deployCosmosDb ? '' : cosmosDbReuse ? existingAccount.name : cosmos.name

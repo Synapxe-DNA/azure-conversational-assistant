@@ -1,3 +1,4 @@
+import os
 import time
 from typing import Any, Coroutine, List, Literal, Optional, Union, overload
 
@@ -22,7 +23,11 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
 )
-from openai_messages_token_helper import build_messages, get_token_limit
+from openai_messages_token_helper import (
+    build_messages,
+    count_tokens_for_message,
+    get_token_limit,
+)
 
 
 class ChatReadRetrieveReadApproach(ChatApproach):
@@ -109,6 +114,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         List[dict[str, Any]],
     ]:
         start_time = time.time()
+        total_tokens = 0
 
         seed = config.SEED
         temperature = config.TEMPERATURE
@@ -120,6 +126,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         minimum_search_score = config.MINIMUM_SEARCH_SCORE
         minimum_reranker_score = config.MINIMUM_RERANKER_SCORE
         response_token_limit = config.CHAT_RESPONSE_MAX_TOKENS
+        query_response_token_limit = config.QUERY_RESPONSE_MAX_TOKENS
+        llm_model = os.environ["AZURE_OPENAI_CHATGPT_MODEL"]
 
         selected_language = language.upper()
         print(f"Selected language: {selected_language}")
@@ -194,35 +202,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
 
-        # STEP 1: Generate an optimized keyword search query based on the chat history and the last question
-        query_response_token_limit = 100
-        query_messages = build_messages(
-            model=self.chatgpt_model,
-            system_prompt=query_prompt,
-            tools=tools,
-            few_shots=self.query_prompt_few_shots,
-            past_messages=messages[:-1],
-            new_user_content=user_query_request,
-            max_tokens=self.chatgpt_token_limit - query_response_token_limit,
-        )
-
-        chat_completion: ChatCompletion = await self.openai_client.chat.completions.create(
-            messages=query_messages,  # type: ignore
-            # Azure OpenAI takes the deployment name as the model name
-            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
-            temperature=0.0,  # Minimize creativity for search query generation
-            max_tokens=query_response_token_limit,  # Setting too low risks malformed JSON, setting too high may affect performance
-            n=1,
-            tools=tools,
-            seed=seed,
-        )
-
-        query_text = self.get_search_query(chat_completion, original_user_query)
-
-        ## STEP 2: LLM to check if the query is health-related
-        # previous_system_reply = messages[-2]
-        # print(f"previous_system_reply: {previous_system_reply}")
-
+        # STEP 1: LLM to check if the query is health-related
         query_check_messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=query_check_prompt,
@@ -236,17 +216,41 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
             messages=query_check_messages,
         )
+        total_tokens += query_check_response.usage.total_tokens
 
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
 
-        # STEP 3: Retrieve relevant documents from the search index with the GPT optimized query
+        # STEP 2: Generate an optimized keyword search query based on the chat history and the last question
+        query_messages = build_messages(
+            model=self.chatgpt_model,
+            system_prompt=query_prompt,
+            tools=tools,
+            few_shots=self.query_prompt_few_shots,
+            past_messages=messages[:-1],
+            new_user_content=user_query_request,
+            max_tokens=self.chatgpt_token_limit - query_response_token_limit,
+        )
+
         if query_check_output == "False":
+            query_text = ""
             sources_content = ""
-            content = ""
             results = ""
+            content = ""
         else:
-            # If retrieval mode includes vectors, compute an embedding for the query
+            chat_completion: ChatCompletion = await self.openai_client.chat.completions.create(
+                messages=query_messages,  # type: ignore
+                # Azure OpenAI takes the deployment name as the model name
+                model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
+                temperature=0.0,  # Minimize creativity for search query generation
+                max_tokens=query_response_token_limit,  # Setting too low risks malformed JSON, setting too high may affect performance
+                n=1,
+                tools=tools,
+                seed=seed,
+            )
+            total_tokens += chat_completion.usage.total_tokens
+            query_text = self.get_search_query(chat_completion, original_user_query)
+
             vectors: list[VectorQuery] = []
             if use_vector_search:
                 vectors.append(await self.compute_text_embedding(query_text))
@@ -268,8 +272,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
 
             content = "\n".join(sources_content)
 
-        # STEP 4: Generate a contextual and content specific answer using the search results and chat history
-
+        # STEP 3: Generate a contextual and content specific answer using the search results and chat history
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
@@ -279,8 +282,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - response_token_limit,
         )
 
-        # data_points = {"text": sources_content}
-        # print(f"data_points: {data_points}")
+        for message in messages:
+            total_tokens += count_tokens_for_message(llm_model, message)
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -340,6 +343,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                     "Original query",
                     original_user_query,
                 ),
+                ThoughtStep("Total tokens", total_tokens),
             ],
         }
 
