@@ -260,8 +260,8 @@ def create_app():
     app.register_blueprint(login)
     app = cors(app, allow_origin="*")  # For local testing
 
-    if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
-        configure_azure_monitor()
+    if connection_string := os.getenv("APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING"):
+        configure_azure_monitor(connection_string=connection_string)
         # This tracks HTTP requests made by aiohttp:
         AioHttpClientInstrumentor().instrument()
         # This tracks HTTP requests made by httpx:
