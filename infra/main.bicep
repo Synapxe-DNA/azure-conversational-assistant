@@ -467,7 +467,7 @@ module cosmosDb 'core/database/cosmos.bicep' = {
     containerId: cosmosContainerId
     location: !empty(cosmosDbLocation) ? cosmosDbLocation : location
     tags: tags
-    enableFreeTier: false
+    enableFreeTier: true
     publicNetworkAccess: publicNetworkAccess
     bypass: 'None'
     disableLocalAuth: true

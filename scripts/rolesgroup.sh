@@ -35,4 +35,4 @@ az cosmosdb sql role assignment create \
 	--resource-group "$AZURE_RESOURCE_GROUP" \
 	--scope /subscriptions/"$AZURE_SUBSCRIPTION_ID"/resourceGroups/"$AZURE_RESOURCE_GROUP"/providers/Microsoft.DocumentDB/databaseAccounts/"$AZURE_COSMOS_DB_NAME" \
 	--principal-id "$AZURE_GROUP_PRINCIPAL_ID" \
-	--role-definition-id "70dead90-615e-4a87-9241-93931570e7d9"
+	--role-definition-id "70dead90-615e-4a87-9241-93931570e7d9"  # Custom role: Cosmos DB Built-in Data Reader + Cosmos DB Built-in Data Contributor

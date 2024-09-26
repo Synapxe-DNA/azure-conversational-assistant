@@ -57,7 +57,7 @@
       "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT}"
     },
     "chatGptDeploymentCapacity": {
-      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_CAPACITY=300}"
+      "value": "${AZURE_OPENAI_CHATGPT_DEPLOYMENT_CAPACITY=150}"
     },
     "embeddingModelName": {
       "value": "${AZURE_OPENAI_EMB_MODEL_NAME=text-embedding-3-small}"
@@ -66,7 +66,7 @@
       "value": "${AZURE_OPENAI_EMB_DEPLOYMENT}"
     },
     "embeddingDeploymentCapacity": {
-      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY=300}"
+      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY=350}"
     },
     "embeddingDimensions": {
       "value": "${AZURE_OPENAI_EMB_DIMENSIONS}"
