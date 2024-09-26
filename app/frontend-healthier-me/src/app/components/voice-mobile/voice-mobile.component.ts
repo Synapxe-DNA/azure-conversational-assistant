@@ -62,6 +62,7 @@ export class VoiceMobileComponent {
   message?: Message;
   chatMode?: ChatMode;
   isLoading: boolean = false; 
+  sendTimedOut: boolean = false;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
