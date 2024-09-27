@@ -35,7 +35,6 @@ class ResponseHandler:
                 tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
                 apiLog = APILog()
                 response_message = ""
-                response_token_count = 0
                 async for res in JSONEncoder.format_as_ndjson(result):
                     # Extract sources
                     res = json.loads(res)
@@ -64,7 +63,7 @@ class ResponseHandler:
                             break
 
                         apiLog.response_message += text_response_chunk
-                        response_token_count += 1
+                        apiLog.output_token_count += 1
 
                         if request_type == RequestType.CHAT:
                             response = TextChatResponse(
@@ -97,7 +96,9 @@ class ResponseHandler:
                         span.set_attribute(f"Chunk {i} content category", source.content_category)
                         span.set_attribute(f"Chunk {i} content", source.chunk)
                 span.set_attribute("Response", apiLog.response_message)
-                span.set_attribute("Total tokens", apiLog.token_count + response_token_count)
+                span.set_attribute("Total input tokens", apiLog.input_token_count)
+                span.set_attribute("Total output tokens", apiLog.output_token_count)
+                span.set_attribute("Total tokens", apiLog.input_token_count + apiLog.output_token_count)
             finally:
                 span.end()
 
@@ -185,7 +186,8 @@ Utility function to extract time taken, user query and sources with chunks from 
 
 def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], log: APILog) -> APILog:
     log.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
-    log.token_count = thoughts[6].get("description", 0)  # thoughts[6] is token count
+    log.input_token_count = thoughts[6].get("description", 0)  # thoughts[6] is input token count
+    log.output_token_count = thoughts[7].get("description", 0)  # thoughts[7] is output token count
     log.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
 
     return log
