@@ -33,3 +33,7 @@
     <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd" ariaLabelledBy="detect-end"></p-inputSwitch>
   </div>
 </p-overlayPanel>
+
+<p-dialog class="responsive-modal" [(visible)]="showTimeoutModal" [modal]="true" [closable]="true" [draggable]="false" header="Timeout">
+  <p class="tw-text-center">Request Timed Out. Please try again later. </p>
+</p-dialog>
