@@ -1,10 +1,11 @@
 <div class="tw-relative tw-bg-emerald-600 tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-overflow-auto no-scrollbar">
   <app-voice-sources [sources]="message!.sources"></app-voice-sources>
   <div class="tw-mt-[-80px]">
-    <app-voice-message [message]="message" [isLoading]="isLoading"></app-voice-message>  
+    <app-voice-message [message]="message" [isLoading]="isLoading"></app-voice-message>
   </div>
   <app-voice-annotation></app-voice-annotation>
-  <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"></app-voice-microphone>  <!-- Call mic click handler -->
+  <app-voice-microphone [state]="micState" (click)="handleMicButtonClick()"></app-voice-microphone>
+  <!-- Call mic click handler -->
   <div class="tw-text-center tw-text-xs tw-text-white tw-mt-[38px]">
     <p>Inspiring Tomorrow's Health</p>
     <p>Synapxe 2024</p>
@@ -14,7 +15,6 @@
 <div class="tw-absolute tw-bottom-6 tw-right-6">
   <p-button icon="pi pi-comment" (onClick)="toggleChatMode()" class="custom-border" />
 </div>
-
 
 <div class="tw-absolute tw-bottom-6 tw-right-6">
   <!-- <button (click)="preferenceOverlayPanel.toggle($event)" class="tw-text-white tw-pt-3"> -->
