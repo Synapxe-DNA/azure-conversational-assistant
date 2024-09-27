@@ -61,7 +61,7 @@ export class VoiceMobileComponent {
   micState: MicState = MicState.PENDING;
   message?: Message;
   chatMode?: ChatMode;
-  isLoading: boolean = false; 
+  isLoading: boolean = false;
   sendTimedOut: boolean = false;
   showTimeoutModal = false;
 
@@ -102,7 +102,7 @@ export class VoiceMobileComponent {
     this.preference.$showLiveTranscription.subscribe(v => (this.showLiveTranscription = v));
     this.convoBroker.$micState.subscribe(v => {
       this.micState = v;
-      this.isLoading = (v === MicState.DISABLED);
+      this.isLoading = v === MicState.DISABLED;
       console.log(this.micState);
       console.log(this.isLoading);
     });
