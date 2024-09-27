@@ -7,6 +7,7 @@ from azure.search.documents.aio import SearchClient
 from config import CONFIG_SEARCH_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
 from error import error_dict
 from lingua import Language, LanguageDetectorBuilder
+from models.apilog import APILog
 from models.chat import TextChatResponse, TextChatResponseWtihChunk
 from models.chat_history import ChatHistory
 from models.feedback import FeedbackRequest, FeedbackStore
@@ -16,8 +17,12 @@ from models.request import Request
 from models.request_type import RequestType
 from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
+from opentelemetry import trace
 from quart import current_app, stream_with_context
 from utils.json_encoder import JSONEncoder
+
+# Get the global tracer provider
+tracer = trace.get_tracer(__name__)
 
 
 class Utils:
@@ -34,59 +39,78 @@ class Utils:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
         """
+        span = tracer.start_span("extra_information")
 
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
-
-            response_message = ""
-            tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
-
-            async for res in format_as_ndjson(result):
-                # Extract sources
-                res = json.loads(res)
-                error_msg = res.get("error", None)
-                thoughts = res.get("context", {}).get("thoughts", [])
-                text_response_chunk = ""
-                if error_msg is not None:
-                    yield construct_error_response(error_msg, request_type, language)
-                elif not thoughts == []:
-                    yield construct_source_response(thoughts, request_type)
-                else:
-                    # Extract text response
-                    text_response_chunk = res.get("delta", {}).get("content", "")
-
-                    if text_response_chunk is None:
-                        if not response_message == "":
-                            audio_data = tts.readText(response_message, True, language)
-                            response = VoiceChatResponse(
-                                response_message=response_message,
-                                sources=[],
-                                audio_base64=audio_data,
-                            )
-                            yield response.model_dump_json()
-                            response_message = ""
-                        break
-
-                    if request_type == RequestType.CHAT:
-                        response = TextChatResponse(
-                            response_message=text_response_chunk,
-                            sources=[],
-                        )
-                        yield response.model_dump_json()
-
+            try:
+                tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+                apiLog = APILog()
+                response_message = ""
+                response_token_count = 0
+                async for res in format_as_ndjson(result):
+                    # Extract sources
+                    res = json.loads(res)
+                    error_msg = res.get("error", None)
+                    thoughts = res.get("context", {}).get("thoughts", [])
+                    text_response_chunk = ""
+                    if error_msg is not None:
+                        yield construct_error_response(error_msg, request_type, language)
+                    elif not thoughts == []:
+                        yield construct_source_response(thoughts, request_type)
+                        apiLog = extract_thoughts_for_logging(thoughts, apiLog)
                     else:
-                        response_message += text_response_chunk
-                        if bool(
-                            re.search(r"[.,!?。，！？]\s", text_response_chunk)
-                        ):  # Transcribe text only when punctuation is detected
-                            audio_data = tts.readText(response_message, True, language)
-                            response = VoiceChatResponse(
-                                response_message=response_message,
+                        # Extract text response
+                        text_response_chunk = res.get("delta", {}).get("content", "")
+
+                        if text_response_chunk is None:
+                            if not response_message == "":
+                                audio_data = tts.readText(response_message, True, language)
+                                response = VoiceChatResponse(
+                                    response_message=response_message,
+                                    sources=[],
+                                    audio_base64=audio_data,
+                                )
+                                yield response.model_dump_json()
+                                response_message = ""
+                            break
+
+                        apiLog.response_message += text_response_chunk
+                        response_token_count += 1
+
+                        if request_type == RequestType.CHAT:
+                            response = TextChatResponse(
+                                response_message=text_response_chunk,
                                 sources=[],
-                                audio_base64=audio_data,
                             )
                             yield response.model_dump_json()
-                            response_message = ""
+
+                        else:
+                            response_message += text_response_chunk
+                            if bool(
+                                re.search(r"[.,!?。，！？]\s", text_response_chunk)
+                            ):  # Transcribe text only when punctuation is detected
+                                audio_data = tts.readText(response_message, True, language)
+                                response = VoiceChatResponse(
+                                    response_message=response_message,
+                                    sources=[],
+                                    audio_base64=audio_data,
+                                )
+                                yield response.model_dump_json()
+                                response_message = ""
+                # sending custom logs to app insights
+                span.set_attribute("Query", apiLog.user_query)
+                for i, source in enumerate(apiLog.retrieved_sources, start=1):
+                    span.set_attribute(f"Chunk {i} ID", source.id)
+                    span.set_attribute(f"Chunk {i} title", source.title)
+                    span.set_attribute(f"Chunk {i} cover image url", source.cover_image_url)
+                    span.set_attribute(f"Chunk {i} full url", source.full_url)
+                    span.set_attribute(f"Chunk {i} content category", source.content_category)
+                    span.set_attribute(f"Chunk {i} content", source.chunk)
+                span.set_attribute("Response", apiLog.response_message)
+                span.set_attribute("Total tokens", apiLog.token_count + response_token_count)
+            finally:
+                span.end()
 
         return generator()
 
@@ -257,6 +281,19 @@ def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) ->
         sources.append(src_instance)
 
     return sources
+
+
+"""
+Utility function to extract time taken, user query and sources with chunks from the ThoughtStep returned by the LLM
+"""
+
+
+def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], log: APILog) -> APILog:
+    log.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
+    log.token_count = thoughts[6].get("description", 0)  # thoughts[6] is token count
+    log.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
+
+    return log
 
 
 """
