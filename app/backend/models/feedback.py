@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from models.chat_history import ChatHistoryWithSource
+from models.chat_message import ChatMessageWithSource
 from models.profile import Profile
 from pydantic import BaseModel
 
@@ -11,7 +11,7 @@ class FeedbackRequest(BaseModel):
     feedback_category: List[str]
     feedback_remarks: Optional[str]
     user_profile: Profile
-    chat_history: List[ChatHistoryWithSource]
+    chat_history: List[ChatMessageWithSource]
 
 
 class FeedbackStore(BaseModel):
@@ -20,4 +20,4 @@ class FeedbackStore(BaseModel):
     feedback_category: List[str]
     feedback_remarks: Optional[str]
     user_profile: Profile
-    chat_history: List[ChatHistoryWithSource]
+    chat_history: List[ChatMessageWithSource]

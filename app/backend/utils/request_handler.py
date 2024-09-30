@@ -2,7 +2,7 @@ from typing import Any, List
 
 from azure.search.documents.aio import SearchClient
 from config import CONFIG_SEARCH_CLIENT
-from models.chat_history import ChatHistory
+from models.chat_message import ChatMessage
 from models.feedback import FeedbackRequest, FeedbackStore
 from models.language import LanguageSelected
 from models.profile import Profile
@@ -49,8 +49,8 @@ class RequestHandler:
     """
 
     @staticmethod
-    def form_message(chat_history_list: List[ChatHistory], query: dict[str, str]) -> list[dict[str, Any]]:
-        messages = [chat_history.model_dump() for chat_history in chat_history_list] + [query]
+    def form_message(chat_history_list: List[ChatMessage], query: ChatMessage) -> list[dict[str, Any]]:
+        messages = [chat_history.model_dump() for chat_history in chat_history_list] + [query.model_dump()]
         return messages
 
     """
@@ -73,7 +73,6 @@ class RequestHandler:
             query=data["query"],
             language=language,
         )
-
         return request
 
     """
