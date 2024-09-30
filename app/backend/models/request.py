@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from models.chat_message import ChatMessage
 from models.profile import Profile
@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class Request(BaseModel):
-    chat_history: Optional[List[ChatMessage]]
-    profile: Optional[Profile]
+    chat_history: List[ChatMessage]
+    profile: Profile
     query: ChatMessage
     language: str
