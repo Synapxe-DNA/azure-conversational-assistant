@@ -1,0 +1,14 @@
+{
+  "language": "english",
+  "chat_history": [],
+  "profile": {
+    "profile_type": "others",
+    "user_age": -1,
+    "user_gender": "male",
+    "user_condition": ""
+  },
+  "query": {
+    "role": "user",
+    "content": "How to sleep better?"
+  }
+}

@@ -31,7 +31,7 @@
   </a>
 
   <!-- Edit Button Icon -->
-  <button class="tw-cursor-pointer" (click)="onEditProfile(profile.id)">
+  <button class="tw-cursor-pointer" (click)="onEditProfile(profile.id)" *ngIf="profile.id !== 'general'">
     <img ngSrc="/app/icons/edit.svg" height="24" width="24" class="tw-w-[24px] tw-h-[24px] tw-mx-3" alt="Edit Profile" />
   </button>
 </div>

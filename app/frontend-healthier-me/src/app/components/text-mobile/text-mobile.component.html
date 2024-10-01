@@ -16,7 +16,7 @@
       <p *ngIf="timeout" class="error-message">Error generating response. Please try again later.</p>
     </div>
   </div>
-  <app-text-loading *ngIf="loading" />
+  <app-loading *ngIf="loading" />
 
   <div class="tw-bottom-6 tw-flex tw-fixed-1 tw-justify-center tw-mb-4">
     <app-text-input (messageSent)="onMessageSent()" class="tw-w-[80dvw] tw-max-w-[800px]" />

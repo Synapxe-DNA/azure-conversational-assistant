@@ -187,6 +187,9 @@
     },
     "passwordName": {
       "value": "${PASSWORD_NAME=password}"
+    },
+    "secretKeyName": {
+      "value": "${SECRET_KEY_NAME=secretKey}"
     }
   }
 }

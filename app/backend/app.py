@@ -7,10 +7,12 @@ from typing import AsyncGenerator
 
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
-from authentication.authenticator import Authenticator
+from authentication.account_authenticator import AccountAuthenticator
+from authentication.jwt_authenticator import JWTAuthenticator
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.keyvault.secrets.aio import SecretClient
+from azure.monitor.opentelemetry import configure_azure_monitor
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from blueprints.backend_blueprint.chat import chat
@@ -38,9 +40,12 @@ from config import (
     CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
-from database.user_database import UserDatabase
 from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 from quart import Blueprint, Quart, current_app, redirect
 from quart_cors import cors
 from speech.speech_to_text import SpeechToText
@@ -234,8 +239,8 @@ async def setup_clients():
     current_app.config[CONFIG_KEYVAULT_CLIENT] = SecretClient(
         vault_url=AZURE_KEY_VAULT_ENDPOINT, credential=azure_credential
     )
-    current_app.config[CONFIG_USER_DATABASE] = await UserDatabase().setup()
-    current_app.config[CONFIG_AUTHENTICATOR] = Authenticator()
+    current_app.config[CONFIG_USER_DATABASE] = AccountAuthenticator()
+    current_app.config[CONFIG_AUTHENTICATOR] = JWTAuthenticator()
 
 
 @bp.after_app_serving
@@ -254,6 +259,17 @@ def create_app():
     app.register_blueprint(transcription)
     app.register_blueprint(login)
     app = cors(app, allow_origin="*")  # For local testing
+
+    if connection_string := os.getenv("APPLICATIONINSIGHTS_FOR_APIM_CONNECTION_STRING"):
+        configure_azure_monitor(connection_string=connection_string)
+        # This tracks HTTP requests made by aiohttp:
+        AioHttpClientInstrumentor().instrument()
+        # This tracks HTTP requests made by httpx:
+        HTTPXClientInstrumentor().instrument()
+        # This tracks OpenAI SDK requests:
+        OpenAIInstrumentor().instrument()
+        # This middleware tracks app route requests:
+        app.asgi_app = OpenTelemetryMiddleware(app.asgi_app)  # type: ignore[assignment]
 
     default_level = "INFO"  # In development, log more verbosely
     logging.basicConfig(level=os.getenv("APP_LOG_LEVEL", default_level))

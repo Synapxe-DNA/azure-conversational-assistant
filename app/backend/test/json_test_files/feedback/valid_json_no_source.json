@@ -1,0 +1,24 @@
+{
+  "date_time": "24/09/2024, 18:28:19",
+  "feedback_type": "positive",
+  "feedback_category": ["Straightforward Answer"],
+  "feedback_remarks": "Generated from testing",
+  "user_profile": {
+    "profile_type": "others",
+    "user_age": 24,
+    "user_gender": "female",
+    "user_condition": "Diabetes, High Cholesterol"
+  },
+  "language": "spoken",
+  "chat_history": [],
+  "profile": {
+    "profile_type": "general",
+    "user_age": 20,
+    "user_gender": "male",
+    "user_condition": ""
+  },
+  "query": {
+    "role": "user",
+    "content": "How to sleep better?"
+  }
+}

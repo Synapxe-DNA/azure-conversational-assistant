@@ -6,7 +6,7 @@ import { GeneralProfile, Profile } from "../../types/profile.type";
 import { Message, MessageRole } from "../../types/message.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../profile/profile.service";
-import { BehaviorSubject, takeWhile } from "rxjs";
+import { BehaviorSubject, takeWhile, takeUntil } from "rxjs";
 import { convertBase64ToBlob } from "../../utils/base-64-to-blob";
 import { VadService } from "../vad/vad.service";
 import { PreferenceService } from "../preference/preference.service";
@@ -18,6 +18,8 @@ import { ChatMode } from "../../types/chat-mode.type";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { Feedback } from "../../types/feedback.type";
 import { Language } from "../../types/language.type";
+import { Subject } from "rxjs";
+import { APP_CONSTANTS } from "../../constants";
 
 @Injectable({
   providedIn: "root"
@@ -30,6 +32,7 @@ export class ConvoBrokerService {
 
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(MicState.PENDING);
   $isWaitingForVoiceApi: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  $sendTimeout: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -152,6 +155,7 @@ export class ConvoBrokerService {
    * @param profile {Profile}
    * @private
    */
+
   private async sendVoice(message: string, profile: Profile) {
     this.$isWaitingForVoiceApi.next(true);
 
@@ -163,6 +167,9 @@ export class ConvoBrokerService {
 
     let audio_base64: string[] = [];
 
+    // Subject to cancel the observable when timeout occurs
+    const cancel$ = new Subject<void>();
+
     const res = await this.endpointService.sendVoice(
       message,
       this.activeProfile.value || GeneralProfile,
@@ -170,34 +177,66 @@ export class ConvoBrokerService {
       this.$language.value || Language.Spoken
     );
 
-    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-      next: async d => {
-        if (!d) {
-          return;
-        }
-        // upsert assistant message
-        await this.chatMessageService.upsert({
-          id: assistantMessageId,
-          profile_id: profile.id,
-          role: MessageRole.Assistant,
-          message: d.assistant_response,
-          timestamp: new Date().getTime(),
-          sources: d.sources
-        });
-
-        const nonNullAudio = d.assistant_response_audio.map(v => v);
-        if (nonNullAudio.length > audio_base64.length) {
-          const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-          audio_base64 = nonNullAudio;
-          newAudioStr.forEach(a => {
-            this.playAudioBase64(a);
-          });
-        }
-      },
-      complete: () => {
-        this.$isWaitingForVoiceApi.next(false);
-      }
+    const timeoutPromise = new Promise<void>(resolve => {
+      setTimeout(() => {
+        this.$sendTimeout.next(true);
+        // Emit a value to cancel the observable
+        cancel$.next();
+        resolve();
+      }, APP_CONSTANTS.VOICE_TIMEOUT);
     });
+
+    const responsePromise = new Promise<void>(resolve => {
+      res
+        .pipe(
+          takeWhile(d => d?.status !== "DONE", true),
+          takeUntil(cancel$) // Cancel the observable if timeout occurs
+        )
+        .subscribe({
+          next: async d => {
+            if (!d) {
+              return;
+            }
+
+            // upsert assistant message
+            await this.chatMessageService.upsert({
+              id: assistantMessageId,
+              profile_id: profile.id,
+              role: MessageRole.Assistant,
+              message: d.assistant_response,
+              timestamp: new Date().getTime(),
+              sources: d.sources
+            });
+
+            const nonNullAudio = d.assistant_response_audio.map(v => v);
+            if (nonNullAudio.length > audio_base64.length) {
+              const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
+              audio_base64 = nonNullAudio;
+
+              // set mic state to pending so the loading throbber is removed.
+              this.$micState.next(MicState.PENDING);
+
+              newAudioStr.forEach(a => {
+                this.playAudioBase64(a);
+              });
+            }
+          },
+          complete: () => {
+            resolve(); // Complete the response handling
+          },
+          error: () => {
+            resolve(); // Also resolve in case of an error
+          }
+        });
+    });
+
+    await Promise.race([responsePromise, timeoutPromise]);
+
+    // Complete the cancel subject to clean up resources
+    cancel$.complete();
+
+    // Handle timeout or completion
+    this.$isWaitingForVoiceApi.next(false);
   }
 
   async sendFeedback(feedback: Feedback) {

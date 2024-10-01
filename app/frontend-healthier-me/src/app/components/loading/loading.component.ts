@@ -2,10 +2,10 @@ import { Component } from "@angular/core";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 
 @Component({
-  selector: "app-text-loading",
+  selector: "app-loading",
   standalone: true,
   imports: [ProgressSpinnerModule],
-  templateUrl: "./text-loading.component.html",
-  styleUrl: "./text-loading.component.css"
+  templateUrl: "./loading.component.html",
+  styleUrl: "./loading.component.css"
 })
-export class TextLoadingComponent {}
+export class LoadingComponent {}
