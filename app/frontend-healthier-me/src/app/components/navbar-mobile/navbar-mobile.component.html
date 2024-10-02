@@ -22,6 +22,7 @@
   </div>
 </div>
 
+<div *ngIf="sidebar" class="custom-overlay" (click)="closeSidebar()"></div>
 <p-sidebar [(visible)]="sidebar" [modal]="false">
   <div class="tw-border-gray-300 tw-bg-white tw-border-solid tw-flex tw-flex-col tw-justify-start tw-items-stretch tw-gap-5">
     <app-navbar-language />
