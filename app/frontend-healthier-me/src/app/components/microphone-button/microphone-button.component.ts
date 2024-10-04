@@ -22,14 +22,21 @@ export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
   constructor(private audioService: AudioService) {}
 
   ngAfterViewInit() {
-    this.startAnalyser().catch(console.error);
+    // this.startAnalyser().catch(console.error);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (Object.hasOwn(changes, "state") && this.btn) {
       switch (changes["state"].currentValue) {
         case MicState.ACTIVE:
-          this.mainLoop();
+          if (this.audioAnalyser === undefined) {
+          this.startAnalyser().then(() => {
+            this.mainLoop();
+          });            
+          } else {
+            this.mainLoop();
+          }
+
           break;
         case MicState.PENDING:
           this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
@@ -40,7 +47,7 @@ export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
       }
     }
   }
-
+  
   async startAnalyser() {
     this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
   }

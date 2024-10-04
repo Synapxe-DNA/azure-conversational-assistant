@@ -16,8 +16,8 @@ export class VadService {
   private __mic!: Promise<MediaStream>;
 
   constructor(private audio: AudioService) {
-    this.__mic = this.audio.getMicInput();
-    this.configSpeechRecognition();
+    // this.__mic = this.audio.getMicInput();
+    // this.configSpeechRecognition();
   }
 
   /**
@@ -50,8 +50,18 @@ export class VadService {
       // console.warn("VAD Error! Restarting VAD session");
       this.configSpeechRecognition();
     };
+    // this.recognition.start();
+  }
+
+  startRecognition() {
     this.recognition.start();
   }
+
+  stopRecognition() {
+    this.recognition.stop();
+  }
+   
+  
 
   /**
    * Method to start VAD globally

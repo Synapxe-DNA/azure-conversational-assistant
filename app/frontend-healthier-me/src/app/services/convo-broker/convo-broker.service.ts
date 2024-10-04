@@ -8,7 +8,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../profile/profile.service";
 import { BehaviorSubject, takeWhile, takeUntil } from "rxjs";
 import { convertBase64ToBlob } from "../../utils/base-64-to-blob";
-import { VadService } from "../vad/vad.service";
+// import { VadService } from "../vad/vad.service";
 import { PreferenceService } from "../preference/preference.service";
 import { AudioService } from "../audio/audio.service";
 import { MicState } from "../../types/mic-state.type";
@@ -40,7 +40,7 @@ export class ConvoBrokerService {
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
     private profileService: ProfileService,
-    private vadService: VadService
+    // private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe(p => {
@@ -67,35 +67,35 @@ export class ConvoBrokerService {
     });
 
     // Monitor VAD activity
-    this.vadService.start().subscribe({
-      next: s => {
-        // DO NOT DO ANYTHING if chat mode is not voice
-        if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
-          return;
-        }
+    // this.vadService.start().subscribe({
+    //   next: s => {
+    //     // DO NOT DO ANYTHING if chat mode is not voice
+    //     if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
+    //       return;
+    //     }
 
-        switch (s) {
-          case VoiceActivity.Start: {
-            if (
-              this.preferenceService.$voiceDetectStart.value &&
-              this.$micState.value === MicState.PENDING &&
-              !this.$isWaitingForVoiceApi.value &&
-              ((this.audioPlayer.$playing.value && this.preferenceService.$voiceDetectInterrupt.value) || !this.audioPlayer.$playing.value)
-            ) {
-              this.handleStartRecording();
-            }
-            break;
-          }
+    //     switch (s) {
+    //       case VoiceActivity.Start: {
+    //         if (
+    //           this.preferenceService.$voiceDetectStart.value &&
+    //           this.$micState.value === MicState.PENDING &&
+    //           !this.$isWaitingForVoiceApi.value &&
+    //           ((this.audioPlayer.$playing.value && this.preferenceService.$voiceDetectInterrupt.value) || !this.audioPlayer.$playing.value)
+    //         ) {
+    //           this.handleStartRecording();
+    //         }
+    //         break;
+    //       }
 
-          case VoiceActivity.End: {
-            if (this.preferenceService.$voiceDetectEnd.value && this.$micState.value === MicState.ACTIVE) {
-              this.handleStopRecording();
-            }
-            break;
-          }
-        }
-      }
-    });
+    //       case VoiceActivity.End: {
+    //         if (this.preferenceService.$voiceDetectEnd.value && this.$micState.value === MicState.ACTIVE) {
+    //           this.handleStopRecording();
+    //         }
+    //         break;
+    //       }
+    //     }
+    //   }
+    // });
   }
 
   openWebSocket() {
