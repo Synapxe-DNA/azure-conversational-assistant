@@ -30,9 +30,9 @@ export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
       switch (changes["state"].currentValue) {
         case MicState.ACTIVE:
           if (this.audioAnalyser === undefined) {
-          this.startAnalyser().then(() => {
-            this.mainLoop();
-          });            
+            this.startAnalyser().then(() => {
+              this.mainLoop();
+            });
           } else {
             this.mainLoop();
           }
@@ -47,7 +47,7 @@ export class MicrophoneButtonComponent implements AfterViewInit, OnChanges {
       }
     }
   }
-  
+
   async startAnalyser() {
     this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
   }

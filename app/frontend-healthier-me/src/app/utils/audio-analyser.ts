@@ -25,7 +25,7 @@ export class AudioAnalyser {
     // Connect the media stream source to the analyser
     const source = audioContext.createMediaStreamSource(stream);
     this.source = source;
-    
+
     this.connectStream(stream, source);
   }
 

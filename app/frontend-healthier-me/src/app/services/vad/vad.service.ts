@@ -60,8 +60,6 @@ export class VadService {
   stopRecognition() {
     this.recognition.stop();
   }
-   
-  
 
   /**
    * Method to start VAD globally

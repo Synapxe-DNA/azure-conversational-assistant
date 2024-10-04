@@ -39,7 +39,7 @@ export class ConvoBrokerService {
     private audioPlayer: AudioPlayerService,
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
-    private profileService: ProfileService,
+    private profileService: ProfileService
     // private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);

@@ -47,7 +47,7 @@ export class VoiceMicrophoneComponent {
               this.mainLoop();
             });
           } else {
-              this.mainLoop();
+            this.mainLoop();
           }
           break;
         case MicState.PENDING:
@@ -60,7 +60,7 @@ export class VoiceMicrophoneComponent {
       }
     }
   }
-  
+
   async startAnalyser() {
     const micInput = await this.getMicrophoneInput();
     this.audioAnalyser = new AudioAnalyser(micInput, 4, 0.001);
@@ -69,7 +69,6 @@ export class VoiceMicrophoneComponent {
   async getMicrophoneInput(): Promise<MediaStream> {
     return await this.audioService.getMicInput();
   }
-  
 
   mainLoop() {
     if (this.state === MicState.ACTIVE && this.audioAnalyser) {
