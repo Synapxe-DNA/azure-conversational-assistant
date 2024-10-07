@@ -1,6 +1,8 @@
 export class AudioAnalyser {
   private readonly numBars: number;
   private readonly analyser: AnalyserNode;
+  private readonly stream: MediaStream;
+  private readonly source: MediaStreamAudioSourceNode;
 
   /**
    * Constructs an instance of AudioAnalyser.
@@ -10,6 +12,7 @@ export class AudioAnalyser {
    */
   constructor(stream: MediaStream, numBars: number = 8, smoothing: number = 0.75) {
     this.numBars = numBars;
+    this.stream = stream;
 
     // Initialize audio context and analyser
     const audioContext = new AudioContext();
@@ -21,7 +24,9 @@ export class AudioAnalyser {
 
     // Connect the media stream source to the analyser
     const source = audioContext.createMediaStreamSource(stream);
-    source.connect(this.analyser);
+    this.source = source;
+
+    this.connectStream(stream, source);
   }
 
   /**
@@ -58,5 +63,17 @@ export class AudioAnalyser {
     const frequencyData = this.getFrequency();
     const sum = frequencyData.reduce((acc, value) => acc + value, 0);
     return sum / frequencyData.length;
+  }
+
+  getStream(): MediaStream {
+    return this.stream;
+  }
+
+  getSource(): MediaStreamAudioSourceNode {
+    return this.source;
+  }
+
+  connectStream(stream: MediaStream, source: MediaStreamAudioSourceNode) {
+    source.connect(this.analyser);
   }
 }

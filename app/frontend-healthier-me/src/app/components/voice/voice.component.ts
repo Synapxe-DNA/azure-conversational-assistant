@@ -11,7 +11,6 @@ import { InputSwitchChangeEvent, InputSwitchModule } from "primeng/inputswitch";
 import { ChatMode } from "../../types/chat-mode.type";
 import { FormsModule } from "@angular/forms";
 import { AudioRecorder } from "../../utils/audio-recorder";
-import { VadService } from "../../services/vad/vad.service";
 import { AudioService } from "../../services/audio/audio.service";
 import { VoiceActivity } from "../../types/voice-activity.type";
 import { BehaviorSubject, takeWhile } from "rxjs";

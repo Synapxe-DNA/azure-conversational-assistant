@@ -31,7 +31,7 @@ export class VoiceMicrophoneComponent {
   ) {}
 
   ngAfterViewInit() {
-    this.startAnalyser().catch(console.error);
+    // this.startAnalyser().catch(console.error);
     this.audioPlayer.$playing.subscribe(playing => {
       this.isPlaying = playing;
       console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
@@ -42,9 +42,16 @@ export class VoiceMicrophoneComponent {
     if (Object.hasOwn(changes, "state") && this.btn) {
       switch (changes["state"].currentValue) {
         case MicState.ACTIVE:
-          this.mainLoop();
+          if (this.audioAnalyser === undefined) {
+            this.startAnalyser().then(() => {
+              this.mainLoop();
+            });
+          } else {
+            this.mainLoop();
+          }
           break;
         case MicState.PENDING:
+          this.audioAnalyser = undefined;
           this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
           break;
         case MicState.DISABLED:
@@ -55,7 +62,12 @@ export class VoiceMicrophoneComponent {
   }
 
   async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
+    const micInput = await this.getMicrophoneInput();
+    this.audioAnalyser = new AudioAnalyser(micInput, 4, 0.001);
+  }
+
+  async getMicrophoneInput(): Promise<MediaStream> {
+    return await this.audioService.getMicInput();
   }
 
   mainLoop() {
