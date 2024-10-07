@@ -72,7 +72,7 @@ export class AudioAnalyser {
   setStream(stream: MediaStream) {
     this.stream = stream;
     this.connectStream(stream, this.source);
-    }
+  }
 
   getSource(): MediaStreamAudioSourceNode {
     return this.source;
