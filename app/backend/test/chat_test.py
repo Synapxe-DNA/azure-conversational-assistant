@@ -27,15 +27,15 @@ valid_json_chinese_in_chinese_out = "json_test_files/chat/valid_json_chinese_in_
 valid_json_chinese_in_malay_out = "json_test_files/chat/valid_json_chinese_in_malay_out.json"
 valid_json_chinese_in_tamil_out = "json_test_files/chat/valid_json_chinese_in_tamil_out.json"
 
-valid_json_malay_in_english_out = ""
-valid_json_malay_in_chinese_out = ""
-valid_json_malay_in_malay_out = ""
-valid_json_malay_in_tamil_out = ""
+valid_json_malay_in_english_out = "json_test_files/chat/valid_json_malay_in_english_out.json"
+valid_json_malay_in_chinese_out = "json_test_files/chat/valid_json_malay_in_chinese_out.json"
+valid_json_malay_in_malay_out = "json_test_files/chat/valid_json_malay_in_malay_out.json"
+valid_json_malay_in_tamil_out = "json_test_files/chat/valid_json_malay_in_tamil_out.json"
 
-valid_json_tamil_in_english_out = ""
-valid_json_tamil_in_chinese_out = ""
-valid_json_tamil_in_malay_out = ""
-valid_json_tamil_in_tamil_out = ""
+valid_json_tamil_in_english_out = "json_test_files/chat/valid_json_tamil_in_english_out.json"
+valid_json_tamil_in_chinese_out = "json_test_files/chat/valid_json_tamil_in_chinese_out.json"
+valid_json_tamil_in_malay_out = "json_test_files/chat/valid_json_tamil_in_malay_out.json"
+valid_json_tamil_in_tamil_out = "json_test_files/chat/valid_json_tamil_in_tamil_out.json"
 
 """
 Response file path
@@ -43,214 +43,290 @@ Response file path
 
 response_folder_path = "responses/chat/"
 
-"""
-Test cases for the feedback endpoint
-"""
-
 
 @pytest_asyncio.fixture
 async def chat_endpointURL(endpointURL):
+    """
+    URL for chat endpoint
+    """
+
     yield f"{endpointURL}/chat/stream"
-
-
-"""
-Test chat endpoint with valid json general profile
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_general_profile_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json general profile
+    """
+
     response, _ = await post_valid_json_request(valid_json_general_profile, chat_endpointURL)
-
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
-
-
-"""
-Test chat endpoint with valid json other profile
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_other_profile_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json other profile
+    """
+
     response, _ = await post_valid_json_request(valid_json_other_profile, chat_endpointURL)
-
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
-
-
-"""
-Test chat endpoint with valid json spoken english
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_spoken_english_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_spoken_english, chat_endpointURL)
+    """
+    Test chat endpoint with valid json spoken english
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_spoken_english, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.ENGLISH, f"Expected {Language.ENGLISH}, got {response_language}"
-
-
-"""
-Test chat endpoint with valid json spoken chinese
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_spoken_chinese_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_spoken_chinese, chat_endpointURL)
+    """
+    Test chat endpoint with valid json spoken chinese
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_spoken_chinese, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.CHINESE, f"Expected {Language.CHINESE}, got {response_language}"
-
-
-"""
-Test chat endpoint with valid json spoken malay
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_spoken_malay_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_spoken_malay, chat_endpointURL)
+    """
+    Test chat endpoint with valid json spoken malay
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_spoken_malay, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.MALAY, f"Expected {Language.MALAY}, got {response_language}"
-
-
-"""
-Test chat endpoint with valid json spoken tamil
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_spoken_tamil_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_spoken_tamil, chat_endpointURL)
+    """
+    Test chat endpoint with valid json spoken tamil
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_spoken_tamil, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.TAMIL, f"Expected {Language.TAMIL}, got {response_language}"
-
-
-"""
-Test chat endpoint with valid json english in english out
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_english_in_english_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_english_in_english_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json english in english out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_english_in_english_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.ENGLISH, f"Expected {Language.ENGLISH}, got {response_language}"
-
-
-"""
-Test chat endpoint with valid json english in chinese out
-"""
 
 
 @pytest.mark.asyncio
 async def test_valid_json_english_in_chinese_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_english_in_chinese_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json english in chinese out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_english_in_chinese_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.CHINESE, f"Expected {Language.CHINESE}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json english in malay out
-"""
-
-
 @pytest.mark.asyncio
 async def test_valid_json_english_in_malay_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_english_in_malay_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json english in malay out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_english_in_malay_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.MALAY, f"Expected {Language.MALAY}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json english in tamil out
-"""
-
-
 @pytest.mark.asyncio
 async def test_valid_json_english_in_tamil_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_english_in_tamil_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json english in tamil out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_english_in_tamil_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.TAMIL, f"Expected {Language.TAMIL}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json chinese in english out
-"""
-
-
 @pytest.mark.asyncio
 async def test_valid_json_chinese_in_english_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_chinese_in_english_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json chinese in english out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_chinese_in_english_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.ENGLISH, f"Expected {Language.ENGLISH}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json chinese in chinese out
-"""
-
-
 @pytest.mark.asyncio
 async def test_valid_json_chinese_in_chinese_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_chinese_in_chinese_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json chinese in chinese out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_chinese_in_chinese_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.CHINESE, f"Expected {Language.CHINESE}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json chinese in malay out
-"""
-
-
 @pytest.mark.asyncio
 async def test_valid_json_chinese_in_malay_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_chinese_in_malay_out, chat_endpointURL)
+    """
+    Test chat endpoint with valid json chinese in malay out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_chinese_in_malay_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
     assert response_language == Language.MALAY, f"Expected {Language.MALAY}, got {response_language}"
 
 
-"""
-Test chat endpoint with valid json chinese in tamil out
-"""
+@pytest.mark.asyncio
+async def test_valid_json_chinese_in_tamil_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json chinese in tamil out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_chinese_in_tamil_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.TAMIL, f"Expected {Language.TAMIL}, got {response_language}"
 
 
 @pytest.mark.asyncio
-async def test_valid_json_chinese_in_tamil_out_request(chat_endpointURL):
-    response, combined_json = await post_valid_json_request(valid_json_chinese_in_tamil_out, chat_endpointURL)
+async def test_valid_json_malay_in_english_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json malay in english out
+    """
 
+    response, combined_json = await post_valid_json_request(valid_json_malay_in_english_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.ENGLISH, f"Expected {Language.ENGLISH}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_malay_in_chinese_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json malay in chinese out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_malay_in_chinese_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.CHINESE, f"Expected {Language.CHINESE}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_malay_in_malay_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json malay in malay out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_malay_in_malay_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.MALAY, f"Expected {Language.MALAY}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_malay_in_tamil_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json malay in tamil out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_malay_in_tamil_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.TAMIL, f"Expected {Language.TAMIL}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_tamil_in_english_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json tamil in english out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_tamil_in_english_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.ENGLISH, f"Expected {Language.ENGLISH}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_tamil_in_chinese_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json tamil in chinese out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_tamil_in_chinese_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.CHINESE, f"Expected {Language.CHINESE}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_tamil_in_malay_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json tamil in malay out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_tamil_in_malay_out, chat_endpointURL)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
+
+    response_language = await check_response_language(combined_json)
+    assert response_language == Language.MALAY, f"Expected {Language.MALAY}, got {response_language}"
+
+
+@pytest.mark.asyncio
+async def test_valid_json_tamil_in_tamil_out_request(chat_endpointURL):
+    """
+    Test chat endpoint with valid json tamil in tamil out
+    """
+
+    response, combined_json = await post_valid_json_request(valid_json_tamil_in_tamil_out, chat_endpointURL)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}, {response.json()}"
 
     response_language = await check_response_language(combined_json)
@@ -258,7 +334,7 @@ async def test_valid_json_chinese_in_tamil_out_request(chat_endpointURL):
 
 
 """
-Helper function
+Helper functions
 """
 
 
