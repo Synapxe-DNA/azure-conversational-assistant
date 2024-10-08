@@ -340,7 +340,7 @@ Helper functions
 
 async def merge_streaming_response(response):
     combined_json = {}
-    response_decode = response.content.decode('utf-8')
+    response_decode = response.content.decode("utf-8")
     list_of_json = json.loads("[{}]".format(response_decode.replace("}{", "},{")))
     for chunk in list_of_json:
         for key, value in chunk.items():
