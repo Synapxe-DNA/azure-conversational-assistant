@@ -1,13 +1,13 @@
+import base64
+import io
 import json
 import os
 
 import pytest
-import io
-from pydub import AudioSegment
-import base64
 import pytest_asyncio
 import requests
 from lingua import Language, LanguageDetectorBuilder
+from pydub import AudioSegment
 
 """
 File paths
@@ -45,6 +45,7 @@ Response file path
 """
 
 response_folder_path = "responses/voice/"
+
 
 @pytest_asyncio.fixture
 async def voice_endpointURL(endpointURL):
@@ -343,20 +344,26 @@ Helper functions
 async def merge_streaming_response(response):
     combined_json = {}
     audio_list = []
-    response_decode = response.content.decode('utf-8')
-    list_of_json = json.loads("[{}]".format(response_decode.replace("}{", "},{")))
-    for chunk in list_of_json: # TODO fix ChunkedEncodingError due to large response
-        for key, value in chunk.items():
-            if key in combined_json:
-                if isinstance(combined_json[key], list):
-                    combined_json[key].extend(value if isinstance(value, list) else [value])
-                else:
-                    combined_json[key] = combined_json[key] + value
-            else:
-                combined_json[key] = value 
+    remaining_text = ""
+    for chunk in response.iter_content(chunk_size=8192):  # TODO fix ChunkedEncodingError due to large response
+        if chunk:
+            remaining_text += chunk.decode("utf-8")
+            while remaining_text:
+                current_text, remaining_text = split_concatenated_json(remaining_text)
+                if not current_text:
+                    break
+                json_object = json.loads(current_text)
+                for key, value in json_object.items():
+                    if key in combined_json:
+                        if isinstance(combined_json[key], list):
+                            combined_json[key].extend(value if isinstance(value, list) else [value])
+                        else:
+                            combined_json[key] = combined_json[key] + value
+                    else:
+                        combined_json[key] = value
 
-            if key == "audio_base64" and value != "":
-                audio_list.append(base64.b64decode(value))
+                    if key == "audio_base64" and value != "":
+                        audio_list.append(base64.b64decode(value))
 
     return combined_json, audio_list
 
@@ -370,6 +377,7 @@ async def save_streaming_response(response_file_path, combined_json, audio_list)
 
     await combine_audio_with_pydub(audio_list, response_file_path)
 
+
 async def combine_audio_with_pydub(audio_list, response_file_path):
     audio_response_file_path = response_file_path.replace(".json", ".mp3")
     combined = AudioSegment.empty()
@@ -377,10 +385,10 @@ async def combine_audio_with_pydub(audio_list, response_file_path):
     for audio_bytes in audio_list:
 
         audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes))
-        
+
         combined += audio_segment
 
-    combined.export(audio_response_file_path, format='mp3', bitrate="32k")
+    combined.export(audio_response_file_path, format="mp3", bitrate="32k")
 
 
 async def check_response_language(combined_json):
@@ -399,5 +407,25 @@ async def post_valid_json_request(file_path, voice_endpointURL):
     response_file_path = os.path.join(response_folder_path, os.path.basename(json_request.name))
     combined_json, audio_list = await merge_streaming_response(response)
     await save_streaming_response(response_file_path, combined_json, audio_list)
-
     return response, combined_json
+
+
+def split_concatenated_json(text):
+    brace_count = 0
+    first_json_end = 0
+
+    for i, char in enumerate(text):
+        if char == "{":
+            brace_count += 1
+        elif char == "}":
+            brace_count -= 1
+
+        if brace_count == 0:
+            first_json_end = i + 1
+            break
+
+    first_match = text[:first_json_end]
+
+    remaining_text = text[first_json_end:]
+
+    return first_match, remaining_text
