@@ -250,7 +250,6 @@ async def close_clients():
 
 def create_app():
     app = Quart(__name__)
-    app.secret_key = os.urandom(24)
     app.register_blueprint(bp)
     app.register_blueprint(frontend)
     app.register_blueprint(voice)

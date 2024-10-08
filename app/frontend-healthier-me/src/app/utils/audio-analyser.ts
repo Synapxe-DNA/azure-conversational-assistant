@@ -1,7 +1,7 @@
 export class AudioAnalyser {
   private readonly numBars: number;
   private readonly analyser: AnalyserNode;
-  private readonly stream: MediaStream;
+  private stream: MediaStream;
   private readonly source: MediaStreamAudioSourceNode;
 
   /**
@@ -67,6 +67,11 @@ export class AudioAnalyser {
 
   getStream(): MediaStream {
     return this.stream;
+  }
+
+  setStream(stream: MediaStream) {
+    this.stream = stream;
+    this.connectStream(stream, this.source);
   }
 
   getSource(): MediaStreamAudioSourceNode {
