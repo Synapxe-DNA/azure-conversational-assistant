@@ -38,7 +38,6 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
   loading: boolean = false;
   timeout: boolean = false;
   private timeoutId: any; // Store the timeout reference
-  private autoScroll: boolean = true; // Tracks whether auto-scroll is enabled
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -82,9 +81,7 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
   }
 
   ngAfterViewChecked(): void {
-    if (this.autoScroll) {
-      this.scrollToBottom();
-    }
+    this.scrollToBottom();
   }
 
   onMessageSent() {
@@ -119,13 +116,5 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
     } catch (err) {
       console.error("Error while scrolling to bottom:", err);
     }
-  }
-
-  onScroll() {
-    const threshold = 50;
-    const position = this.messageContainer.nativeElement.scrollTop + this.messageContainer.nativeElement.clientHeight;
-    const height = this.messageContainer.nativeElement.scrollHeight;
-
-    this.autoScroll = height - position <= threshold;
   }
 }
