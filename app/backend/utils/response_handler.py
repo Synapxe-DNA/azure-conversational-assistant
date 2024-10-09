@@ -9,7 +9,7 @@ from models.request_type import RequestType
 from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from opentelemetry import trace
-from quart import current_app, stream_with_context
+from quart import current_app, request, stream_with_context
 from utils.json_encoder import JSONEncoder
 
 # Get the global tracer provider
@@ -95,6 +95,7 @@ class ResponseHandler:
                     span.set_attribute(f"Chunk {i} content category", source.content_category)
                     span.set_attribute(f"Chunk {i} content", source.chunk)
             span.set_attribute("Response", apiLog.response_message)
+            span.set_attribute("Session id", request.cookies.get("session_id"))
             span.set_attribute("Total input tokens", apiLog.input_token_count)
             span.set_attribute("Total output tokens", apiLog.output_token_count)
             span.set_attribute("Total tokens", apiLog.input_token_count + apiLog.output_token_count)

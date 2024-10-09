@@ -11,7 +11,6 @@ import { InputSwitchChangeEvent, InputSwitchModule } from "primeng/inputswitch";
 import { ChatMode } from "../../types/chat-mode.type";
 import { FormsModule } from "@angular/forms";
 import { AudioRecorder } from "../../utils/audio-recorder";
-import { VadService } from "../../services/vad/vad.service";
 import { AudioService } from "../../services/audio/audio.service";
 import { VoiceActivity } from "../../types/voice-activity.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
@@ -28,7 +27,7 @@ import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { CommonModule } from "@angular/common";
-import { AudioPlayerService } from "../../services/audio-player/audio-player.service";
+import { DialogModule } from "primeng/dialog";
 
 @Component({
   selector: "app-voice-mobile",
@@ -44,7 +43,7 @@ import { AudioPlayerService } from "../../services/audio-player/audio-player.ser
     FormsModule,
     TextComponent,
     CommonModule,
-
+    DialogModule,
     VoiceSourcesComponent,
     VoiceMessageComponent,
     VoiceAnnotationComponent,
@@ -63,6 +62,7 @@ export class VoiceMobileComponent {
   chatMode?: ChatMode;
   isLoading: boolean = false;
   sendTimedOut: boolean = false;
+  showTimeoutModal = false;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -102,8 +102,16 @@ export class VoiceMobileComponent {
     this.convoBroker.$micState.subscribe(v => {
       this.micState = v;
       this.isLoading = v === MicState.DISABLED;
-      console.log(this.micState);
-      console.log(this.isLoading);
+      // console.log(this.micState);
+      // console.log(this.isLoading);
+    });
+    this.convoBroker.$sendTimeout.subscribe(timeoutOccurred => {
+      this.sendTimedOut = timeoutOccurred;
+
+      if (this.sendTimedOut) {
+        // Handle the timeout state in the UI (e.g., display an error message)
+        this.showTimeoutPopup();
+      }
     });
   }
 
@@ -156,5 +164,13 @@ export class VoiceMobileComponent {
         this.preferences.setChatMode(ChatMode.Voice);
         break;
     }
+  }
+
+  showTimeoutPopup() {
+    this.showTimeoutModal = true;
+  }
+
+  closeTimeoutPopup() {
+    this.showTimeoutModal = false;
   }
 }

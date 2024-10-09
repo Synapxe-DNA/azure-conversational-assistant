@@ -1,4 +1,4 @@
-<div class="tw-relative tw-bg-emerald-600 tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-overflow-auto no-scrollbar">
+<div class="tw-relative tw-bg-emerald-600 tw-h-screen no-scrollbar">
   <app-voice-sources [sources]="message!.sources"></app-voice-sources>
   <div class="tw-mt-[-80px]">
     <app-voice-message [message]="message" [isLoading]="isLoading"></app-voice-message>
@@ -33,3 +33,7 @@
     <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd" ariaLabelledBy="detect-end"></p-inputSwitch>
   </div>
 </p-overlayPanel>
+
+<p-dialog class="responsive-modal" [(visible)]="showTimeoutModal" [modal]="true" [closable]="true" [draggable]="false" header="Timeout">
+  <p class="tw-text-center">Request Timed Out. Please try again later.</p>
+</p-dialog>
