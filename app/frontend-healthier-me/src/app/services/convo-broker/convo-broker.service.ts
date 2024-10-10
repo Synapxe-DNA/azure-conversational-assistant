@@ -212,11 +212,11 @@ export class ConvoBrokerService {
             const nonNullAudio = d.assistant_response_audio.filter(a => !audio_base64.includes(a));
             audio_base64.push(...nonNullAudio);
 
-            // set mic state to pending so the loading throbber is removed.
-            this.$micState.next(MicState.PENDING);
-
             nonNullAudio.forEach(a => {
               this.playAudioBase64(a);
+              if (this.audioPlayer.$playing.value) {
+                this.$micState.next(MicState.PENDING);
+              }
             });
           },
           complete: () => {
