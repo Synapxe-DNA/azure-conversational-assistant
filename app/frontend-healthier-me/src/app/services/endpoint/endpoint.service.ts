@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { Observable, Subscription } from "rxjs";
 import { Profile, ProfileGender, ProfileType } from "../../types/profile.type";
 import { BehaviorSubject } from "rxjs";
 import { VoiceResponse } from "../../types/responses/voice-response.type";
@@ -23,6 +23,8 @@ import { APP_CONSTANTS } from "../../constants";
   providedIn: "root"
 })
 export class EndpointService {
+  private voiceSubscription: Subscription | null = null;
+
   constructor(private httpClient: HttpClient) {}
 
   /**
@@ -161,10 +163,10 @@ export class EndpointService {
         assistant_response_audio: existingAudio,
         sources: currentSources
       });
-      subscription.unsubscribe(); // Unsubscribe from the HTTP request
+      this.voiceSubscription?.unsubscribe(); // Unsubscribe from the HTTP request
     }, APP_CONSTANTS.VOICE_TIMEOUT);
 
-    const subscription = this.httpClient
+    this.voiceSubscription = this.httpClient
       .post("/voice/stream", data, {
         responseType: "text",
         reportProgress: true,

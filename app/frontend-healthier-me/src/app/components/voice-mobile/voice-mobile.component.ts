@@ -103,8 +103,6 @@ export class VoiceMobileComponent {
     this.convoBroker.$micState.subscribe(v => {
       this.micState = v;
       this.isLoading = v === MicState.DISABLED;
-      console.log(this.micState);
-      console.log(this.isLoading);
     });
     this.convoBroker.$sendTimeout.subscribe(timeoutOccurred => {
       this.sendTimedOut = timeoutOccurred;
