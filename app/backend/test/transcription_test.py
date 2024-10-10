@@ -112,7 +112,14 @@ async def send_audio_file(audio_file_path, transcription_endpointURL, endpointUR
         await asyncio.gather(receive_task, send_task, check_task)
 
 
-async def check_and_close(websocket, state):
+async def check_and_close(websocket, state, timeout=30):
+    try:
+        await asyncio.wait_for(_check_and_close(websocket, state), timeout)
+    except asyncio.TimeoutError:
+        pytest.fail("Transcription took too long to complete")
+
+
+async def _check_and_close(websocket, state):
     while True:
         await asyncio.sleep(1)  # Check every second
         if state["completed"] and state["is_final"]:

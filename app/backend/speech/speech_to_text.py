@@ -90,14 +90,12 @@ class SpeechAsync:
     def recognizing_cb(self, evt):
         self.finished_recognising = False
         logging.info(f"Recognizing: {evt.result.text}")
-        print(f"Recognizing: {evt.result.text}")
         self.result_queue.put({"text": self.all_result + evt.result.text, "is_final": False})
 
     def recognized_cb(self, evt):
         self.finished_recognising = True
         self.all_result += evt.result.text + " "
         logging.info(f"Recognized: {evt.result.text}")
-        print(f"Recognized: {evt.result.text}")
         self.result_queue.put({"text": self.all_result, "is_final": True})
 
     def canceled_cb(self, evt):
