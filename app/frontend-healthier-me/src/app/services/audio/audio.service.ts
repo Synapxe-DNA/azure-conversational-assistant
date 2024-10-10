@@ -12,6 +12,21 @@ export class AudioService {
    */
   async getMicInput(): Promise<MediaStream> {
     return navigator.mediaDevices.getUserMedia({ audio: true });
+    // return new MediaStream();
+  }
+
+  /**
+   * Method to remove all tracks from a given media stream
+   * @param {MediaStream} stream - The MediaStream from which tracks are to be removed
+   */
+  async stopTracks(stream: MediaStream) {
+    if (stream) {
+      // Loop through all the tracks and stop each one
+      stream.getTracks().forEach(track => {
+        track.stop(); // Stops the track and releases the resource
+        stream.removeTrack(track); // Removes the track from the stream
+      });
+    }
   }
 
   /**

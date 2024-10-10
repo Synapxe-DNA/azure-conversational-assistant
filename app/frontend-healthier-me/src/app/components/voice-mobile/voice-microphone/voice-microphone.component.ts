@@ -17,13 +17,12 @@ import { AudioPlayerService } from "../../../services/audio-player/audio-player.
 })
 export class VoiceMicrophoneComponent {
   @Input() state!: MicState;
-
   @ViewChild("btn") btn!: ElementRef<HTMLButtonElement>;
-
   @Output() audioLevelChange = new EventEmitter<number>();
 
   audioAnalyser: AudioAnalyser | undefined;
   isPlaying: boolean = false;
+  private micStream: MediaStream | undefined; // Store the microphone stream
 
   constructor(
     private audioService: AudioService,
@@ -31,7 +30,7 @@ export class VoiceMicrophoneComponent {
   ) {}
 
   ngAfterViewInit() {
-    this.startAnalyser().catch(console.error);
+    console.log("ngAfterViewInit called");
     this.audioPlayer.$playing.subscribe(playing => {
       this.isPlaying = playing;
     });
@@ -39,22 +38,43 @@ export class VoiceMicrophoneComponent {
 
   ngOnChanges(changes: SimpleChanges) {
     if (Object.hasOwn(changes, "state") && this.btn) {
-      switch (changes["state"].currentValue) {
+      const previousState = changes["state"].previousValue;
+      const currentState = changes["state"].currentValue;
+
+      console.log(`MicState changed from ${previousState} to ${currentState}`);
+
+      switch (currentState) {
         case MicState.ACTIVE:
-          this.mainLoop();
+          if (this.audioAnalyser === undefined) {
+            this.startAnalyser().then(() => {
+              this.mainLoop();
+            });
+          } else {
+            this.mainLoop();
+          }
           break;
         case MicState.PENDING:
+          this.audioAnalyser = undefined;
           this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
           break;
         case MicState.DISABLED:
-          this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(24px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
+          this.releaseMicrophone().then(() => {
+            this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(24px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
+            console.log("Microphone successfully released and button style updated.");
+          });
           break;
       }
     }
   }
 
   async startAnalyser() {
-    this.audioAnalyser = new AudioAnalyser(await this.audioService.getMicInput(), 4, 0.001);
+    const micInput = await this.getMicrophoneInput();
+    this.audioAnalyser = new AudioAnalyser(micInput, 4, 0.001);
+  }
+
+  async getMicrophoneInput(): Promise<MediaStream> {
+    this.micStream = await this.audioService.getMicInput();
+    return this.micStream;
   }
 
   mainLoop() {
@@ -64,6 +84,25 @@ export class VoiceMicrophoneComponent {
       this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(${level}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
       window.requestAnimationFrame(this.mainLoop.bind(this));
     }
+  }
+
+  // New method to release the microphone resource
+  async releaseMicrophone(): Promise<void> {
+    if (this.micStream) {
+      const tracks = this.micStream.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        console.log(`Track ${track.label} state after stop: ${track.readyState}`);
+      });
+
+      this.micStream = undefined; // Clear the stored MediaStream
+    }
+
+    if (this.audioAnalyser) {
+      this.audioAnalyser = undefined; // Clear the audio analyser
+    }
+
+    console.log("Microphone released");
   }
 
   buttonStateClasses() {

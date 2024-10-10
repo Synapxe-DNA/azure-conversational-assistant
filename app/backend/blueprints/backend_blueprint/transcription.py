@@ -5,6 +5,7 @@ import signal
 
 from config import CONFIG_SPEECH_TO_TEXT_SERVICE
 from quart import Blueprint, current_app, websocket
+from speech.speech_to_text import SpeechAsync, SpeechToText
 
 transcription = Blueprint("transcription", __name__, url_prefix="/ws")
 
@@ -16,7 +17,9 @@ async def ws_transcribe():
     asyncio.get_running_loop().slow_callback_duration = 1
 
     # create stt object
-    stt = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
+    stt: SpeechToText = current_app.config[CONFIG_SPEECH_TO_TEXT_SERVICE]
+    speech_config = await stt.getSpeechConfig()
+    stt_async = await SpeechAsync.create(speech_config)
     start_transcription = False
     send_task = None
 
@@ -24,7 +27,7 @@ async def ws_transcribe():
     async def send_results():
         while True:
             try:
-                result = stt.getQueue().get(timeout=0.1)
+                result = stt_async.getQueue().get(timeout=0.1)
                 await websocket.send_json(result)
             except queue.Empty:
                 await asyncio.sleep(0.1)
@@ -36,14 +39,14 @@ async def ws_transcribe():
         nonlocal start_transcription
         nonlocal send_task
 
-        stt.getSpeechRecognizer().stop_continuous_recognition_async()
+        stt_async.getSpeechRecognizer().stop_continuous_recognition_async()
         if send_task is not None:
             send_task.cancel()
             try:
                 await send_task  # Wait for the task to be cancelled
             except asyncio.CancelledError:
                 send_task = None
-        stt.reset()
+        stt_async.reset()
         start_transcription = False
         logging.info("Transcribed audio successfully")
 
@@ -61,17 +64,17 @@ async def ws_transcribe():
             if not start_transcription:
                 logging.info("Starting transcription")
                 send_task = asyncio.create_task(send_results())  # Start the result sending task
-                stt.getSpeechRecognizer().start_continuous_recognition_async()
+                stt_async.getSpeechRecognizer().start_continuous_recognition_async()
                 start_transcription = True
 
             if isinstance(data, str) and data == "completed":  # wait for frontend to send completed message
-                while not stt.finished_recognising:
-                    stt.getStream().write(b"")  # empty bytes needed to trigger recognition if audio too short
-                while not stt.getQueue().empty():  # Ensure all results are sent before stopping transcription
+                while not stt_async.finished_recognising:
+                    stt_async.getStream().write(b"")  # empty bytes needed to trigger recognition if audio too short
+                while not stt_async.getQueue().empty():  # Ensure all results are sent before stopping transcription
                     await asyncio.sleep(0.1)
                 await stop_transcription()
                 continue
-            stt.getStream().write(data)
+            stt_async.getStream().write(data)
     except asyncio.TimeoutError:
         logging.info("WebSocket connection timed out")
     except asyncio.CancelledError:

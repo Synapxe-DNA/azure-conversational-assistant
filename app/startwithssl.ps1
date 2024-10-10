@@ -38,6 +38,8 @@ function func_backend {
     Pop-Location
 }
 
+# TODO: Auto create SSL cert - Lyndon
+
 function func_frontend {
     Write-Host "`nRestoring frontend npm packages`n"
 
