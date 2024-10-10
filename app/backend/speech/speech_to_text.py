@@ -22,10 +22,6 @@ class SpeechToText:
 
         # create recognizer
         self.speech_config = speechsdk.SpeechConfig(auth_token=auth_token, region=region)
-        self.auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
-            languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
-        )
-        self.setup()
 
     @classmethod
     async def create(cls):
@@ -44,6 +40,22 @@ class SpeechToText:
 
     def getAuthToken(self, resource_id, token):
         return "aad#" + resource_id + "#" + token
+
+    async def getSpeechConfig(self):
+        return self.speech_config
+
+
+class SpeechAsync:
+    def __init__(self, speech_config):
+        self.speech_config = speech_config
+        self.auto_detect_source_language_config = speechsdk.languageconfig.AutoDetectSourceLanguageConfig(
+            languages=["en-SG", "zh-CN", "ta-IN", "ms-MY"]
+        )
+        self.setup()
+
+    @classmethod
+    async def create(cls, speech_config):
+        return cls(speech_config)
 
     def getSpeechRecognizer(self) -> speechsdk.SpeechRecognizer:
         return self.speech_recognizer
@@ -78,12 +90,14 @@ class SpeechToText:
     def recognizing_cb(self, evt):
         self.finished_recognising = False
         logging.info(f"Recognizing: {evt.result.text}")
+        print(f"Recognizing: {evt.result.text}")
         self.result_queue.put({"text": self.all_result + evt.result.text, "is_final": False})
 
     def recognized_cb(self, evt):
         self.finished_recognising = True
         self.all_result += evt.result.text + " "
         logging.info(f"Recognized: {evt.result.text}")
+        print(f"Recognized: {evt.result.text}")
         self.result_queue.put({"text": self.all_result, "is_final": True})
 
     def canceled_cb(self, evt):

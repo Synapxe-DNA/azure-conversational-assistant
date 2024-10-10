@@ -26,10 +26,10 @@ backend-test: # Run backend tests using deployed API endpoint. Indicate FILE=<TE
 			fullpath=$$endpoint"_test.py"; \
 		fi; \
 		echo "Running test for $$fullpath"; \
-		cd backend/test && pytest -v "$$fullpath" -n 5; \
+		cd backend/test && pytest -v "$$fullpath" -n auto; \
 	else \
 		echo "Running all tests."; \
-		cd backend/test && pytest -v -n 5; \
+		cd backend/test && pytest -v -n auto; \
 	fi
 
 backend-test-local: # Run backend tests using local API endpoint
@@ -42,8 +42,8 @@ backend-test-local: # Run backend tests using local API endpoint
 			fullpath=$$endpoint"_test.py"; \
 		fi; \
 		echo "Running test for $$fullpath"; \
-		cd backend/test && pytest -v --local "$$fullpath" -n 5; \
+		cd backend/test && pytest -v -s --local "$$fullpath" -n auto; \
 	else \
 		echo "Running all tests."; \
-		cd backend/test && pytest -v --local -n 5; \
+		cd backend/test && pytest -v -s --local -n auto; \
 	fi
