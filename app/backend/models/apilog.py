@@ -8,4 +8,5 @@ class APILog(BaseModel):
     user_query: str = ""
     response_message: str = ""
     retrieved_sources: List[SourceWithChunk] = []
-    token_count: int = -1
+    input_token_count: int = -1
+    output_token_count: int = -1
