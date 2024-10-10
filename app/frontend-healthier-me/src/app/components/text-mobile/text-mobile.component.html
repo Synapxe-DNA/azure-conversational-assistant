@@ -1,6 +1,6 @@
-<div class="tw-w-full tw-h-full tw-flex tw-flex-col tw-relative tw-items-center">
-  <div #messageContainer class="tw-w-full tw-h-full tw-flex tw-justify-center tw-overflow-y-scroll" (scroll)="onScroll()">
-    <div class="tw-w-[80dvw] tw-max-w-[800px] tw-flex tw-flex-col tw-justify-start tw-gap-6 tw-mx-4 tw-justify-items-stretch">
+<div class="tw-flex tw-flex-col tw-items-center tw-h-full">
+  <div #messageContainer class="tw-overflow-y-auto tw-flex-grow">
+    <div class="tw-w-[80dvw] tw-max-w-[800px]">
       @for (message of messages; track message) {
         @if (message.message.trim()) {
           @switch (message.role) {
@@ -18,8 +18,8 @@
   </div>
   <app-loading *ngIf="loading" />
 
-  <div class="tw-bottom-6 tw-flex tw-fixed-1 tw-justify-center tw-mb-4">
-    <app-text-input (messageSent)="onMessageSent()" class="tw-w-[80dvw] tw-max-w-[800px]" />
+  <div class="tw-w-[80dvw] tw-max-w-[800px]">
+    <app-text-input (messageSent)="onMessageSent()" />
   </div>
 
   <!-- Comment button fixed at the bottom right corner -->

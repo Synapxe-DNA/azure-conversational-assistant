@@ -30,6 +30,7 @@ export class VoiceMicrophoneComponent {
   ) {}
 
   ngAfterViewInit() {
+    console.log("ngAfterViewInit called");
     this.audioPlayer.$playing.subscribe(playing => {
       this.isPlaying = playing;
       console.log("isPlaying value in ngAfterViewInit:", this.isPlaying);
@@ -58,8 +59,10 @@ export class VoiceMicrophoneComponent {
           this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
           break;
         case MicState.DISABLED:
-          this.releaseMicrophone(); // Release the microphone when DISABLED
-          this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(24px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
+          this.releaseMicrophone().then(() => {
+            this.btn.nativeElement.style.boxShadow = `var(--tw-ring-inset) 0 0 0 calc(24px + var(--tw-ring-offset-width)) var(--tw-ring-color)`;
+            console.log("Microphone successfully released and button style updated.");
+          });
           break;
       }
     }
@@ -85,14 +88,22 @@ export class VoiceMicrophoneComponent {
   }
 
   // New method to release the microphone resource
-  releaseMicrophone() {
+  async releaseMicrophone(): Promise<void> {
     if (this.micStream) {
-      this.micStream.getTracks().forEach(track => track.stop());
+      const tracks = this.micStream.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        console.log(`Track ${track.label} state after stop: ${track.readyState}`);
+      });
+
       this.micStream = undefined; // Clear the stored MediaStream
     }
+
     if (this.audioAnalyser) {
       this.audioAnalyser = undefined; // Clear the audio analyser
     }
+
+    console.log("Microphone released");
   }
 
   buttonStateClasses() {
