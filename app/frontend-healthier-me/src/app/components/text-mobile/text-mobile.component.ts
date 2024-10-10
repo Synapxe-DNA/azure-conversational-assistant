@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { AfterViewChecked, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { MessageRole } from "../../types/message.type";
 import { BehaviorSubject, takeWhile } from "rxjs";
 import { Profile } from "../../types/profile.type";
@@ -24,8 +24,10 @@ import { Button } from "primeng/button";
   templateUrl: "./text-mobile.component.html",
   styleUrl: "./text-mobile.component.css"
 })
-export class TextMobileComponent implements OnInit {
+export class TextMobileComponent implements OnInit, AfterViewChecked {
   @Input() showTextInput?: boolean = true;
+
+  @ViewChild("messageContainer") private messageContainer!: ElementRef;
 
   user: string = MessageRole.User;
   system: string = MessageRole.Assistant;
@@ -78,6 +80,10 @@ export class TextMobileComponent implements OnInit {
     });
   }
 
+  ngAfterViewChecked(): void {
+    this.scrollToBottom();
+  }
+
   onMessageSent() {
     console.log("Message sent");
     this.loading = true;
@@ -102,5 +108,13 @@ export class TextMobileComponent implements OnInit {
 
   showTimeoutMessage() {
     this.timeout = true;
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+    } catch (err) {
+      console.error("Error while scrolling to bottom:", err);
+    }
   }
 }

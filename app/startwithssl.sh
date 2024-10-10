@@ -16,6 +16,9 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+echo "Creating SSL certificate"
+yes "SG" | make ssl-cert
+
 cd ../
 echo 'Creating python virtual environment ".venv"'
 python3 -m venv .venv

@@ -1,4 +1,4 @@
-<div class="tw-relative tw-bg-emerald-600 tw-top-10 tw-h-[calc(100dvh-2.5rem)] tw-overflow-auto no-scrollbar">
+<div class="tw-relative tw-bg-emerald-600 tw-h-screen no-scrollbar">
   <app-voice-sources [sources]="message!.sources"></app-voice-sources>
   <div class="tw-mt-[-80px]">
     <app-voice-message [message]="message" [isLoading]="isLoading"></app-voice-message>
@@ -12,14 +12,7 @@
   </div>
 </div>
 
-<div class="tw-absolute tw-bottom-6 tw-right-6">
-  <p-button icon="pi pi-comment" (onClick)="toggleChatMode()" class="custom-border" />
-</div>
-
-<div class="tw-absolute tw-bottom-6 tw-right-6">
-  <!-- <button (click)="preferenceOverlayPanel.toggle($event)" class="tw-text-white tw-pt-3"> -->
-  <!-- <lucide-icon name="settings" class="tw-text-white"></lucide-icon> -->
-  <!-- </button> -->
+<div class="tw-fixed tw-bottom-6 tw-right-6">
   <p-button icon="pi pi-comment" (onClick)="toggleChatMode()" class="custom-border" />
 </div>
 
@@ -33,3 +26,7 @@
     <p-inputSwitch (onChange)="prefVoiceEnd($event)" [(ngModel)]="voiceDetectEnd" ariaLabelledBy="detect-end"></p-inputSwitch>
   </div>
 </p-overlayPanel>
+
+<p-dialog class="responsive-modal" [(visible)]="showTimeoutModal" [modal]="true" [closable]="true" [draggable]="false" header="Timeout">
+  <p class="tw-text-center">Request Timed Out. Please try again later.</p>
+</p-dialog>

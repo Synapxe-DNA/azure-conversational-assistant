@@ -114,7 +114,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         List[dict[str, Any]],
     ]:
         start_time = time.time()
-        total_tokens = 0
+        total_input_tokens = total_output_tokens = 0
 
         seed = config.SEED
         temperature = config.TEMPERATURE
@@ -216,7 +216,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
             messages=query_check_messages,
         )
-        total_tokens += query_check_response.usage.total_tokens
+        total_input_tokens += query_check_response.usage.prompt_tokens
+        total_output_tokens += query_check_response.usage.completion_tokens
 
         query_check_output = query_check_response.choices[0].message.content
         print(f"query_check_output: {query_check_output}")
@@ -248,7 +249,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 tools=tools,
                 seed=seed,
             )
-            total_tokens += chat_completion.usage.total_tokens
+            total_input_tokens += chat_completion.usage.prompt_tokens
+            total_output_tokens += chat_completion.usage.completion_tokens
             query_text = self.get_search_query(chat_completion, original_user_query)
 
             vectors: list[VectorQuery] = []
@@ -283,7 +285,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         )
 
         for message in messages:
-            total_tokens += count_tokens_for_message(llm_model, message)
+            total_input_tokens += count_tokens_for_message(llm_model, message)
 
         chat_coroutine = self.openai_client.chat.completions.create(
             # Azure OpenAI takes the deployment name as the model name
@@ -343,7 +345,8 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                     "Original query",
                     original_user_query,
                 ),
-                ThoughtStep("Total tokens", total_tokens),
+                ThoughtStep("Total input tokens", total_input_tokens),
+                ThoughtStep("Total output tokens", total_output_tokens),
             ],
         }
 

@@ -12,8 +12,10 @@
 </div>
 } -->
 
-<div class="no-scrollbar">
+<div class="tw-h-full tw-flex tw-flex-col no-scrollbar tw-fixed">
   <app-navbar-mobile />
-  <router-outlet />
+  <div class="tw-flex-auto tw-overflow-y-auto">
+    <router-outlet />
+  </div>
   <app-disclaimer />
 </div>

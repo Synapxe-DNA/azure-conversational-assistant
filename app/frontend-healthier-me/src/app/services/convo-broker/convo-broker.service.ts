@@ -6,9 +6,9 @@ import { GeneralProfile, Profile } from "../../types/profile.type";
 import { Message, MessageRole } from "../../types/message.type";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileService } from "../profile/profile.service";
-import { BehaviorSubject, takeWhile, takeUntil } from "rxjs";
+import { BehaviorSubject, takeWhile, takeUntil, Subscription } from "rxjs";
 import { convertBase64ToBlob } from "../../utils/base-64-to-blob";
-import { VadService } from "../vad/vad.service";
+// import { VadService } from "../vad/vad.service";
 import { PreferenceService } from "../preference/preference.service";
 import { AudioService } from "../audio/audio.service";
 import { MicState } from "../../types/mic-state.type";
@@ -34,13 +34,16 @@ export class ConvoBrokerService {
   $isWaitingForVoiceApi: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   $sendTimeout: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
+  private voiceSubscription: Subscription | null = null;
+  private cancel$ = new Subject<void>();
+
   constructor(
     private chatMessageService: ChatMessageService,
     private audioPlayer: AudioPlayerService,
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
-    private profileService: ProfileService,
-    private vadService: VadService
+    private profileService: ProfileService
+    // private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);
     this.profileService.$currentProfileInUrl.subscribe(p => {
@@ -67,35 +70,35 @@ export class ConvoBrokerService {
     });
 
     // Monitor VAD activity
-    this.vadService.start().subscribe({
-      next: s => {
-        // DO NOT DO ANYTHING if chat mode is not voice
-        if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
-          return;
-        }
+    // this.vadService.start().subscribe({
+    //   next: s => {
+    //     // DO NOT DO ANYTHING if chat mode is not voice
+    //     if (this.preferenceService.$chatMode.value !== ChatMode.Voice) {
+    //       return;
+    //     }
 
-        switch (s) {
-          case VoiceActivity.Start: {
-            if (
-              this.preferenceService.$voiceDetectStart.value &&
-              this.$micState.value === MicState.PENDING &&
-              !this.$isWaitingForVoiceApi.value &&
-              ((this.audioPlayer.$playing.value && this.preferenceService.$voiceDetectInterrupt.value) || !this.audioPlayer.$playing.value)
-            ) {
-              this.handleStartRecording();
-            }
-            break;
-          }
+    //     switch (s) {
+    //       case VoiceActivity.Start: {
+    //         if (
+    //           this.preferenceService.$voiceDetectStart.value &&
+    //           this.$micState.value === MicState.PENDING &&
+    //           !this.$isWaitingForVoiceApi.value &&
+    //           ((this.audioPlayer.$playing.value && this.preferenceService.$voiceDetectInterrupt.value) || !this.audioPlayer.$playing.value)
+    //         ) {
+    //           this.handleStartRecording();
+    //         }
+    //         break;
+    //       }
 
-          case VoiceActivity.End: {
-            if (this.preferenceService.$voiceDetectEnd.value && this.$micState.value === MicState.ACTIVE) {
-              this.handleStopRecording();
-            }
-            break;
-          }
-        }
-      }
-    });
+    //       case VoiceActivity.End: {
+    //         if (this.preferenceService.$voiceDetectEnd.value && this.$micState.value === MicState.ACTIVE) {
+    //           this.handleStopRecording();
+    //         }
+    //         break;
+    //       }
+    //     }
+    //   }
+    // });
   }
 
   openWebSocket() {
@@ -137,6 +140,18 @@ export class ConvoBrokerService {
   private handleStopPlaying() {
     this.audioPlayer.stopAndClear();
     this.$micState.next(MicState.PENDING);
+    this.unsubscribeVoiceStream();
+  }
+
+  /**
+   * Method to unsubscribe from the voice stream
+   * @private
+   */
+  private unsubscribeVoiceStream() {
+    if (this.voiceSubscription) this.voiceSubscription.unsubscribe();
+    this.cancel$.next();
+    this.cancel$.complete();
+    this.cancel$ = new Subject<void>();
   }
 
   /**
@@ -159,38 +174,25 @@ export class ConvoBrokerService {
   private async sendVoice(message: string, profile: Profile) {
     this.$isWaitingForVoiceApi.next(true);
 
-    const requestTime: number = new Date().getTime();
-    const userMessageId = createId();
     const assistantMessageId: string = createId();
-
     const history: Message[] = await this.chatMessageService.staticLoad(profile.id);
-
     let audio_base64: string[] = [];
-
-    // Subject to cancel the observable when timeout occurs
-    const cancel$ = new Subject<void>();
-
-    const res = await this.endpointService.sendVoice(
-      message,
-      this.activeProfile.value || GeneralProfile,
-      history.slice(-8),
-      this.$language.value || Language.Spoken
-    );
 
     const timeoutPromise = new Promise<void>(resolve => {
       setTimeout(() => {
         this.$sendTimeout.next(true);
-        // Emit a value to cancel the observable
-        cancel$.next();
+        this.cancel$.next(); // Trigger cancellation on timeout
         resolve();
       }, APP_CONSTANTS.VOICE_TIMEOUT);
     });
 
+    const res = await this.endpointService.sendVoice(message, profile, history.slice(-8), this.$language.value || Language.Spoken);
+
     const responsePromise = new Promise<void>(resolve => {
-      res
+      this.voiceSubscription = res
         .pipe(
           takeWhile(d => d?.status !== "DONE", true),
-          takeUntil(cancel$) // Cancel the observable if timeout occurs
+          takeUntil(this.cancel$) // Cancel the subscription if the cancel$ emits
         )
         .subscribe({
           next: async d => {
@@ -198,7 +200,6 @@ export class ConvoBrokerService {
               return;
             }
 
-            // upsert assistant message
             await this.chatMessageService.upsert({
               id: assistantMessageId,
               profile_id: profile.id,
@@ -208,18 +209,15 @@ export class ConvoBrokerService {
               sources: d.sources
             });
 
-            const nonNullAudio = d.assistant_response_audio.map(v => v);
-            if (nonNullAudio.length > audio_base64.length) {
-              const newAudioStr = nonNullAudio.filter(a => !audio_base64.includes(a));
-              audio_base64 = nonNullAudio;
+            const nonNullAudio = d.assistant_response_audio.filter(a => !audio_base64.includes(a));
+            audio_base64.push(...nonNullAudio);
 
-              // set mic state to pending so the loading throbber is removed.
-              this.$micState.next(MicState.PENDING);
-
-              newAudioStr.forEach(a => {
-                this.playAudioBase64(a);
-              });
-            }
+            nonNullAudio.forEach(a => {
+              this.playAudioBase64(a);
+              if (this.audioPlayer.$playing.value) {
+                this.$micState.next(MicState.PENDING);
+              }
+            });
           },
           complete: () => {
             resolve(); // Complete the response handling
@@ -232,10 +230,6 @@ export class ConvoBrokerService {
 
     await Promise.race([responsePromise, timeoutPromise]);
 
-    // Complete the cancel subject to clean up resources
-    cancel$.complete();
-
-    // Handle timeout or completion
     this.$isWaitingForVoiceApi.next(false);
   }
 
@@ -262,20 +256,15 @@ export class ConvoBrokerService {
    * Callback method to be called from anywhere to directly interact with audio recording/voice interaction.
    */
   handleMicButtonClick() {
-    switch (this.$micState.value) {
-      case MicState.ACTIVE:
-        this.handleStopRecording();
-        break;
-      case MicState.PENDING:
-        if (this.audioPlayer.$playing.value) {
-          this.handleStopPlaying();
-        } else {
-          this.handleStartRecording();
-        }
-        break;
-      default:
-        console.warn("Unhandled mic state:", this.$micState.value);
-        break;
+    const currMicState = this.$micState.value;
+    if (currMicState == MicState.ACTIVE) {
+      this.handleStopRecording();
+    } else if (this.audioPlayer.$playing.value) {
+      this.handleStopPlaying();
+    } else if (currMicState == MicState.PENDING) {
+      this.handleStartRecording();
+    } else {
+      console.warn("Unhandled mic state:", this.$micState.value);
     }
   }
 

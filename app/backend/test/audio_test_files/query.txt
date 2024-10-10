@@ -1,0 +1,11 @@
+English query:
+Hi, I am Bob and I have diabetes. Could you give me advice on how to better manage my diabetes?
+
+Chinese: 
+你好，我是鲍勃，我患有糖尿病。你能给我一些建议，告诉我如何更好地控制我的糖尿病吗？
+
+Malay:
+Hai, saya Bob dan saya menghidap diabetes. Bolehkah anda memberi saya nasihat tentang cara menguruskan diabetes saya dengan lebih baik?
+
+Tamil:
+வணக்கம், நான் பாப் மற்றும் எனக்கு நீரிழிவு நோய் உள்ளது. எனது நீரிழிவு நோயை எவ்வாறு சிறப்பாகக் கையாள்வது என்பது குறித்து எனக்கு ஆலோசனை வழங்க முடியுமா?
