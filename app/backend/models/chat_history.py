@@ -1,6 +1,5 @@
 from typing import List
 
-from models.source import Source, SourceWithChunk
 from models.chat_message import ChatMessageWithSource
 from pydantic import BaseModel
 
