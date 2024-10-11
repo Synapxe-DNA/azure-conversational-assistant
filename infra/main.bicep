@@ -219,8 +219,10 @@ param useSpeechOutputAzure bool // Set in main.parameters.json
 // Azure Cosmos DB
 param cosmosDbName string = ''
 param cosmosDbLocation string // Set in main.parameters.json
-param cosmosDatabaseId string // Set in main.parameters.json
-param cosmosContainerId string // Set in main.parameters.json
+param cosmosFeedbackDatabaseId string // Set in main.parameters.json
+param cosmosFeedbackContainerId string // Set in main.parameters.json
+param cosmosChatHistoryDatabaseId string // Set in main.parameters.json
+param cosmosChatHistoryContainerId string // Set in main.parameters.json
 param cosmosDbReuse bool = false
 param existingCosmosDbResourceGroupName string = ''
 param existingCosmosDbAccountName string = ''
@@ -463,8 +465,10 @@ module cosmosDb 'core/database/cosmos.bicep' = {
     cosmosDbReuse: cosmosDbReuse
     existingCosmosDbResourceGroupName: existingCosmosDbResourceGroupName
     existingCosmosDbAccountName: existingCosmosDbAccountName
-    databaseId: cosmosDatabaseId
-    containerId: cosmosContainerId
+    feedbackDatabaseId: cosmosFeedbackDatabaseId
+    feedbackContainerId: cosmosFeedbackContainerId
+    chatHistoryDatabaseId: cosmosChatHistoryDatabaseId
+    chatHistoryContainerId: cosmosChatHistoryContainerId
     location: !empty(cosmosDbLocation) ? cosmosDbLocation : location
     tags: tags
     enableFreeTier: true
@@ -592,8 +596,10 @@ module backend 'core/host/appservice.bicep' = {
       // Azure Cosmos DB
       AZURE_COSMOS_DB_NAME: !empty(cosmosDbName) ? cosmosDbName : cosmosDb.outputs.name
       AZURE_COSMOS_DB_LOCATION: cosmosDb.outputs.location
-      AZURE_DATABASE_ID: !empty(cosmosDatabaseId) ? cosmosDatabaseId : cosmosDb.outputs.databaseId
-      AZURE_CONTAINER_ID: !empty(cosmosContainerId) ? cosmosContainerId : cosmosDb.outputs.containerId
+      AZURE_FEEDBACK_DATABASE_ID: !empty(cosmosFeedbackDatabaseId) ? cosmosFeedbackDatabaseId : cosmosDb.outputs.feedbackDatabaseId
+      AZURE_FEEDBACK_CONTAINER_ID: !empty(cosmosFeedbackContainerId) ? cosmosFeedbackContainerId : cosmosDb.outputs.feedbackContainerId
+      AZURE_CHAT_HISTORY_DATABASE_ID: !empty(cosmosChatHistoryDatabaseId) ? cosmosChatHistoryDatabaseId : cosmosDb.outputs.chatHistoryDatabaseId
+      AZURE_CHAT_HISTORY_CONTAINER_ID: !empty(cosmosChatHistoryContainerId) ? cosmosChatHistoryContainerId : cosmosDb.outputs.chatHistoryContainerId
       // Azure API Management
       AZURE_APIM_SERVICE_NAME: !empty(apimServiceName) ? apimServiceName : apim.outputs.apimName
       APIM_AOI_PATH: apim.outputs.apimOpenAiApiPath
@@ -950,8 +956,10 @@ output USE_SPEECH_OUTPUT_AZURE bool = useSpeechOutputAzure
 // Azure Cosmos DB
 output AZURE_COSMOS_DB_NAME string = !empty(cosmosDbName) ? cosmosDbName : cosmosDb.outputs.name
 output AZURE_COSMOS_DB_LOCATION string = cosmosDb.outputs.location
-output AZURE_DATABASE_ID string = !empty(cosmosDatabaseId) ? cosmosDatabaseId : cosmosDb.outputs.databaseId
-output AZURE_CONTAINER_ID string = !empty(cosmosContainerId) ? cosmosContainerId : cosmosDb.outputs.containerId
+output AZURE_FEEDBACK_DATABASE_ID string = !empty(cosmosFeedbackDatabaseId) ? cosmosFeedbackDatabaseId : cosmosDb.outputs.feedbackDatabaseId
+output AZURE_FEEDBACK_CONTAINER_ID string = !empty(cosmosFeedbackContainerId) ? cosmosFeedbackContainerId : cosmosDb.outputs.feedbackContainerId
+output AZURE_CHAT_HISTORY_DATABASE_ID string = !empty(cosmosChatHistoryDatabaseId) ? cosmosChatHistoryDatabaseId : cosmosDb.outputs.chatHistoryDatabaseId
+output AZURE_CHAT_HISTORY_CONTAINER_ID string = !empty(cosmosChatHistoryContainerId) ? cosmosChatHistoryContainerId : cosmosDb.outputs.chatHistoryContainerId
 
 // Azure API Management
 output AZURE_APIM_SERVICE_NAME string = !empty(apimServiceName) ? apimServiceName : apim.outputs.apimName

@@ -80,5 +80,8 @@ async def ws_transcribe():
     except asyncio.CancelledError:
         logging.info("WebSocket connection closed")
     finally:
-        await websocket.close(1000)
+        try:
+            await websocket.close(1000)
+        except Exception:
+            logging.info("WebSocket connection already closed")
         await stop_transcription()
