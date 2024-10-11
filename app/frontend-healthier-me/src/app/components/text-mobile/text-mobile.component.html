@@ -1,5 +1,5 @@
 <div class="tw-flex tw-flex-col tw-items-center tw-h-full">
-  <div #messageContainer class="tw-overflow-y-auto tw-flex-grow">
+  <div #messageContainer class="tw-overflow-y-auto tw-flex-grow" (scroll)="onScroll()">
     <div class="tw-w-[80dvw] tw-max-w-[800px]">
       @for (message of messages; track message) {
         @if (message.message.trim()) {
@@ -14,9 +14,11 @@
         }
       }
       <p *ngIf="timeout" class="error-message">Error generating response. Please try again later.</p>
+      <div class="tw-flex tw-justify-center">
+        <app-loading *ngIf="loading" />
+      </div>
     </div>
   </div>
-  <app-loading *ngIf="loading" />
 
   <div class="tw-w-[80dvw] tw-max-w-[800px]">
     <app-text-input (messageSent)="onMessageSent()" />
