@@ -6,7 +6,9 @@
 #
 aiofiles==24.1.0
     # via quart
-aiohttp==3.9.5
+aiohappyeyeballs==2.4.3
+    # via aiohttp
+aiohttp==3.10.2
     # via
     #   -r requirements.in
     #   microsoft-kiota-authentication-azure
@@ -41,10 +43,8 @@ azure-core==1.30.2
     #   microsoft-kiota-authentication-azure
     #   msrest
 azure-core-tracing-opentelemetry==1.0.0b11
-azure-cosmos==4.7.0
     # via azure-monitor-opentelemetry
 azure-identity==1.17.1
-azure-keyvault==4.2.0
     # via
     #   -r requirements.in
     #   msgraph-sdk
@@ -59,7 +59,6 @@ azure-storage-blob==12.21.0
     #   -r requirements.in
     #   azure-storage-file-datalake
 azure-storage-file-datalake==12.16.0
-bcrypt==4.2.0
     # via -r requirements.in
 beautifulsoup4==4.12.3
     # via -r requirements.in
@@ -82,7 +81,7 @@ click==8.1.7
     #   flask
     #   quart
     #   uvicorn
-cryptography==43.0.0
+cryptography==43.0.1
     # via
     #   -r requirements.in
     #   azure-identity
@@ -149,7 +148,6 @@ itsdangerous==2.2.0
     #   flask
     #   quart
 jinja2==3.1.4
-lingua-language-detector==2.0.2
     # via
     #   flask
     #   quart
@@ -337,7 +335,6 @@ pycparser==2.22
 pydantic==2.8.2
     # via openai
 pydantic-core==2.20.1
-pydub==0.25.1
     # via pydantic
 pyjwt[crypto]==2.8.0
     # via
@@ -350,8 +347,6 @@ pymupdfb==1.24.6
 pypdf==4.3.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
-    # via importlib-metadata
-python-dotenv==1.0.1
     # via
     #   microsoft-kiota-serialization-text
     #   pendulum
@@ -376,7 +371,6 @@ requests==2.32.3
 requests-oauthlib==2.0.0
     # via msrest
 rsa==4.9
-simple-term-menu==1.6.4
     # via python-jose
 six==1.16.0
     # via
@@ -430,7 +424,6 @@ tzdata==2024.1
 urllib3==2.2.2
     # via requests
 uvicorn==0.30.3
-websockets==13.1
     # via -r requirements.in
 werkzeug==3.0.3
     # via
@@ -448,3 +441,4 @@ wsproto==1.2.0
 yarl==1.9.4
     # via aiohttp
 zipp==3.19.2
+    # via importlib-metadata
