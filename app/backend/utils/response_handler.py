@@ -1,15 +1,22 @@
+import datetime
 import json
+import logging
 import re
 from typing import Any, AsyncGenerator, List
 
-from config import CONFIG_TEXT_TO_SPEECH_SERVICE
+import pytz
+from azure.cosmos import ContainerProxy
+from azure.cosmos.exceptions import CosmosHttpResponseError
+from config import CONFIG_CHAT_HISTORY_CONTAINER_CLIENT, CONFIG_TEXT_TO_SPEECH_SERVICE
 from models.apilog import APILog
-from models.chat import TextChatResponse, TextChatResponseWtihChunk
+from models.chat import TextChatResponse, TextChatResponseWithChunk
+from models.chat_history import ChatHistory
+from models.chat_message import ChatMessageWithSource
 from models.request_type import RequestType
 from models.source import Source, SourceWithChunk
 from models.voice import VoiceChatResponse
 from opentelemetry import trace
-from quart import current_app, stream_with_context
+from quart import current_app, request, stream_with_context
 from utils.json_encoder import JSONEncoder
 
 # Get the global tracer provider
@@ -22,84 +29,69 @@ class ResponseHandler:
     async def construct_streaming_response(
         result: AsyncGenerator[dict[str, Any], None],
         request_type: RequestType,
-        language: str = None,
+        language: str,
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
         """
-        span = tracer.start_span("extra_information")
 
         @stream_with_context
         async def generator() -> AsyncGenerator[str, None]:
-            try:
-                tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
-                apiLog = APILog()
-                response_message = ""
-                response_token_count = 0
-                async for res in JSONEncoder.format_as_ndjson(result):
-                    # Extract sources
-                    res = json.loads(res)
-                    error_msg = res.get("error", None)
-                    thoughts = res.get("context", {}).get("thoughts", [])
-                    text_response_chunk = ""
-                    if error_msg is not None:
-                        yield construct_error_response(error_msg, request_type, language)
-                    elif not thoughts == []:
-                        yield construct_source_response(thoughts, request_type)
-                        apiLog = extract_thoughts_for_logging(thoughts, apiLog)
-                    else:
-                        # Extract text response
-                        text_response_chunk = res.get("delta", {}).get("content", "")
+            tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
+            apiLog = APILog()
+            response_message = ""
+            async for res in JSONEncoder.format_as_ndjson(result, language):
+                res = json.loads(res)
+                error_msg = res.get("error", None)
+                thoughts = res.get("context", {}).get("thoughts", [])
+                text_response_chunk = ""
+                if error_msg is not None:
+                    yield construct_error_response(error_msg, request_type, language)
+                elif not thoughts == []:
+                    yield construct_source_response(thoughts, request_type)
+                    apiLog = extract_thoughts_for_logging(thoughts, apiLog)
+                else:
+                    # Extract text response
+                    text_response_chunk = res.get("delta", {}).get("content", "")
 
-                        if text_response_chunk is None:
-                            if not response_message == "":
-                                audio_data = tts.readText(response_message, True, language)
-                                response = VoiceChatResponse(
-                                    response_message=response_message,
-                                    sources=[],
-                                    audio_base64=audio_data,
-                                )
-                                yield response.model_dump_json()
-                                response_message = ""
-                            break
-
-                        apiLog.response_message += text_response_chunk
-                        response_token_count += 1
-
-                        if request_type == RequestType.CHAT:
-                            response = TextChatResponse(
-                                response_message=text_response_chunk,
+                    if text_response_chunk is None:
+                        if not response_message == "":
+                            audio_data = tts.readText(response_message, True, language)
+                            response = VoiceChatResponse(
+                                response_message=response_message,
                                 sources=[],
+                                audio_base64=audio_data,
                             )
                             yield response.model_dump_json()
+                            response_message = ""
+                        break
 
-                        else:
-                            response_message += text_response_chunk
-                            if bool(
-                                re.search(r"[.,!?。，！？]\s", text_response_chunk)
-                            ):  # Transcribe text only when punctuation is detected
-                                audio_data = tts.readText(response_message, True, language)
-                                response = VoiceChatResponse(
-                                    response_message=response_message,
-                                    sources=[],
-                                    audio_base64=audio_data,
-                                )
-                                yield response.model_dump_json()
-                                response_message = ""
-                # sending custom logs to app insights
-                span.set_attribute("Query", apiLog.user_query)
-                if apiLog.retrieved_sources:
-                    for i, source in enumerate(apiLog.retrieved_sources, start=1):
-                        span.set_attribute(f"Chunk {i} ID", source.id)
-                        span.set_attribute(f"Chunk {i} title", source.title)
-                        span.set_attribute(f"Chunk {i} cover image url", source.cover_image_url)
-                        span.set_attribute(f"Chunk {i} full url", source.full_url)
-                        span.set_attribute(f"Chunk {i} content category", source.content_category)
-                        span.set_attribute(f"Chunk {i} content", source.chunk)
-                span.set_attribute("Response", apiLog.response_message)
-                span.set_attribute("Total tokens", apiLog.token_count + response_token_count)
-            finally:
-                span.end()
+                    apiLog.response_message += text_response_chunk
+                    apiLog.output_token_count += 1
+
+                    if request_type == RequestType.CHAT:
+                        response = TextChatResponse(
+                            response_message=text_response_chunk,
+                            sources=[],
+                        )
+                        yield response.model_dump_json()
+
+                    else:
+                        response_message += text_response_chunk
+                        if bool(
+                            re.search(r"[.,!?。，！？]\s", text_response_chunk)
+                        ):  # Transcribe text only when punctuation is detected
+                            audio_data = tts.readText(response_message, True, language)
+                            response = VoiceChatResponse(
+                                response_message=response_message,
+                                sources=[],
+                                audio_base64=audio_data,
+                            )
+                            yield response.model_dump_json()
+                            response_message = ""
+
+            await send_custom_logs(apiLog)  # Send custom logs to app insights
+            await store_chat_history(request.cookies.get("session"), apiLog)  # Store chat history in Cosmos DB
 
         return generator()
 
@@ -113,7 +105,7 @@ class ResponseHandler:
         data = json.loads(json.dumps(data, ensure_ascii=False, cls=JSONEncoder) + "\n")
         thoughts = data.get("context", {}).get("thoughts", [])
         sources = extract_sources_with_chunks_from_thoughts(thoughts)
-        response = TextChatResponseWtihChunk(
+        response = TextChatResponseWithChunk(
             response_message=data["message"]["content"],
             sources=sources,
         )
@@ -185,7 +177,8 @@ Utility function to extract time taken, user query and sources with chunks from 
 
 def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], log: APILog) -> APILog:
     log.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
-    log.token_count = thoughts[6].get("description", 0)  # thoughts[6] is token count
+    log.input_token_count = thoughts[6].get("description", 0)  # thoughts[6] is input token count
+    log.output_token_count = thoughts[7].get("description", 0)  # thoughts[7] is output token count
     log.retrieved_sources = extract_sources_with_chunks_from_thoughts(thoughts)
 
     return log
@@ -235,3 +228,53 @@ def construct_source_response(thoughts: List[dict[str, Any]], request_type: Requ
             audio_base64="",
         )
     return response.model_dump_json()
+
+
+@staticmethod
+async def send_custom_logs(apiLog: APILog):
+    span = trace.get_current_span()
+    # sending custom logs to app insights
+    span.set_attribute("Query", apiLog.user_query)
+    if apiLog.retrieved_sources:
+        for i, source in enumerate(apiLog.retrieved_sources, start=1):
+            span.set_attribute(f"Chunk {i} ID", source.id)
+            span.set_attribute(f"Chunk {i} title", source.title)
+            span.set_attribute(f"Chunk {i} cover image url", source.cover_image_url)
+            span.set_attribute(f"Chunk {i} full url", source.full_url)
+            span.set_attribute(f"Chunk {i} content category", source.content_category)
+            span.set_attribute(f"Chunk {i} content", source.chunk)
+    span.set_attribute("Response", apiLog.response_message)
+    span.set_attribute("Session id", request.cookies.get("session"))
+    span.set_attribute("Total input tokens", apiLog.input_token_count)
+    span.set_attribute("Total output tokens", apiLog.output_token_count)
+    span.set_attribute("Total tokens", apiLog.input_token_count + apiLog.output_token_count)
+
+
+@staticmethod
+async def store_chat_history(session_id, apiLog: APILog):
+    chat_history_client: ContainerProxy = current_app.config[CONFIG_CHAT_HISTORY_CONTAINER_CLIENT]
+    response_message = ChatMessageWithSource(
+        role="assistant", content=apiLog.response_message, sources=apiLog.retrieved_sources
+    )
+    query_message = ChatMessageWithSource(role="user", content=apiLog.user_query, sources=[])
+    chat_message = [query_message, response_message]
+
+    date_time = str(datetime.datetime.now(pytz.timezone("Asia/Singapore")))
+
+    try:
+        try:
+            chat_history_item = await chat_history_client.read_item(item=session_id, partition_key=session_id)
+            chat_history = ChatHistory(**chat_history_item)
+            chat_history.chat_messages.extend(chat_message)
+            chat_history.last_modified = date_time
+        except CosmosHttpResponseError:  # If the chat history does not exist
+            chat_history = ChatHistory(
+                id=session_id,
+                session_id=session_id,
+                created_at=date_time,
+                last_modified=date_time,
+                chat_messages=chat_message,
+            )
+        await chat_history_client.upsert_item(chat_history.model_dump())
+    except Exception as e:
+        logging.info("Error storing chat history: ", e)

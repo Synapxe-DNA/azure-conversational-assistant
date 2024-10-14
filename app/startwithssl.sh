@@ -16,6 +16,9 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+echo "Creating SSL certificate"
+yes "SG" | make ssl-cert
+
 cd ../
 echo 'Creating python virtual environment ".venv"'
 python3 -m venv .venv
@@ -34,7 +37,7 @@ echo ""
 echo "Restoring frontend npm packages"
 echo ""
 
-cd app/frontend-healthier-me
+cd app/frontend
 npm install
 if [ $? -ne 0 ]; then
     echo "Failed to restore frontend npm packages"

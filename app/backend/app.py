@@ -1,9 +1,6 @@
-import dataclasses
-import json
 import logging
 import mimetypes
 import os
-from typing import AsyncGenerator
 
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
@@ -27,6 +24,7 @@ from config import (
     CONFIG_AUTH_CLIENT,
     CONFIG_AUTHENTICATOR,
     CONFIG_CHAT_APPROACH,
+    CONFIG_CHAT_HISTORY_CONTAINER_CLIENT,
     CONFIG_CREDENTIAL,
     CONFIG_FEEDBACK_CONTAINER_CLIENT,
     CONFIG_KEYVAULT_CLIENT,
@@ -40,7 +38,6 @@ from config import (
     CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
-from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -63,22 +60,6 @@ async def serve_app():
     return redirect("/app")
 
 
-class JSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o) and not isinstance(o, type):
-            return dataclasses.asdict(o)
-        return super().default(o)
-
-
-async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:
-    try:
-        async for event in r:
-            yield json.dumps(event, ensure_ascii=False, cls=JSONEncoder) + "\n"
-    except Exception as error:
-        logging.exception("Exception while generating response stream: %s", error)
-        yield json.dumps(error_dict(error))
-
-
 # endregion
 
 
@@ -86,8 +67,10 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
 async def setup_clients():
     # Replace these with your own values, either in environment variables or directly here
     AZURE_COSMOS_DB_NAME = os.environ["AZURE_COSMOS_DB_NAME"]
-    AZURE_DATABASE_ID = os.environ["AZURE_DATABASE_ID"]
-    AZURE_CONTAINER_ID = os.environ["AZURE_CONTAINER_ID"]
+    AZURE_FEEDBACK_DATABASE_ID = os.environ["AZURE_FEEDBACK_DATABASE_ID"]
+    AZURE_FEEDBACK_CONTAINER_ID = os.environ["AZURE_FEEDBACK_CONTAINER_ID"]
+    AZURE_CHAT_HISTORY_DATABASE_ID = os.environ["AZURE_CHAT_HISTORY_DATABASE_ID"]
+    AZURE_CHAT_HISTORY_CONTAINER_ID = os.environ["AZURE_CHAT_HISTORY_CONTAINER_ID"]
     AZURE_SEARCH_SERVICE = os.environ["AZURE_SEARCH_SERVICE"]
     AZURE_SEARCH_INDEX = os.environ["AZURE_SEARCH_INDEX"]
     # Shared by all OpenAI deployments
@@ -140,9 +123,13 @@ async def setup_clients():
     cosmos_client = CosmosClient(
         url=f"https://{AZURE_COSMOS_DB_NAME}.documents.azure.com:443/", credential=azure_credential
     )
-    feedback_database_client = cosmos_client.get_database_client(AZURE_DATABASE_ID)
-    feedback_container_client = feedback_database_client.get_container_client(AZURE_CONTAINER_ID)
+    feedback_database_client = cosmos_client.get_database_client(AZURE_FEEDBACK_DATABASE_ID)
+    feedback_container_client = feedback_database_client.get_container_client(AZURE_FEEDBACK_CONTAINER_ID)
     current_app.config[CONFIG_FEEDBACK_CONTAINER_CLIENT] = feedback_container_client
+
+    chat_history_database_client = cosmos_client.get_database_client(AZURE_CHAT_HISTORY_DATABASE_ID)
+    chat_history_container_client = chat_history_database_client.get_container_client(AZURE_CHAT_HISTORY_CONTAINER_ID)
+    current_app.config[CONFIG_CHAT_HISTORY_CONTAINER_CLIENT] = chat_history_container_client
 
     # Set up authentication helper
     search_index = None
@@ -250,6 +237,7 @@ async def close_clients():
 
 def create_app():
     app = Quart(__name__)
+    app.secret_key = os.urandom(24)
     app.register_blueprint(bp)
     app.register_blueprint(frontend)
     app.register_blueprint(voice)

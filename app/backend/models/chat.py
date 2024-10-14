@@ -14,6 +14,6 @@ class TextChatResponse(BaseModel):
     sources: List[Source]
 
 
-class TextChatResponseWtihChunk(BaseModel):
+class TextChatResponseWithChunk(BaseModel):
     response_message: str
     sources: List[SourceWithChunk]
