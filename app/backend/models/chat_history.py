@@ -7,6 +7,6 @@ from pydantic import BaseModel
 class ChatHistory(BaseModel):
     id: str
     session_id: str
-    first_message_date: str
-    lastest_message_date: str
+    created_at: str
+    last_modified: str
     chat_messages: List[ChatMessageWithSource]
