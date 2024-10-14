@@ -6,6 +6,8 @@
 #
 aiofiles==24.1.0
     # via quart
+aiohappyeyeballs==2.4.3
+    # via aiohttp
 aiohttp==3.10.10
     # via
     #   -r requirements.in
@@ -41,7 +43,6 @@ azure-core==1.31.0
     #   microsoft-kiota-authentication-azure
     #   msrest
 azure-core-tracing-opentelemetry==1.0.0b11
-azure-cosmos==4.7.0
     # via azure-monitor-opentelemetry
 azure-identity==1.19.0
 azure-keyvault==4.2.0
@@ -149,7 +150,6 @@ itsdangerous==2.2.0
     #   flask
     #   quart
 jinja2==3.1.4
-lingua-language-detector==2.0.2
     # via
     #   flask
     #   quart
@@ -350,8 +350,6 @@ pymupdfb==1.24.10
 pypdf==5.0.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
-    # via importlib-metadata
-python-dotenv==1.0.1
     # via
     #   microsoft-kiota-serialization-text
     #   pendulum
@@ -376,7 +374,6 @@ requests==2.32.3
 requests-oauthlib==2.0.0
     # via msrest
 rsa==4.9
-simple-term-menu==1.6.4
     # via python-jose
 six==1.16.0
     # via
