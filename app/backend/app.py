@@ -1,9 +1,6 @@
-import dataclasses
-import json
 import logging
 import mimetypes
 import os
-from typing import AsyncGenerator
 
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from approaches.retrievethenread import RetrieveThenReadApproach
@@ -41,7 +38,6 @@ from config import (
     CONFIG_USER_DATABASE,
 )
 from core.authentication import AuthenticationHelper
-from error import error_dict
 from openai import AsyncAzureOpenAI, AsyncOpenAI
 from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
 from opentelemetry.instrumentation.asgi import OpenTelemetryMiddleware
@@ -62,22 +58,6 @@ mimetypes.add_type("text/css", ".css")
 @bp.route("/")
 async def serve_app():
     return redirect("/app")
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o) and not isinstance(o, type):
-            return dataclasses.asdict(o)
-        return super().default(o)
-
-
-async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:
-    try:
-        async for event in r:
-            yield json.dumps(event, ensure_ascii=False, cls=JSONEncoder) + "\n"
-    except Exception as error:
-        logging.exception("Exception while generating response stream: %s", error)
-        yield json.dumps(error_dict(error))
 
 
 # endregion

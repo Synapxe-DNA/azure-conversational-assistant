@@ -3,7 +3,7 @@ from typing import cast
 
 from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH
-from error import error_response
+from error.error import error_response
 from models.request_type import RequestType
 from models.voice import VoiceChatRequest
 from quart import Blueprint, current_app, request
@@ -35,5 +35,5 @@ async def voice_endpoint():
         )
         return response, 200
     except Exception as error:
-        logging.error("Exception in /voice/stream. ", error)
-        return error_response(error, "/voice/stream")
+        logging.error(f"Exception in /voice/stream. {error}")
+        return error_response(error)

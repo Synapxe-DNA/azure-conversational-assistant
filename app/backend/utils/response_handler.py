@@ -29,7 +29,7 @@ class ResponseHandler:
     async def construct_streaming_response(
         result: AsyncGenerator[dict[str, Any], None],
         request_type: RequestType,
-        language: str = None,
+        language: str,
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
@@ -40,7 +40,7 @@ class ResponseHandler:
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
             apiLog = APILog()
             response_message = ""
-            async for res in JSONEncoder.format_as_ndjson(result):
+            async for res in JSONEncoder.format_as_ndjson(result, language):
                 res = json.loads(res)
                 error_msg = res.get("error", None)
                 thoughts = res.get("context", {}).get("thoughts", [])
