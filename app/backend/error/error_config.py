@@ -1,4 +1,3 @@
-
 self_harm_english = """
 I’m sorry I can’t assist with that. If you or someone you care about needs a safe space and would like for someone to provide a listening ear, these helplines are available.\n
 Samaritans of Singapore: 1-767 (24 hour)\n
@@ -59,4 +58,3 @@ Maaf, mesej anda terlalu panjang untuk saya proses. Jangan ragu untuk bertanya k
 exceed_context_length_tamil = """
 மன்னிக்கவும், உங்கள் செய்தி நீண்டதாக இருப்பதால் நான் அதைச் செயல்படுத்த முடியவில்லை. சிங்கப்பூரின் ஆரோக்கிய தகவல் அல்லது திட்டங்கள் பற்றி கேட்கலாம், நான் மகிழ்ச்சியுடன் உதவிசெய்வேன்!
 """
-
