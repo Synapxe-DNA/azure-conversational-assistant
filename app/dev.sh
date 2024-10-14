@@ -48,7 +48,7 @@ func_frontend() {
   echo ""
 
 
-  cd ./frontend-healthier-me
+  cd ./frontend
   npm install
   if [ $? -ne 0 ]; then
       echo "Failed to restore frontend npm packages"
@@ -73,7 +73,7 @@ func_frontend_build() {
   echo ""
 
 
-  cd ./frontend-healthier-me
+  cd ./frontend
   npm install
   if [ $? -ne 0 ]; then
       echo "Failed to restore frontend npm packages"

@@ -67,7 +67,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        args: [--write, --config, app/frontend-healthier-me/.prettierrc.json]
+        args: [--write, --config, app/frontend/.prettierrc.json]
         types_or: [css, json, javascript, ts, tsx, html]
         additional_dependencies:
           - prettier@3.3.3
