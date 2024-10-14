@@ -38,6 +38,7 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
   loading: boolean = false;
   timeout: boolean = false;
   private timeoutId: any; // Store the timeout reference
+  private autoScroll: boolean = true;
 
   constructor(
     private chatMessageService: ChatMessageService,
@@ -63,6 +64,7 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
         m.subscribe(messages => {
           this.messages = messages;
           this.timeout = false;
+          this.onScroll();
 
           // Check the most recent message (last element in the array)
           const mostRecentMessage = messages[messages.length - 1];
@@ -76,17 +78,22 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
             }
           }
         });
+        this.autoScroll = true;
       });
     });
   }
 
   ngAfterViewChecked(): void {
-    this.scrollToBottom();
+    if (this.autoScroll) {
+      this.scrollToBottom();
+      this.autoScroll = false;
+    }
   }
 
   onMessageSent() {
     console.log("Message sent");
     this.loading = true;
+    this.autoScroll = true;
 
     // Simulate message processing with a timeout
     this.timeoutId = setTimeout(() => {
@@ -116,5 +123,12 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
     } catch (err) {
       console.error("Error while scrolling to bottom:", err);
     }
+  }
+
+  onScroll() {
+    const threshold = 2;
+    const position = this.messageContainer.nativeElement.scrollTop + this.messageContainer.nativeElement.clientHeight;
+    const height = this.messageContainer.nativeElement.scrollHeight;
+    this.autoScroll = height - position <= threshold;
   }
 }
