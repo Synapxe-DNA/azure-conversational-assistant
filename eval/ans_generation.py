@@ -1,15 +1,14 @@
+import argparse
 import asyncio
 import dataclasses
 import json
 import logging
 import os
-import pandas as pd
-import re
-import argparse
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from types import CoroutineType
-from typing import Any, AsyncGenerator, Optional, TypedDict, cast
+from typing import Any, Optional, TypedDict, cast
 
 import pandas as pd
 from azure.core.credentials_async import AsyncTokenCredential
@@ -21,7 +20,7 @@ from azure.search.documents.models import (
     VectorizedQuery,
     VectorQuery,
 )
-from openai import APIError, AsyncAzureOpenAI
+from openai import AsyncAzureOpenAI
 from openai.types.chat import (
     ChatCompletion,
     ChatCompletionMessageParam,
@@ -30,11 +29,14 @@ from openai.types.chat import (
 from openai_messages_token_helper import build_messages, get_token_limit
 from pydantic import BaseModel
 
-import os
-import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(current_dir, '..')))
-from app.backend.approaches.prompts import general_prompt, general_query_prompt, query_prompt_few_shots
+sys.path.append(os.path.abspath(os.path.join(current_dir, "..")))
+from app.backend.approaches.prompts import (  # noqa: E402
+    general_prompt,
+    general_query_prompt,
+    query_prompt_few_shots,
+)
+
 
 class Language(Enum):
     en: str = "English"
@@ -274,9 +276,7 @@ def nonewlines(s: str) -> str:
     return s.replace("\n", " ").replace("\r", " ")
 
 
-def get_sources_content(
-    results: list[Document], use_semantic_captions: bool, use_image_citation: bool
-) -> list[str]:
+def get_sources_content(results: list[Document], use_semantic_captions: bool, use_image_citation: bool) -> list[str]:
     if use_semantic_captions:
         return [
             {
@@ -284,7 +284,10 @@ def get_sources_content(
                 "article_id": doc.parent_id or "",
                 "title": doc.title or "",
                 "pr_name": doc.pr_name or "",
-                "url": get_citation((doc.full_url or ""), use_image_citation)+ " [" + (doc.date_modified or "no date") + "]",
+                "url": get_citation((doc.full_url or ""), use_image_citation)
+                + " ["
+                + (doc.date_modified or "no date")
+                + "]",
                 "captions": nonewlines(" . ".join([cast(str, c.text) for c in (doc.captions or [])])),
                 "search_score": doc.score or "",
                 "reranker_score": doc.reranker_score or "",
@@ -298,7 +301,10 @@ def get_sources_content(
                 "article_id": doc.parent_id or "",
                 "title": doc.title or "",
                 "pr_name": doc.pr_name or "",
-                "url": get_citation((doc.full_url or ""), use_image_citation)+ " [" + (doc.date_modified or "no date") + "]",
+                "url": get_citation((doc.full_url or ""), use_image_citation)
+                + " ["
+                + (doc.date_modified or "no date")
+                + "]",
                 "chunk": (get_citation((doc.title or ""), use_image_citation)) + ": " + nonewlines(doc.chunks or ""),
                 "search_score": doc.score or "",
                 "reranker_score": doc.reranker_score or "",
@@ -306,29 +312,31 @@ def get_sources_content(
             for doc in results
         ]
 
+
 def concat_sources(sources_content, start_idx, end_idx):
     combined = {
-        'index_ids': [],
-        'article_ids': [],
-        'titles': [],
-        'pr_names': [],
-        'urls': [],
-        'chunks': [],
-        'search_scores': [],
-        'reranker_scores': []
+        "index_ids": [],
+        "article_ids": [],
+        "titles": [],
+        "pr_names": [],
+        "urls": [],
+        "chunks": [],
+        "search_scores": [],
+        "reranker_scores": [],
     }
 
     for item in sources_content[start_idx:end_idx]:
-        combined['index_ids'].append(item['index_id'])
-        combined['article_ids'].append(item['article_id'])
-        combined['titles'].append(item['title'])
-        combined['pr_names'].append(item['pr_name'])
-        combined['urls'].append(item['url'])
-        combined['chunks'].append(item['chunk'])
-        combined['search_scores'].append(round(float(item['search_score']),5))
-        combined['reranker_scores'].append(round(float(item['reranker_score']),3))
+        combined["index_ids"].append(item["index_id"])
+        combined["article_ids"].append(item["article_id"])
+        combined["titles"].append(item["title"])
+        combined["pr_names"].append(item["pr_name"])
+        combined["urls"].append(item["url"])
+        combined["chunks"].append(item["chunk"])
+        combined["search_scores"].append(round(float(item["search_score"]), 5))
+        combined["reranker_scores"].append(round(float(item["reranker_score"]), 3))
 
     return combined
+
 
 def get_citation(sourcepage: str, use_image_citation: bool) -> str:
     if use_image_citation:
@@ -342,9 +350,13 @@ def get_citation(sourcepage: str, use_image_citation: bool) -> str:
 
         return sourcepage
 
+
 def clean_text(df):
-    df = df.apply(lambda col: col.map(lambda x: x.replace('\\u200b', '').replace('’', "'") if isinstance(x, str) else x))
+    df = df.apply(
+        lambda col: col.map(lambda x: x.replace("\\u200b", "").replace("’", "'") if isinstance(x, str) else x)
+    )
     return df
+
 
 async def perform_search_and_fetch_documents(
     endpoint: str,
@@ -408,7 +420,7 @@ async def perform_search_and_fetch_documents(
                         embedding=document.get("embedding"),
                         captions=cast(list[QueryCaptionResult], document.get("@search.captions")),
                         score=document.get("@search.score"),
-                        reranker_score=document.get("@search.reranker_score")
+                        reranker_score=document.get("@search.reranker_score"),
                     )
                 )
 
@@ -443,7 +455,7 @@ def ensure_directory_exists(file_path: str):
         os.makedirs(directory)
 
 
-def write_or_append_csv(file_path: str, row_data: dict[str, str]): ####
+def write_or_append_csv(file_path: str, row_data: dict[str, str]):  ####
     """
     Writes a new row to the CSV file specified by file_path.
 
@@ -471,20 +483,27 @@ def write_or_append_csv(file_path: str, row_data: dict[str, str]): ####
         df.to_csv(file_path, mode="w", header=True, index=False)
 
 
-async def run(user_query: str, file_path: str, response: str, combined_sources: dict[str, str], total_input_tokens: int, total_output_tokens: int):
+async def run(
+    user_query: str,
+    file_path: str,
+    response: str,
+    combined_sources: dict[str, str],
+    total_input_tokens: int,
+    total_output_tokens: int,
+):
     data = {
         "user_query": user_query,
         "generated_response": response,
         "tokens_input": total_input_tokens,
         "tokens_output": total_output_tokens,
-        "source_index_ids": combined_sources['index_ids'],
+        "source_index_ids": combined_sources["index_ids"],
         "source_article_ids": list(set(combined_sources["article_ids"])),
         "source_titles": list(set(combined_sources["titles"])),
         "source_urls": list(set(combined_sources["urls"])),
         "source_contributors": list(set(combined_sources["pr_names"])),
-        "source_chunks": "\n+++\n".join(combined_sources['chunks']),
-        "source_search_scores": combined_sources['search_scores'],
-        "source_reranker_scores": combined_sources['reranker_scores']
+        "source_chunks": "\n+++\n".join(combined_sources["chunks"]),
+        "source_search_scores": combined_sources["search_scores"],
+        "source_reranker_scores": combined_sources["reranker_scores"],
     }
     # Function call to write or append row data to the CSV file
     write_or_append_csv(file_path, data)
@@ -516,7 +535,9 @@ if __name__ == "__main__":
     )
     # Azure OpenAI service
     parser.add_argument("--openaimodelname", type=str, default="gpt-4o", help="Azure OpenAI GPT model")
-    parser.add_argument("--openaiservicename", type=str, default="cog-jisfkas7teqvm-000", help="Azure OpenAI service name")
+    parser.add_argument(
+        "--openaiservicename", type=str, default="cog-jisfkas7teqvm-000", help="Azure OpenAI service name"
+    )
     parser.add_argument("--apiversion", type=str, default="2024-06-01", help="Azure API version")
     parser.add_argument("--openaideploymentname", type=str, default="chat", help="Azure OpenAI deployment name")
     parser.add_argument("--embeddingdimensions", type=int, default=1536, help="Embedding dimensions")
@@ -610,7 +631,7 @@ if __name__ == "__main__":
     OPEN_FILE_PATH = args.readfilepath
     qns_bank_df = pd.read_csv(OPEN_FILE_PATH)
 
-    for index,row in qns_bank_df.iterrows():
+    for index, row in qns_bank_df.iterrows():
         INPUT_QUERY = row["question"]
         print(f"INPUT_QUERY: {INPUT_QUERY}")
         ORIGINAL_USER_QUERY = [Prompts({"role": "user", "content": INPUT_QUERY})]
@@ -619,13 +640,15 @@ if __name__ == "__main__":
 
         async def main():
             async with AzureDeveloperCliCredential(process_timeout=60) as azure_credential:
-                token_provider = get_bearer_token_provider(azure_credential, "https://cognitiveservices.azure.com/.default")
+                token_provider = get_bearer_token_provider(
+                    azure_credential, "https://cognitiveservices.azure.com/.default"
+                )
                 async with AsyncAzureOpenAI(
                     api_version=AZURE_OPENAI_API_VERSION,
                     azure_endpoint=AZURE_OPENAI_ENDPOINT,
                     azure_ad_token_provider=token_provider,
                 ) as openai_client:
-                    try:                
+                    try:
                         total_input_tokens = 0
                         total_output_tokens = 0
 
@@ -691,7 +714,7 @@ if __name__ == "__main__":
                         )
 
                         combined_sources = concat_sources(sources_content, 0, len(sources_content))
-                        content = "\n".join(combined_sources['chunks'])
+                        content = "\n".join(combined_sources["chunks"])
 
                         chat_completion = await generate_search_query_or_response(
                             azure_openai_model=AZURE_OPENAI_CHATGPT_MODEL,
@@ -710,8 +733,15 @@ if __name__ == "__main__":
 
                         response = chat_completion.choices[0].message.content
 
-                        await run(INPUT_QUERY, SAVE_FILE_PATH, response, combined_sources, total_input_tokens, total_output_tokens)
-                    
+                        await run(
+                            INPUT_QUERY,
+                            SAVE_FILE_PATH,
+                            response,
+                            combined_sources,
+                            total_input_tokens,
+                            total_output_tokens,
+                        )
+
                     except Exception as e:
                         logging.info("Logging error")
                         print(f"Error: {e}")
