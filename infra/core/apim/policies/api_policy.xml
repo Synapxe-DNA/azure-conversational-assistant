@@ -6,6 +6,9 @@
         <!-- If we can't find the variable, initialize it -->
         <choose>
             <when condition="@(context.Variables.ContainsKey("listBackends") == false)">
+                <!-- Note: Update backend-id -->
+                <!-- Sponsorship: https://cog-jisfkas7teqvm-xxx.openai.azure.com/ -->
+                <!-- Enterprise: https://cog-5ivxbh72auo44-xxx.openai.azure.com/ -->
                 <set-variable name="listBackends" value="@{
                     // -------------------------------------------------
                     // ------- Explanation of backend properties -------
@@ -20,7 +23,7 @@
                     JArray backends = new JArray();
                     backends.Add(new JObject()
                     {
-                        { "backend-id", "https://cog-jisfkas7teqvm-000.openai.azure.com/" },
+                        { "backend-id", "https://cog-5ivxbh72auo44-000.openai.azure.com/" },
                         { "priority", 1},
                         { "isThrottling", false },
                         { "retryAfter", DateTime.MinValue }
@@ -28,7 +31,7 @@
 
                     backends.Add(new JObject()
                     {
-                        { "backend-id", "https://cog-jisfkas7teqvm-001.openai.azure.com/" },
+                        { "backend-id", "https://cog-5ivxbh72auo44-001.openai.azure.com/" },
                         { "priority", 2},
                         { "isThrottling", false },
                         { "retryAfter", DateTime.MinValue }
@@ -40,7 +43,10 @@
                 <cache-store-value key="@("listBackends-" + context.Api.Id)" value="@((JArray)context.Variables["listBackends"])" duration="60" />
             </when>
         </choose>
-        <authentication-managed-identity resource="https://cognitiveservices.azure.com" client-id="e26c6d5c-6e79-4549-b95d-5767747f5200" output-token-variable-name="msi-access-token" ignore-error="false" />
+        <!-- Note: Update client-id -->
+        <!-- Sponsorship: e26c6d5c-6e79-4549-b95d-5767747f5200 -->
+        <!-- Enterprise: d40cb1e0-7510-442d-8458-fdaad613d2c8 -->
+        <authentication-managed-identity resource="https://cognitiveservices.azure.com" client-id="d40cb1e0-7510-442d-8458-fdaad613d2c8" output-token-variable-name="msi-access-token" ignore-error="false" />
         <set-header name="Authorization" exists-action="override">
             <value>@("Bearer " + (string)context.Variables["msi-access-token"])</value>
         </set-header>
