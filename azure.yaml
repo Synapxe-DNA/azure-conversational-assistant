@@ -12,12 +12,12 @@ services:
       prepackage:
         windows:
           shell: pwsh
-          run: cd ../frontend-healthier-me;npm install;npm run build
+          run: cd ../frontend;npm install;npm run build
           interactive: false
           continueOnError: false
         posix:
           shell: sh
-          run: cd ../frontend-healthier-me;npm install;npm run build
+          run: cd ../frontend;npm install;npm run build
           interactive: false
           continueOnError: false
 pipeline:
@@ -74,8 +74,10 @@ pipeline:
     - ALLOWED_ORIGIN
     - AZURE_COSMOS_DB_NAME
     - AZURE_COSMOS_DB_LOCATION
-    - AZURE_DATABASE_ID
-    - AZURE_CONTAINER_ID
+    - AZURE_FEEDBACK_DATABASE_ID
+    - AZURE_FEEDBACK_CONTAINER_ID
+    - AZURE_CHAT_HISTORY_DATABASE_ID
+    - AZURE_CHAT_HISTORY_CONTAINER_ID
     - AZURE_APIM_SERVICE_NAME
     - APIM_AOI_PATH
     - APIM_GATEWAY_URL

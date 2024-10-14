@@ -1,0 +1,17 @@
+{
+  "language": "chinese",
+  "chat_history": [
+    { "role": "user", "content": "Hello!" },
+    { "role": "assistant", "content": "Hello" }
+  ],
+  "profile": {
+    "profile_type": "general",
+    "user_age": -1,
+    "user_gender": "male",
+    "user_condition": ""
+  },
+  "query": {
+    "role": "user",
+    "content": "Bagaimana untuk tidur dengan lebih baik?"
+  }
+}

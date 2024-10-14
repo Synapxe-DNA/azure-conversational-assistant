@@ -1,7 +1,7 @@
-from authentication.authenticator import Authenticator
+from authentication.account_authenticator import AccountAuthenticator
+from authentication.jwt_authenticator import JWTAuthenticator
 from config import CONFIG_AUTHENTICATOR, CONFIG_USER_DATABASE
-from database.user_database import UserDatabase
-from models.payload import Payload
+from models.account import Account
 from quart import Blueprint, current_app, jsonify, request
 
 login = Blueprint("login", __name__, url_prefix="/login")
@@ -11,13 +11,17 @@ login = Blueprint("login", __name__, url_prefix="/login")
 async def login_endpoint():
     data = await request.get_json()
 
-    payload = Payload(username=data.get("username"), password=data.get("password"))
+    account = Account(username=data.get("username"), password=data.get("password"))
 
-    authenticator: Authenticator = current_app.config[CONFIG_AUTHENTICATOR]
-    user_database: UserDatabase = current_app.config[CONFIG_USER_DATABASE]
+    authenticator: JWTAuthenticator = current_app.config[CONFIG_AUTHENTICATOR]
+    user_database: AccountAuthenticator = current_app.config[CONFIG_USER_DATABASE]
 
-    if user_database.verify_user(payload):
-        token = authenticator.generate_jwt_token(payload)
-        return jsonify(token=token, token_type="Bearer")
-
-    return jsonify(error="Invalid credentials"), 401
+    is_verified, message = await user_database.verify_user(account)
+    if is_verified:
+        try:
+            token = await authenticator.generate_jwt_token(account)
+            return jsonify(token=token, token_type="Bearer"), 200
+        except Exception as error:
+            return jsonify(error=str(error)), 500
+    else:
+        return jsonify(error=message), 401

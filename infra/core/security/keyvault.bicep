@@ -59,10 +59,14 @@ param principalId string = ''
 param usernameName string
 #disable-next-line secure-secrets-in-params
 param passwordName string
+#disable-next-line secure-secrets-in-params
+param secretKeyName string
 @secure()
 param usernameValue string
 @secure()
 param passwordValue string
+@secure()
+param secretKeyValue string
 
 
 resource existingKeyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = if (keyVaultReuse) {
@@ -82,7 +86,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = if (!keyVault
     }
     enableSoftDelete: true
     publicNetworkAccess: publicNetworkAccess
-    enablePurgeProtection: true
+    enablePurgeProtection: true  // Should have been set to false; this is permanent
     accessPolicies: !empty(principalId) ? [
       {
         objectId: principalId
@@ -122,6 +126,20 @@ resource secretPassword 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' =
     }
     contentType: contentType
     value: passwordValue
+  }
+}
+
+resource secretKey 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' = {
+  parent: keyVault
+  name: secretKeyName
+  tags: tags
+  properties: {
+    attributes: {
+      enabled: true
+      exp: 1735660799
+    }
+    contentType: contentType
+    value: secretKeyValue
   }
 }
 
