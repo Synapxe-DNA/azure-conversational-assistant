@@ -115,7 +115,7 @@ jobs:
           contains(steps.changed-files.outputs.all_changed_files, '.ts')
 
       - name: Run Prettier Check
-        run: prettier --check "**/*.{css,json,yaml,yml,md}" --config app/frontend-healthier-me/.prettierrc.json
+        run: prettier --check "**/*.{css,json,yaml,yml,md}" --config app/frontend/.prettierrc.json
         if: >
           contains(steps.changed-files.outputs.all_changed_files, '.md') ||
           contains(steps.changed-files.outputs.all_changed_files, '.css') ||

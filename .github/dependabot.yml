@@ -17,7 +17,7 @@ updates:
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
-    directory: "/app/frontend-healthier-me"
+    directory: "/app/frontend"
     schedule:
       interval: "weekly"
 
