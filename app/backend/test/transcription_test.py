@@ -11,16 +11,16 @@ from pydub import AudioSegment
 """
 File paths
 """
-english_query = "audio_test_files/english_query.mp3"
-chinese_query = "audio_test_files/chinese_query.mp3"
-malay_query = "audio_test_files/malay_query.mp3"
-tamil_query = "audio_test_files/tamil_query.mp3"
+english_query = "backend/test/audio_test_files/english_query.mp3"
+chinese_query = "backend/test/audio_test_files/chinese_query.mp3"
+malay_query = "backend/test/audio_test_files/malay_query.mp3"
+tamil_query = "backend/test/audio_test_files/tamil_query.mp3"
 
 """
 Response file path
 """
 
-RESPONSE_FOLDER_PATH = "responses/transcription/"
+RESPONSE_FOLDER_PATH = "backend/test/responses/transcription/"
 
 
 @pytest_asyncio.fixture
@@ -112,7 +112,7 @@ async def send_audio_file(audio_file_path, transcription_endpointURL, endpointUR
         await asyncio.gather(receive_task, send_task, check_task)
 
 
-async def check_and_close(websocket, state, timeout=30):
+async def check_and_close(websocket, state, timeout=60):
     try:
         await asyncio.wait_for(_check_and_close(websocket, state), timeout)
     except asyncio.TimeoutError:

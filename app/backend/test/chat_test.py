@@ -9,39 +9,39 @@ from lingua import Language, LanguageDetectorBuilder
 """
 File paths
 """
-valid_json_general_profile = "json_test_files/chat/valid_json_general_profile.json"
-valid_json_other_profile = "json_test_files/chat/valid_json_other_profile.json"
+valid_json_general_profile = "backend/test/json_test_files/chat/valid_json_general_profile.json"
+valid_json_other_profile = "backend/test/json_test_files/chat/valid_json_other_profile.json"
 
-valid_json_spoken_english = "json_test_files/chat/valid_json_spoken_english.json"
-valid_json_spoken_chinese = "json_test_files/chat/valid_json_spoken_chinese.json"
-valid_json_spoken_malay = "json_test_files/chat/valid_json_spoken_malay.json"
-valid_json_spoken_tamil = "json_test_files/chat/valid_json_spoken_tamil.json"
+valid_json_spoken_english = "backend/test/json_test_files/chat/valid_json_spoken_english.json"
+valid_json_spoken_chinese = "backend/test/json_test_files/chat/valid_json_spoken_chinese.json"
+valid_json_spoken_malay = "backend/test/json_test_files/chat/valid_json_spoken_malay.json"
+valid_json_spoken_tamil = "backend/test/json_test_files/chat/valid_json_spoken_tamil.json"
 
-valid_json_english_in_english_out = "json_test_files/chat/valid_json_english_in_english_out.json"
-valid_json_english_in_chinese_out = "json_test_files/chat/valid_json_english_in_chinese_out.json"
-valid_json_english_in_malay_out = "json_test_files/chat/valid_json_english_in_malay_out.json"
-valid_json_english_in_tamil_out = "json_test_files/chat/valid_json_english_in_tamil_out.json"
+valid_json_english_in_english_out = "backend/test/json_test_files/chat/valid_json_english_in_english_out.json"
+valid_json_english_in_chinese_out = "backend/test/json_test_files/chat/valid_json_english_in_chinese_out.json"
+valid_json_english_in_malay_out = "backend/test/json_test_files/chat/valid_json_english_in_malay_out.json"
+valid_json_english_in_tamil_out = "backend/test/json_test_files/chat/valid_json_english_in_tamil_out.json"
 
-valid_json_chinese_in_english_out = "json_test_files/chat/valid_json_chinese_in_english_out.json"
-valid_json_chinese_in_chinese_out = "json_test_files/chat/valid_json_chinese_in_chinese_out.json"
-valid_json_chinese_in_malay_out = "json_test_files/chat/valid_json_chinese_in_malay_out.json"
-valid_json_chinese_in_tamil_out = "json_test_files/chat/valid_json_chinese_in_tamil_out.json"
+valid_json_chinese_in_english_out = "backend/test/json_test_files/chat/valid_json_chinese_in_english_out.json"
+valid_json_chinese_in_chinese_out = "backend/test/json_test_files/chat/valid_json_chinese_in_chinese_out.json"
+valid_json_chinese_in_malay_out = "backend/test/json_test_files/chat/valid_json_chinese_in_malay_out.json"
+valid_json_chinese_in_tamil_out = "backend/test/json_test_files/chat/valid_json_chinese_in_tamil_out.json"
 
-valid_json_malay_in_english_out = "json_test_files/chat/valid_json_malay_in_english_out.json"
-valid_json_malay_in_chinese_out = "json_test_files/chat/valid_json_malay_in_chinese_out.json"
-valid_json_malay_in_malay_out = "json_test_files/chat/valid_json_malay_in_malay_out.json"
-valid_json_malay_in_tamil_out = "json_test_files/chat/valid_json_malay_in_tamil_out.json"
+valid_json_malay_in_english_out = "backend/test/json_test_files/chat/valid_json_malay_in_english_out.json"
+valid_json_malay_in_chinese_out = "backend/test/json_test_files/chat/valid_json_malay_in_chinese_out.json"
+valid_json_malay_in_malay_out = "backend/test/json_test_files/chat/valid_json_malay_in_malay_out.json"
+valid_json_malay_in_tamil_out = "backend/test/json_test_files/chat/valid_json_malay_in_tamil_out.json"
 
-valid_json_tamil_in_english_out = "json_test_files/chat/valid_json_tamil_in_english_out.json"
-valid_json_tamil_in_chinese_out = "json_test_files/chat/valid_json_tamil_in_chinese_out.json"
-valid_json_tamil_in_malay_out = "json_test_files/chat/valid_json_tamil_in_malay_out.json"
-valid_json_tamil_in_tamil_out = "json_test_files/chat/valid_json_tamil_in_tamil_out.json"
+valid_json_tamil_in_english_out = "backend/test/json_test_files/chat/valid_json_tamil_in_english_out.json"
+valid_json_tamil_in_chinese_out = "backend/test/json_test_files/chat/valid_json_tamil_in_chinese_out.json"
+valid_json_tamil_in_malay_out = "backend/test/json_test_files/chat/valid_json_tamil_in_malay_out.json"
+valid_json_tamil_in_tamil_out = "backend/test/json_test_files/chat/valid_json_tamil_in_tamil_out.json"
 
 """
 Response file path
 """
 
-response_folder_path = "responses/chat/"
+response_folder_path = "backend/test/responses/chat/"
 
 
 @pytest_asyncio.fixture

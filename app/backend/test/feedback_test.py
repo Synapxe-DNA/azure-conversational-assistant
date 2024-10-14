@@ -8,10 +8,10 @@ import requests
 """
 File paths
 """
-valid_json_positive = "json_test_files/feedback/valid_json_positive.json"
-valid_json_negative = "json_test_files/feedback/valid_json_negative.json"
-valid_json_invalid_source_id = "json_test_files/feedback/valid_json_invalid_source_id.json"
-valid_json_no_source = "json_test_files/feedback/valid_json_no_source.json"
+valid_json_positive = "backend/test/json_test_files/feedback/valid_json_positive.json"
+valid_json_negative = "backend/test/json_test_files/feedback/valid_json_negative.json"
+valid_json_invalid_source_id = "backend/test/json_test_files/feedback/valid_json_invalid_source_id.json"
+valid_json_no_source = "backend/test/json_test_files/feedback/valid_json_no_source.json"
 
 
 @pytest_asyncio.fixture

@@ -1,7 +1,7 @@
 English query:
 Hi, I am Bob and I have diabetes. Could you give me advice on how to better manage my diabetes?
 
-Chinese: 
+Chinese:
 你好，我是鲍勃，我患有糖尿病。你能给我一些建议，告诉我如何更好地控制我的糖尿病吗？
 
 Malay:

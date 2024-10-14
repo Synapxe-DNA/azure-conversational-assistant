@@ -16,34 +16,5 @@ lint:
 ssl-cert: # Create ssl for local development
 	openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 
-backend-test: # Run backend tests using deployed API endpoint. Indicate FILE=<TEST FILE PATH> to run specific test file
-	@read -p "Enter the endpoint you want to test (e.g speech, feedback) [or press Enter to skip and run all test files]: " endpoint; \
-	if [ -n "$$endpoint" ]; then \
-		read -p "Enter the function you want to test (e.g valid_json_test) [or press Enter to skip and run all functions]: " function; \
-		if [ -n "$$function" ]; then \
-			fullpath=$$endpoint"_test.py"::$$function; \
-		else \
-			fullpath=$$endpoint"_test.py"; \
-		fi; \
-		echo "Running test for $$fullpath"; \
-		cd backend/test && pytest -v "$$fullpath" -n auto; \
-	else \
-		echo "Running all tests."; \
-		cd backend/test && pytest -v -n auto; \
-	fi
-
-backend-test-local: # Run backend tests using local API endpoint
-	@read -p "Enter the endpoint you want to test (e.g speech, feedback) [or press Enter to skip and run all test files]: " endpoint; \
-	if [ -n "$$endpoint" ]; then \
-		read -p "Enter the function you want to test (e.g valid_json_test) [or press Enter to skip and run all functions]: " function; \
-		if [ -n "$$function" ]; then \
-			fullpath=$$endpoint"_test.py"::$$function; \
-		else \
-			fullpath=$$endpoint"_test.py"; \
-		fi; \
-		echo "Running test for $$fullpath"; \
-		cd backend/test && pytest -v -s --local "$$fullpath" -n auto; \
-	else \
-		echo "Running all tests."; \
-		cd backend/test && pytest -v -s --local -n auto; \
-	fi
+backend-test: # Run backend test
+	python backend/test/pytest_main.py
