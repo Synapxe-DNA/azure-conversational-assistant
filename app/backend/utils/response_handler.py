@@ -266,13 +266,13 @@ async def store_chat_history(session_id, apiLog: APILog):
             chat_history_item = await chat_history_client.read_item(item=session_id, partition_key=session_id)
             chat_history = ChatHistory(**chat_history_item)
             chat_history.chat_messages.extend(chat_message)
-            chat_history.last_modified = date_time
+            chat_history.lastest_message_date = date_time
         except CosmosHttpResponseError:  # If the chat history does not exist
             chat_history = ChatHistory(
                 id=session_id,
                 session_id=session_id,
-                date_time=date_time,
-                last_modified=date_time,
+                first_message_date=date_time,
+                lastest_message_date=date_time,
                 chat_messages=chat_message,
             )
         await chat_history_client.upsert_item(chat_history.model_dump())
