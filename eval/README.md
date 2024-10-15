@@ -68,18 +68,19 @@ The steps to run `ans_generation.py` are:
     - Change the `readfilepath` accordingly.
     - Include `--asyncmode` to run in async mode. Otherwise, do not include `--asyncmode` to use sync mode.
     - Change the model argument accordingly (`gpt-4o-mini`/`gpt-4o`).
-    > [!NOTE]
-    > If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
 
-    ```.env
-    # Azure OpenAI Services
-    AZURE_OPENAI_API_TYPE="xx"
-    AZURE_OPENAI_API_VERSION="xx"
-    AZURE_OPENAI_CHATGPT_DEPLOYMENT="xx"
-    AZURE_OPENAI_SERVICE="xx"
-    ```
+> [!NOTE]
+> If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
 
-A successful `eval.py` script run will save the evaluation results in a file named `deepeval_results_<model_name>_<date>_<time>.csv`, under the `output` folder.
+```.env
+# Azure OpenAI Services
+AZURE_OPENAI_API_TYPE="xx"
+AZURE_OPENAI_API_VERSION="xx"
+AZURE_OPENAI_CHATGPT_DEPLOYMENT="xx"
+AZURE_OPENAI_SERVICE="xx"
+```
+
+A successful `eval.py` script run will save the evaluation results under the `output` folder in a file named `deepeval_results_<model_name>_<date>_<time>.csv`.
 
 ### async mode vs sync mode
 
