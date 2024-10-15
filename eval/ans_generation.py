@@ -34,7 +34,6 @@ sys.path.append(os.path.abspath(os.path.join(current_dir, "..")))
 from app.backend.approaches.prompts import (  # noqa: E402
     general_prompt,
     general_query_prompt,
-    query_prompt_few_shots,
 )
 
 
@@ -517,13 +516,13 @@ if __name__ == "__main__":
         description="Generate chat completion with Azure OpenAI and Azure Search for rapid RAG evaluation and testing.",
         epilog="""
         Example:
-            python ans_generation.py --readfilepath input/sample_question_bank_5.csv --usevectorsearch --usetextsearch --usesemanticranker
+            python ans_generation.py --readfilepath input/sample_question_bank.csv --usevectorsearch --usetextsearch --usesemanticranker
         """,
     )
     parser.add_argument(
         "--readfilepath",
         type=str,
-        default="./input/sample_question_bank_5.csv",
+        default="./input/sample_question_bank.csv",
         help="The file path to read questions bank input file",
     )
     parser.add_argument(
@@ -575,7 +574,14 @@ if __name__ == "__main__":
     QUERY_PROMPT = general_query_prompt
     SELECTED_LANGUAGE = Language.from_iso_code(args.selectedlanguage).value
     ANSWER_GENERATION_PROMPT = general_prompt.format(language=SELECTED_LANGUAGE)
-    QUERY_PROMPT_FEW_SHOTS: list[ChatCompletionMessageParam] = json.loads(query_prompt_few_shots)
+    QUERY_PROMPT_FEW_SHOTS: list[ChatCompletionMessageParam] = [
+        {"role": "user", "content": "What are the common symptoms of flu?"},
+        {"role": "assistant", "content": "Provide a list of common flu symptoms"},
+        {"role": "user", "content": "How can I manage high blood pressure?"},
+        {"role": "assistant", "content": "Suggest ways to manage high blood pressure"},
+        {"role": "user", "content": " "},
+        {"role": "assistant", "content": ""},
+    ]
     CHAT_HISTORY = []
 
     # Azure OpenAI service
