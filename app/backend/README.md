@@ -3,7 +3,7 @@
 ## Running backend locally
 
 1. Navigate to the `app` folder
-2. Run `make run-local'
+2. Run `make run-local`
 3. To access the endpoints for testing, navigate to `https://0.0.0.0:8000/{route name}`
 
 > [!NOTE]

@@ -4,10 +4,10 @@ from typing import cast
 from approaches.approach import Approach
 from config import CONFIG_CHAT_APPROACH
 from decorators import require_authentication
-from error import error_response
+from error.error import error_response
 from models.chat import TextChatRequest
 from models.request_type import RequestType
-from quart import Blueprint, current_app, request
+from quart import Blueprint, current_app, jsonify, request
 from utils.request_handler import RequestHandler
 from utils.response_handler import ResponseHandler
 
@@ -25,14 +25,15 @@ async def chat_stream_endpoint():
         result = await approach.run_stream(
             messages=RequestHandler.form_message(textChatRequest.chat_history, textChatRequest.query),
             profile=textChatRequest.profile,
-            language=textChatRequest.language,
+            language=textChatRequest.language.lower(),
         )
-
-        response = await ResponseHandler.construct_streaming_response(result, RequestType.CHAT)
+        response = await ResponseHandler.construct_streaming_response(
+            result, RequestType.CHAT, textChatRequest.language.lower()
+        )
         return response, 200
     except Exception as error:
-        logging.error("Exception in /chat/stream. ", error)
-        return error_response(error, "/chat/stream")
+        logging.error(f"Exception in /chat/stream. {error}")
+        return jsonify(error_response(error)), 500
 
 
 @chat.route("", methods=["POST"])
@@ -53,5 +54,5 @@ async def chat_endpoint():
 
         return response, 200
     except Exception as error:
-        logging.error("Exception in /chat. ", error)
-        return error_response(error, "/chat")
+        logging.error(f"Exception in /chat. {error}")
+        return jsonify(error_response(error)), 500

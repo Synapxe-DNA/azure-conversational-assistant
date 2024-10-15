@@ -1,0 +1,13 @@
+.disclaimer-list {
+  @apply tw-list-decimal tw-pl-4 tw-space-y-2 tw-text-gray-700 tw-text-sm;
+}
+
+.disclaimer-button-container {
+  @apply tw-mt-4 tw-flex tw-justify-center;
+}
+
+.disclaimer-button {
+  @apply tw-bg-emerald-600 tw-text-white tw-px-4 tw-py-2 tw-rounded;
+  @apply hover:tw-bg-emerald-700 hover:tw-shadow-lg;
+  @apply focus:tw-outline-none;
+}

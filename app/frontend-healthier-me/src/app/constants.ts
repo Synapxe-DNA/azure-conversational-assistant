@@ -1,4 +1,0 @@
-export const APP_CONSTANTS = {
-  VOICE_TIMEOUT: 480000,
-  TEXT_TIMEOUT: 480000
-};

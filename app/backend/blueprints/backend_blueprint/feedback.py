@@ -20,5 +20,5 @@ async def feedback_endpoint():
         return jsonify({"message": "Feedback sent!"}), 200
 
     except Exception as error:
-        logging.exception("Exception in /feedback. ", error)
+        logging.error(f"Exception in /feedback.{error}")
         return jsonify({"error": str(error)}), 500

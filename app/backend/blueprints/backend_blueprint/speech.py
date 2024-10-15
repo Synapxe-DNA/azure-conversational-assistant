@@ -16,5 +16,5 @@ async def speech_endpoint():
         audio_data = tts.readText(speech_request.text, False)
         return audio_data, 200, {"Content-Type": "audio/mp3"}
     except Exception as e:
-        logging.exception("Exception in /speech. ", e)
+        logging.error(f"Exception in /speech. {e}")
         return jsonify({"error": str(e)}), 500

@@ -43,7 +43,7 @@ function func_backend {
 function func_frontend {
     Write-Host "`nRestoring frontend npm packages`n"
 
-    Push-Location ./frontend-healthier-me
+    Push-Location ./frontend
     npm install
     if ($LastExitCode -ne 0) {
         Write-Host "Failed to restore frontend npm packages"
