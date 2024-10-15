@@ -40,7 +40,8 @@ The steps to run `ans_generation.py` are:
 
 2. Upload your CSV file with a list of questions under the `input` subfolder.
     - Ensure that the column header is `question`:
-    <img src="../docs/images/deepeval_input_csv_sample.png" alt="CSV file input" width="350">
+
+        <img src="../docs/images/deepeval_input_csv_sample.png" alt="CSV file input" width="350">
 
 3. Run the following command:
 
@@ -65,19 +66,18 @@ The steps to run `ans_generation.py` are:
    ```
 
     - Change the `readfilepath` accordingly.
+    - Include `--asyncmode` to run in async mode. Otherwise, do not include `--asyncmode` to use sync mode.
     - Change the model argument accordingly (`gpt-4o-mini`/`gpt-4o`).
-        > [!NOTE]
-        > If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
+    > [!NOTE]
+    > If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
 
-        ```.env
-        # Azure OpenAI Services
-        AZURE_OPENAI_API_TYPE="xx"
-        AZURE_OPENAI_API_VERSION="xx"
-        AZURE_OPENAI_CHATGPT_DEPLOYMENT="xx"
-        AZURE_OPENAI_SERVICE="xx"
-        ```
-
-    - Include `--asyncmode` to run in async mode. Otherwise, do not include `--asyncmode` to use sync mode .
+    ```.env
+    # Azure OpenAI Services
+    AZURE_OPENAI_API_TYPE="xx"
+    AZURE_OPENAI_API_VERSION="xx"
+    AZURE_OPENAI_CHATGPT_DEPLOYMENT="xx"
+    AZURE_OPENAI_SERVICE="xx"
+    ```
 
 A successful `eval.py` script run will save the evaluation results in a file named `deepeval_results_<model_name>_<date>_<time>.csv`, under the `output` folder.
 
