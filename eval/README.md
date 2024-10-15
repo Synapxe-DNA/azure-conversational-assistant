@@ -36,7 +36,7 @@ The `ans_generation.py` generates answers for a given CSV file input with a list
 
 The steps to run `ans_generation.py` are:
 
-1. In the `eval` folder, create an `input` and `output` subfolder.
+1. In the `eval` folder, create an `input` subfolder.
 
 2. Upload your CSV file with a list of questions under the `input` subfolder.
     - Ensure that the column header is `question`:
@@ -46,18 +46,25 @@ The steps to run `ans_generation.py` are:
 3. Run the following command:
 
     ```shell
-   python ans_generation.py --readfilepath input/sample_question_bank_5.csv --usevectorsearch --usetextsearch --usesemanticranker
+   python ans_generation.py --readfilepath input/sample_question_bank.csv --usevectorsearch --usetextsearch --usesemanticranker
    ```
 
-   - Change the `readfilepath` accordingly.
+   The following table summarizes the argument(s) for the above command:
 
-A successful `ans_generation.py` script run will save the Generated answers and source information into a CSV file under the `output` folder, named `generated_answers_for_eval.csv`.
+    | Argument             | Description                                      | Default Value                                | Remarks                                    |
+    |----------------------|--------------------------------------------------|----------------------------------------------|--------------------------------------------|
+    | `--readfilepath`      | The file path to read input file                | `input/sample_question_bank.csv` |                                            |
+    | `--usevectorsearch`   | Enables vector-based search functionality        | `NA`                                          |                                            |
+    | `--usetextsearch`     | Enables text-based search functionality          | `NA`                                          |                                            |
+    | `--usesemanticranker` | Enables semantic ranking mechanism                | `NA`                                          |                                            |
+
+A successful `ans_generation.py` script run will save the generated answers and source information into a CSV file under the `output` folder, named `generated_answers_for_eval.csv`.
 
 ## Evaluation (Deepeval)
 
-Using the output `generated_answers_for_eval.csv` from `ans_generation.py`, `eval.py` evaluates the generated question using the Deepeval framework. The metrics used from Deepeval are Answer Relevancy, Faithfulness and Contextual Relevancy
+Using the output `generated_answers_for_eval.csv` from `ans_generation.py`, `eval.py` evaluates the generated question using the Deepeval framework. The metrics used from Deepeval are Answer Relevancy, Faithfulness and Contextual Relevancy.
 
-The steps to run `ans_generation.py` are:
+The steps to run `eval.py` are:
 
 1. Run the following command:
 
@@ -65,9 +72,13 @@ The steps to run `ans_generation.py` are:
    python eval.py --readfilepath output/generated_answers_for_eval.csv --model gpt-4o-mini --asyncmode
    ```
 
-    - Change the `readfilepath` accordingly.
-    - Include `--asyncmode` to run in async mode. Otherwise, do not include `--asyncmode` to use sync mode.
-    - Change the model argument accordingly (`gpt-4o-mini`/`gpt-4o`).
+    The following table summarizes the argument(s) for the above command:
+
+    | Argument        | Description                                      | Default Value                                | Remarks                                |
+    |------------------|--------------------------------------------------|----------------------------------------------|----------------------------------------|
+    | `--readfilepath`  | The file path to read input file                | `output/generated_answers_for_eval.csv` |                                        |
+    | `--model`        | Azure OpenAI GPT model for evaluation            | `gpt-4o`                                    | Accepted values: `gpt-4o` / `gpt-4o-mini` |
+    | `--asyncmode`    | Programming mode (async or sync)                | `False if not specified`                    |                                        |
 
 > [!NOTE]
 > If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
