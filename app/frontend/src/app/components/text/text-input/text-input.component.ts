@@ -58,13 +58,15 @@ export class TextInputComponent implements OnInit {
       return;
     }
 
-    this.messageSent.emit();
+    this.messageSent.emit(false);
+    let qn = this.questionForm.value.question;
+    this.questionForm.reset()
 
     this.convoBroker
-      .sendChat(this.questionForm.value.question, this.profile.value || GeneralProfile)
-      .then(() => {
-        this.questionForm.reset();
+      .sendChat(qn, this.profile.value || GeneralProfile)
+      .catch(err=>{
+        this.messageSent.emit(true);
+        console.error("chat/stream error:", err);
       })
-      .catch(console.error);
   }
 }
