@@ -32,3 +32,6 @@ updates:
           - "*"
     ignore:
       - dependency-name: azure-search-documents
+      - dependency-name: pydantic
+      - dependency-name: azure-monitor-opentelemetry-exporter
+      - dependency-name: opentelemetry-api
