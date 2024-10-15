@@ -42,7 +42,8 @@ export class ConvoBrokerService {
     private audioPlayer: AudioPlayerService,
     private endpointService: EndpointService,
     private preferenceService: PreferenceService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private audioService: AudioService
     // private vadService: VadService
   ) {
     this.initVoiceChat().catch(console.error);
@@ -60,7 +61,7 @@ export class ConvoBrokerService {
    */
   private async initVoiceChat() {
     // this.recorder = new AudioRecorder(await this.audioService.getMicInput());
-    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
+    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService, this.audioService);
 
     // Subscriber to "open" the mic for user once API call has been completed
     this.$isWaitingForVoiceApi.subscribe(v => {

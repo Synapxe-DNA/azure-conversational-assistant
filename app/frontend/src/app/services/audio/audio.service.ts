@@ -25,6 +25,7 @@ export class AudioService {
       stream.getTracks().forEach(track => {
         track.stop(); // Stops the track and releases the resource
         stream.removeTrack(track); // Removes the track from the stream
+        console.log(`Track ${track.label} state after stop: ${track.readyState}`);
       });
     }
   }

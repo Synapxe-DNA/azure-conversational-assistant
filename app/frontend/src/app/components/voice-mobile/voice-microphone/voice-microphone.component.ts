@@ -89,12 +89,7 @@ export class VoiceMicrophoneComponent {
   // New method to release the microphone resource
   async releaseMicrophone(): Promise<void> {
     if (this.micStream) {
-      const tracks = this.micStream.getTracks();
-      tracks.forEach(track => {
-        track.stop();
-        console.log(`Track ${track.label} state after stop: ${track.readyState}`);
-      });
-
+      this.audioService.stopTracks(this.micStream); // Stop all tracks in the stream
       this.micStream = undefined; // Clear the stored MediaStream
     }
 
