@@ -32,3 +32,7 @@ updates:
           - "*"
     ignore:
       - dependency-name: azure-search-documents
+      - dependency-name: pydantic-core
+      - dependency-name: fixedint
+      - dependency-name: psutil
+      - dependency-name: importlib-metadata
