@@ -160,7 +160,7 @@ markupsafe==3.0.1
     #   jinja2
     #   quart
     #   werkzeug
-microsoft-kiota-abstractions==1.3.3
+microsoft-kiota-abstractions==1.4.0
     # via
     #   microsoft-kiota-authentication-azure
     #   microsoft-kiota-http
