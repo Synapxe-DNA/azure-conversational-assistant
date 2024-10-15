@@ -53,7 +53,7 @@ The steps to run `ans_generation.py` are:
 
     | Argument             | Description                                      | Default Value                                | Remarks                                    |
     |----------------------|--------------------------------------------------|----------------------------------------------|--------------------------------------------|
-    | `--readfilepath`      | The file path to read input file                | `input/sample_question_bank.csv` |                                            |
+    | `--readfilepath`      | The file path to read input file                | `./input/sample_question_bank.csv` |                                            |
     | `--usevectorsearch`   | Enables vector-based search functionality        | `NA`                                          |                                            |
     | `--usetextsearch`     | Enables text-based search functionality          | `NA`                                          |                                            |
     | `--usesemanticranker` | Enables semantic ranking mechanism                | `NA`                                          |                                            |
@@ -76,7 +76,7 @@ The steps to run `eval.py` are:
 
     | Argument        | Description                                      | Default Value                                | Remarks                                |
     |------------------|--------------------------------------------------|----------------------------------------------|----------------------------------------|
-    | `--readfilepath`  | The file path to read input file                | `output/generated_answers_for_eval.csv` |                                        |
+    | `--readfilepath`  | The file path to read input file                | `./output/generated_answers_for_eval_test.csv` |                                        |
     | `--model`        | Azure OpenAI GPT model for evaluation            | `gpt-4o`                                    | Accepted values: `gpt-4o` / `gpt-4o-mini` |
     | `--asyncmode`    | Programming mode (async or sync)                | `False if not specified`                    |                                        |
 
