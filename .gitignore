@@ -166,3 +166,6 @@ cert.pem
 
 # Database
 *.db
+
+# Test results
+app/backend/test/responses

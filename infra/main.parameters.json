@@ -66,7 +66,7 @@
       "value": "${AZURE_OPENAI_EMB_DEPLOYMENT}"
     },
     "embeddingDeploymentCapacity": {
-      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY=350}"
+      "value": "${AZURE_OPENAI_EMB_DEPLOYMENT_CAPACITY=300}"
     },
     "embeddingDimensions": {
       "value": "${AZURE_OPENAI_EMB_DIMENSIONS}"
@@ -128,11 +128,17 @@
     "cosmosDbLocation": {
       "value": "${AZURE_COSMOS_DB_LOCATION=eastasia}"
     },
-    "cosmosDatabaseId": {
-      "value": "${AZURE_DATABASE_ID=feedbacks}"
+    "cosmosFeedbackDatabaseId": {
+      "value": "${AZURE_FEEDBACK_DATABASE_ID=feedbacks}"
     },
-    "cosmosContainerId": {
-      "value": "${AZURE_CONTAINER_ID=feedbacks}"
+    "cosmosFeedbackContainerId": {
+      "value": "${AZURE_FEEDBACK_CONTAINER_ID=feedbacks}"
+    },
+    "cosmosChatHistoryDatabaseId": {
+      "value": "${AZURE_CHAT_HISTORY_DATABASE_ID=chat_history}"
+    },
+    "cosmosChatHistoryContainerId": {
+      "value": "${AZURE_CHAT_HISTORY_CONTAINER_ID=chat_history}"
     },
     "apimServiceName": {
       "value": "${AZURE_APIM_SERVICE_PLAN}"
@@ -187,6 +193,9 @@
     },
     "passwordName": {
       "value": "${PASSWORD_NAME=password}"
+    },
+    "secretKeyName": {
+      "value": "${SECRET_KEY_NAME=secretKey}"
     }
   }
 }

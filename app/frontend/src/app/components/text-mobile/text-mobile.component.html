@@ -1,0 +1,33 @@
+<div class="tw-flex tw-flex-col tw-items-center tw-h-full">
+  <div #messageContainer class="tw-overflow-y-auto tw-flex-grow" (scroll)="onScroll()">
+    <div class="tw-w-[80dvw] tw-max-w-[800px]">
+      @for (message of messages; track message) {
+        @if (message.message.trim()) {
+          @switch (message.role) {
+            @case (user) {
+              <app-text-user [message]="message"></app-text-user>
+            }
+            @case (system) {
+              <app-text-system [message]="message"></app-text-system>
+            }
+          }
+        }
+      }
+      <p *ngIf="timeout" class="error-message">Error generating response. Please try again later.</p>
+      <div class="tw-flex tw-justify-center">
+        <app-loading *ngIf="loading" />
+      </div>
+    </div>
+  </div>
+
+  <div class="tw-w-[80dvw] tw-max-w-[800px]">
+    <app-text-input (messageSent)="onMessageSent()" />
+  </div>
+
+  <!-- Comment button fixed at the bottom right corner -->
+  <!-- <p-button
+    icon="pi pi-comment"
+    (onClick)="toggleChatMode()"
+    class="tw-fixed tw-bottom-6 tw-right-6 tw-w-auto tw-h-auto tw-p-3"
+  /> -->
+</div>

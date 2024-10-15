@@ -15,13 +15,16 @@ param backupPolicy object = {
   }
 }
 param bypass string
-param containerId string
+param feedbackContainerId string
+param chatHistoryContainerId string
+
 param consistencyPolicy object = {
   defaultConsistencyLevel: 'Session'
   maxIntervalInSeconds: 5
   maxStalenessPrefix: 100
 }
-param databaseId string
+param feedbackDatabaseId string
+param chatHistoryDatabaseId string
 param databaseAccountOfferType string = 'Standard'
 param defaultIdentity string = 'FirstPartyIdentity'
 param disableKeyBasedMetadataWriteAccess bool = false // true
@@ -42,8 +45,8 @@ param principalId string
   'Disabled'
 ])
 param publicNetworkAccess string
-param throughput int = 400
-param totalThroughputLimit int = 4000
+// param throughput int = 400
+// param totalThroughputLimit int = 4000
 param virtualNetworkRules array = []
 
 param cosmosDbReuse bool
@@ -90,13 +93,17 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     ]
     cors: []
-    capabilities: []
+    capabilities: [
+      {
+        name: 'EnableServerless' // Serverless
+      }
+    ]
     ipRules: []
     backupPolicy: backupPolicy
     networkAclBypassResourceIds: []
-    capacity: {
-      totalThroughputLimit: totalThroughputLimit
-    }
+    // capacity: {
+    //   totalThroughputLimit: totalThroughputLimit
+    // }
   }
 
   resource cosmosDbBuiltInDataReader 'sqlRoleDefinitions' = {
@@ -174,22 +181,32 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
 }
 
 
-resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
+resource feedbackDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
   parent: cosmos
-  name: databaseId
+  name: feedbackDatabaseId
   properties: {
     resource: {
-      id: databaseId
+      id: feedbackDatabaseId
     }
   }
 }
 
-resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
-  parent: database
-  name: containerId
+resource chatHistoryDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
+  parent: cosmos
+  name: chatHistoryDatabaseId
   properties: {
     resource: {
-      id: containerId
+      id: chatHistoryDatabaseId
+    }
+  }
+}
+
+resource feedbackContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: feedbackDatabase
+  name: feedbackContainerId
+  properties: {
+    resource: {
+      id: feedbackContainerId
       indexingPolicy: {
         indexingMode: 'consistent'
         automatic: true
@@ -222,17 +239,67 @@ resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/container
     }
   }
 
-  resource containerThroughput 'throughputSettings' = {
-    name: 'default'
-    properties: {
-      resource: {
-        throughput: throughput
+  // resource containerThroughput 'throughputSettings' = {
+  //   name: 'default'
+  //   properties: {
+  //     resource: {
+  //       throughput: throughput
+  //     }
+  //   }
+  // }
+}
+
+resource chatHistoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: chatHistoryDatabase
+  name: chatHistoryContainerId
+  properties: {
+    resource: {
+      id: chatHistoryContainerId
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
       }
+      partitionKey: {
+        paths: [
+          '/session_id'
+        ]
+        kind: 'Hash'
+        version: 2
+      }
+      uniqueKeyPolicy: {
+        uniqueKeys: []
+      }
+      conflictResolutionPolicy: {
+        mode: 'LastWriterWins'
+        conflictResolutionPath: '/_ts'
+      }
+      computedProperties: []
     }
   }
+
+  // resource containerThroughput 'throughputSettings' = {
+  //   name: 'default'
+  //   properties: {
+  //     resource: {
+  //       throughput: throughput
+  //     }
+  //   }
+  // }
 }
 
 output name string =  !deployCosmosDb ? '' : cosmosDbReuse ? existingAccount.name : cosmos.name
 output location string =  !deployCosmosDb ? '' : cosmosDbReuse ? existingAccount.location : cosmos.location
-output containerId string = container.id
-output databaseId string = database.id
+output feedbackContainerId string = feedbackContainer.id
+output feedbackDatabaseId string = feedbackDatabase.id
+output chatHistoryContainerId string = chatHistoryContainer.id
+output chatHistoryDatabaseId string = chatHistoryDatabase.id

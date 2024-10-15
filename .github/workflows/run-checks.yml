@@ -22,10 +22,10 @@ jobs:
 
       - name: Get Changed Files
         id: changed-files
-        uses: tj-actions/changed-files@v41
+        uses: tj-actions/changed-files@v45
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
         if: >
@@ -74,7 +74,7 @@ jobs:
           contains(steps.changed-files.outputs.all_changed_files, '.ipynb')
 
       - name: Set Up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
         if: >
@@ -115,7 +115,7 @@ jobs:
           contains(steps.changed-files.outputs.all_changed_files, '.ts')
 
       - name: Run Prettier Check
-        run: prettier --check "**/*.{css,json,yaml,yml,md}" --config app/frontend-healthier-me/.prettierrc.json
+        run: prettier --check "**/*.{css,json,yaml,yml,md}" --config app/frontend/.prettierrc.json
         if: >
           contains(steps.changed-files.outputs.all_changed_files, '.md') ||
           contains(steps.changed-files.outputs.all_changed_files, '.css') ||
