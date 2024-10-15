@@ -40,7 +40,7 @@ The steps to run `ans_generation.py` are:
 
 2. Upload your CSV file with a list of questions under the `input` subfolder.
     - Ensure that the column header is `question`:
-    ![CSV file input](/docs/images/deepeval_input_csv_sample.png)
+    <img src="../docs/images/deepeval_input_csv_sample.png" alt="CSV file input" width="350">
 
 3. Run the following command:
 
