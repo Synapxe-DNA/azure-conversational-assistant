@@ -20,6 +20,7 @@ from azure.search.documents.models import (
     VectorizedQuery,
     VectorQuery,
 )
+from dotenv import load_dotenv
 from openai import AsyncAzureOpenAI
 from openai.types.chat import (
     ChatCompletion,
@@ -35,6 +36,8 @@ from app.backend.approaches.prompts import (  # noqa: E402
     general_prompt,
     general_query_prompt,
 )
+
+load_dotenv(dotenv_path=r"..\.azure\hhgai-prod-eastasia-001\.env")
 
 
 class Language(Enum):
@@ -485,6 +488,7 @@ def write_or_append_csv(file_path: str, row_data: dict[str, str]):  ####
 async def run(
     user_query: str,
     file_path: str,
+    query_text: str,
     response: str,
     combined_sources: dict[str, str],
     total_input_tokens: int,
@@ -492,6 +496,7 @@ async def run(
 ):
     data = {
         "user_query": user_query,
+        "search_query": query_text,
         "generated_response": response,
         "tokens_input": total_input_tokens,
         "tokens_output": total_output_tokens,
@@ -532,15 +537,15 @@ if __name__ == "__main__":
         choices=["en", "zh", "ms", "ta"],
         help="The selected language. Only 'en', 'zh', 'ms', 'ta' are allowed",
     )
-    # Azure OpenAI service
-    parser.add_argument("--openaimodelname", type=str, default="gpt-4o", help="Azure OpenAI GPT model")
-    parser.add_argument(
-        "--openaiservicename", type=str, default="cog-jisfkas7teqvm-000", help="Azure OpenAI service name"
-    )
-    parser.add_argument("--apiversion", type=str, default="2024-06-01", help="Azure API version")
-    parser.add_argument("--openaideploymentname", type=str, default="chat", help="Azure OpenAI deployment name")
+    # # Azure OpenAI service
+    # parser.add_argument("--openaimodelname", type=str, default="gpt-4o", help="Azure OpenAI GPT model")
+    # parser.add_argument(
+    #     "--openaiservicename", type=str, default="cog-jisfkas7teqvm-000", help="Azure OpenAI service name"
+    # )
+    # parser.add_argument("--apiversion", type=str, default="2024-06-01", help="Azure API version")
+    # parser.add_argument("--openaideploymentname", type=str, default="chat", help="Azure OpenAI deployment name")
     parser.add_argument("--embeddingdimensions", type=int, default=1536, help="Embedding dimensions")
-    parser.add_argument("--embeddingmodelname", type=str, default="text-embedding-3-small", help="Embedding model name")
+    # parser.add_argument("--embeddingmodelname", type=str, default="text-embedding-3-small", help="Embedding model name")
     parser.add_argument("--embeddingdeploymentname", type=str, default="embedding", help="Embedding deployment name")
 
     # Azure AI Search service
@@ -585,12 +590,29 @@ if __name__ == "__main__":
     CHAT_HISTORY = []
 
     # Azure OpenAI service
-    AZURE_OPENAI_CHATGPT_MODEL = args.openaimodelname
+    AZURE_OPENAI_CHATGPT_MODEL = os.getenv("AZURE_OPENAI_CHATGPT_MODEL")
     CHATGPT_TOKEN_LIMIT = get_token_limit(AZURE_OPENAI_CHATGPT_MODEL)
-    AZURE_OPENAI_SERVICE = args.openaiservicename
+    AZURE_OPENAI_SERVICE = os.getenv("AZURE_OPENAI_SERVICE")
     AZURE_OPENAI_ENDPOINT = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
-    AZURE_OPENAI_API_VERSION = args.apiversion
-    AZURE_OPENAI_CHATGPT_DEPLOYMENT = args.openaideploymentname
+    AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
+    AZURE_OPENAI_CHATGPT_DEPLOYMENT = os.getenv("AZURE_OPENAI_CHATGPT_DEPLOYMENT")
+    EMBEDDING_DIMENSIONS = os.getenv("AZURE_OPENAI_EMB_DIMENSION", 1536)
+    EMBEDDING_MODEL = os.getenv("AZURE_OPENAI_EMB_MODEL_NAME")
+    EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMB_DEPLOYMENT")
+
+    # Azure AI Search
+    AZURE_SEARCH_SERVICE = os.getenv("AZURE_SEARCH_SERVICE")
+    AZURE_SEARCH_INDEX = os.getenv("AZURE_SEARCH_INDEX")
+    AZURE_SEARCH_ENDPOINT = f"https://{AZURE_SEARCH_SERVICE}.search.windows.net"
+
+    # # Azure OpenAI service
+    # AZURE_OPENAI_CHATGPT_MODEL = args.openaimodelname
+    # CHATGPT_TOKEN_LIMIT = get_token_limit(AZURE_OPENAI_CHATGPT_MODEL)
+    # AZURE_OPENAI_SERVICE = args.openaiservicename
+    # AZURE_OPENAI_ENDPOINT = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
+    # AZURE_OPENAI_API_VERSION = args.apiversion
+    # AZURE_OPENAI_CHATGPT_DEPLOYMENT = args.openaideploymentname
+
     TOOLS: list[ChatCompletionToolParam] = [
         {
             "type": "function",
@@ -610,14 +632,15 @@ if __name__ == "__main__":
             },
         }
     ]
-    EMBEDDING_DIMENSIONS = args.embeddingdimensions
-    EMBEDDING_MODEL = args.embeddingmodelname
-    EMBEDDING_DEPLOYMENT = args.embeddingdeploymentname
+    # EMBEDDING_DIMENSIONS = args.embeddingdimensions
+    # EMBEDDING_MODEL = args.embeddingmodelname
+    # EMBEDDING_DEPLOYMENT = args.embeddingdeploymentname
 
-    # Azure AI Search
-    AZURE_SEARCH_SERVICE = args.searchservice
-    AZURE_SEARCH_INDEX = args.searchindex
-    AZURE_SEARCH_ENDPOINT = f"https://{AZURE_SEARCH_SERVICE}.search.windows.net"
+    # # Azure AI Search
+    # AZURE_SEARCH_SERVICE = args.searchservice
+    # AZURE_SEARCH_INDEX = args.searchindex
+    # AZURE_SEARCH_ENDPOINT = f"https://{AZURE_SEARCH_SERVICE}.search.windows.net"
+
     TOP = args.topn
     WEIGHT = args.weight
     AZURE_SEARCH_QUERY_LANGUAGE = args.querylanguage
@@ -742,6 +765,7 @@ if __name__ == "__main__":
                         await run(
                             INPUT_QUERY,
                             SAVE_FILE_PATH,
+                            query_text,
                             response,
                             combined_sources,
                             total_input_tokens,

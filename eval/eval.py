@@ -72,7 +72,7 @@ async def initialize_azure_openai(use_model):
     token = await get_azure_ad_token("https://cognitiveservices.azure.com/.default")
 
     if use_model == "gpt-4o":
-        load_dotenv(dotenv_path=r"..\.azure\hhgai-dev-eastasia-002\.env")
+        load_dotenv(dotenv_path=r"..\.azure\hhgai-prod-eastasia-001\.env")
     elif use_model == "gpt-4o-mini":
         load_dotenv(dotenv_path=r".env")
 
