@@ -25,7 +25,6 @@ import { VoiceAnnotationComponent } from "./voice-annotation/voice-annotation.co
 import { VoiceMicrophoneComponent } from "./voice-microphone/voice-microphone.component";
 import { Message, MessageRole, MessageSource } from "../../types/message.type";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
-import { v2AudioRecorder } from "../../utils/v2/audio-recorder-v2";
 import { CommonModule } from "@angular/common";
 import { DialogModule } from "primeng/dialog";
 
@@ -54,7 +53,6 @@ import { DialogModule } from "primeng/dialog";
 })
 export class VoiceMobileComponent {
   private isUserTurn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-  private recorder: v2AudioRecorder | undefined;
   profile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
 
   micState: MicState = MicState.PENDING;
@@ -126,11 +124,6 @@ export class VoiceMobileComponent {
         });
       });
     });
-    this.initVoiceChat().catch(console.error);
-  }
-
-  private async initVoiceChat() {
-    this.recorder = new v2AudioRecorder(this.chatMessageService, this.profileService);
   }
 
   handleMicButtonClick() {

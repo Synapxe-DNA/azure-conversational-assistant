@@ -4,6 +4,7 @@ import { GeneralProfile, Profile } from "../../types/profile.type";
 import { ProfileService } from "../../services/profile/profile.service";
 import { ChatMessageService } from "../../services/chat-message/chat-message.service";
 import { MessageRole } from "../../types/message.type";
+import { AudioService } from "../../services/audio/audio.service";
 
 export class v2AudioRecorder {
   socket?: WebSocket;
@@ -17,10 +18,12 @@ export class v2AudioRecorder {
   finalText: string = "";
   isFinal: boolean = false;
   requestTime: number = 0;
+  micStream: MediaStream | undefined;
 
   constructor(
     private chatMessageService: ChatMessageService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private audioService: AudioService
   ) {
     this.profileService.$currentProfileInUrl.subscribe(p => {
       this.activeProfile = this.profileService.getProfile(p);
@@ -69,9 +72,10 @@ export class v2AudioRecorder {
       this.setupWebSocket();
     }
     this.resetFields();
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
+    this.audioService
+      .getMicInput()
       .then(stream => {
+        this.micStream = stream;
         this.audioContext = new AudioContext();
         this.pcmDataList = [];
         const source = this.audioContext.createMediaStreamSource(stream);
@@ -124,6 +128,11 @@ export class v2AudioRecorder {
       if (this.audioContext) {
         this.audioContext.close();
         this.audioContext = undefined;
+      }
+
+      if (this.micStream) {
+        this.audioService.stopTracks(this.micStream); // Stop all tracks in the stream
+        this.micStream = undefined; // Clear the stored MediaStream
       }
 
       const checkBufferInterval = setInterval(() => {
