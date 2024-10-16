@@ -1,0 +1,2 @@
+['remote "final_kws_for_qns_generation"']
+    url = azure://eval/final_kws_for_qns_generation
