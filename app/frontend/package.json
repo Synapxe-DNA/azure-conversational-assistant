@@ -30,7 +30,7 @@
     "@ng-web-apis/common": "^4.2.0",
     "@ng-web-apis/speech": "^4.2.0",
     "@paralleldrive/cuid2": "^2.2.2",
-    "lucide-angular": "^0.414.0",
+    "lucide-angular": "^0.453.0",
     "ngx-indexed-db": "^19.0.0",
     "ngx-markdown": "^18.0.0",
     "primeicons": "^7.0.0",
