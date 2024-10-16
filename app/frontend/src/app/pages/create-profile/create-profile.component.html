@@ -26,7 +26,15 @@
       <!-- Age Input with Error Display -->
       <div class="tw-flex tw-flex-col tw-gap-2">
         <label for="profile-age">Age</label>
-        <p-inputNumber id="profile-age" formControlName="age" styleClass="tw-w-full" [min]="0"></p-inputNumber>
+        <input
+          type="text"
+          pInputText
+          id="profile-age"
+          formControlName="age"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+        />
         <div *ngIf="profileForm.get('age')?.hasError('invalidAge')" class="tw-text-red-500">Invalid age, must be less than or equal to 100.</div>
       </div>
 
