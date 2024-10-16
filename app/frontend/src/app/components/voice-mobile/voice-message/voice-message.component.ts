@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from "@angular/core";
 import { Message } from "../../../types/message.type";
-import { MicState } from "../../../types/mic-state.type";
 import { AudioAnalyser } from "../../../utils/audio-analyser";
 import { AudioService } from "../../../services/audio/audio.service";
 import { MarkdownComponent } from "../../markdown/markdown.component";
@@ -16,7 +15,7 @@ import { LoadingComponent } from "../../loading/loading.component";
   templateUrl: "./voice-message.component.html",
   styleUrl: "./voice-message.component.css"
 })
-export class VoiceMessageComponent implements AfterViewInit, OnInit {
+export class VoiceMessageComponent implements AfterViewInit, OnInit, OnChanges {
   @Input() message?: Message;
   @Input() state?: string;
   @Input() level?: number;
@@ -48,6 +47,12 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
     });
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["message"] && changes["message"].currentValue) {
+      this.scrollToBottom();
+    }
+  }
+
   mainLoop() {
     const raw_level = this.audioAnalyser!.getAudioLevel();
     const level = Math.floor(40 * raw_level);
@@ -58,5 +63,13 @@ export class VoiceMessageComponent implements AfterViewInit, OnInit {
   onFontSizeChange() {
     // Save the font size in local storage whenever it changes
     localStorage.setItem("fontSize", this.fontSize.toString());
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.box.nativeElement.scrollTop = this.box.nativeElement.scrollHeight;
+    } catch (err) {
+      console.error("Error while scrolling to bottom:", err);
+    }
   }
 }

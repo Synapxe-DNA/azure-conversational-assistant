@@ -28,8 +28,4 @@ export class ChatComponent {
     this.convoBroker.openWebSocket();
   }
   protected readonly ChatMode = ChatMode;
-
-  ngOnDestroy() {
-    this.convoBroker.closeWebSocket();
-  }
 }
