@@ -36,3 +36,4 @@ updates:
       - dependency-name: fixedint
       - dependency-name: psutil
       - dependency-name: importlib-metadata
+      - dependency-name: microsoft-kiota-abstractions
