@@ -11,7 +11,8 @@ export class v2AudioRecorder {
   audioContext?: AudioContext;
   processor?: ScriptProcessorNode;
   pcmData?: Int16Array;
-  pcmDataList?: Int16Array[];
+  pcmDataList: Int16Array[] = [];
+  stoppedAudioCapture: boolean = false; // Required as the processor will still run after stopAudioCapture is called
 
   userMessageId: string = "";
   private activeProfile: BehaviorSubject<Profile | undefined> = new BehaviorSubject<Profile | undefined>(undefined);
@@ -79,40 +80,43 @@ export class v2AudioRecorder {
         this.audioContext = new AudioContext();
         this.pcmDataList = [];
         const source = this.audioContext.createMediaStreamSource(stream);
-        this.processor = this.audioContext.createScriptProcessor(1024, 1, 1);
+        if (!this.stoppedAudioCapture) {
+          // Check if audio capture has been stopped
+          this.processor = this.audioContext.createScriptProcessor(1024, 1, 1);
 
-        source.connect(this.processor);
-        this.processor.connect(this.audioContext.destination);
-        const sampleRate = 16000;
-        const downsampleFactor = this.audioContext.sampleRate / sampleRate;
+          source.connect(this.processor);
+          this.processor.connect(this.audioContext.destination);
+          const sampleRate = 16000;
+          const downsampleFactor = this.audioContext.sampleRate / sampleRate;
 
-        let sampleCounter = 0;
+          let sampleCounter = 0;
 
-        this.processor.onaudioprocess = e => {
-          const inputBuffer = e.inputBuffer.getChannelData(0);
-          const outputBuffer = new Float32Array(Math.floor(inputBuffer.length / downsampleFactor));
+          this.processor.onaudioprocess = e => {
+            const inputBuffer = e.inputBuffer.getChannelData(0);
+            const outputBuffer = new Float32Array(Math.floor(inputBuffer.length / downsampleFactor));
 
-          for (let i = 0; i < outputBuffer.length; i++) {
-            sampleCounter += downsampleFactor;
-            outputBuffer[i] = inputBuffer[Math.floor(sampleCounter) - 1];
-          }
+            for (let i = 0; i < outputBuffer.length; i++) {
+              sampleCounter += downsampleFactor;
+              outputBuffer[i] = inputBuffer[Math.floor(sampleCounter) - 1];
+            }
 
-          sampleCounter = sampleCounter % 1;
+            sampleCounter = sampleCounter % 1;
 
-          /// convert to 16-bit PCM
-          this.pcmData = new Int16Array(outputBuffer.length);
-          for (let i = 0; i < outputBuffer.length; i++) {
-            this.pcmData[i] = Math.max(-1, Math.min(1, outputBuffer[i])) * 0x7fff;
-          }
+            /// convert to 16-bit PCM
+            this.pcmData = new Int16Array(outputBuffer.length);
+            for (let i = 0; i < outputBuffer.length; i++) {
+              this.pcmData[i] = Math.max(-1, Math.min(1, outputBuffer[i])) * 0x7fff;
+            }
 
-          // Send pcmData to backend
-          if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.sendAllPcmData();
-          } else {
-            this.pcmDataList!.push(this.pcmData);
-          }
-          this.pcmData = new Int16Array(0); // Clear the buffer
-        };
+            // Send pcmData to backend
+            if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+              this.sendAllPcmData();
+            } else {
+              this.pcmDataList.push(this.pcmData);
+            }
+            this.pcmData = new Int16Array(0); // Clear the buffer
+          };
+        }
       })
       .catch(error => {
         console.error("Error accessing microphone:", error);
@@ -120,6 +124,7 @@ export class v2AudioRecorder {
   }
 
   stopAudioCapture(): Promise<string> {
+    this.stoppedAudioCapture = true;
     return new Promise(resolve => {
       if (this.processor) {
         this.processor.disconnect();
@@ -160,17 +165,18 @@ export class v2AudioRecorder {
     this.finalText = "";
     this.isFinal = false;
     this.requestTime = new Date().getTime();
+    this.stoppedAudioCapture = false;
   }
 
   sendAllPcmData() {
-    while (this.pcmDataList!.length > 0) {
-      const data = this.pcmDataList!.shift(); // Pop the first item
+    while (this.pcmDataList.length > 0) {
+      const data = this.pcmDataList.shift(); // Pop the first item
       if (data) {
         this.socket!.send(data.buffer);
       }
     }
-    if (this.pcmData!.length > 0) {
-      this.socket!.send(this.pcmData!.buffer);
+    if (this.pcmData && this.pcmData.length > 0) {
+      this.socket!.send(this.pcmData.buffer);
     }
   }
 
