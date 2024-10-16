@@ -1,17 +1,16 @@
 import ast
+import asyncio
+import logging
 import os
+import sys
+from collections import defaultdict
+from datetime import datetime
+from typing import Optional, TypedDict, cast
+
+import nest_asyncio
 import pandas as pd
 import pyarrow.parquet as pq
-import sys
-from typing import Optional, TypedDict, cast
-from datetime import datetime
-from tqdm import tqdm
-from collections import defaultdict
-import asyncio
-import nest_asyncio
-import logging
-
-from azure.identity.aio import AzureDeveloperCliCredential, DefaultAzureCredential, get_bearer_token_provider
+from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import (
     QueryCaptionResult,
@@ -21,11 +20,12 @@ from azure.search.documents.models import (
 )
 from dotenv import load_dotenv
 from openai import AsyncAzureOpenAI
+from openai.types.chat import ChatCompletion
 from openai_messages_token_helper import build_messages, get_token_limit
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.abspath(os.path.join(current_dir, '..')))
-from app.backend.approaches.prompts import general_prompt # noqa: E402
+sys.path.append(os.path.abspath(os.path.join(current_dir, "..")))
+from app.backend.approaches.prompts import general_prompt  # noqa: E402
 
 load_dotenv(dotenv_path=r"..\.azure\hhgai-prod-eastasia-001\.env")
 
@@ -48,6 +48,7 @@ CHATGPT_TOKEN_LIMIT = get_token_limit(OPENAI_CHATGPT_MODEL)
 
 print(AZURE_OPENAI_SERVICE)
 
+
 class Document:
     id: Optional[str]
     parent_id: Optional[str]
@@ -61,6 +62,7 @@ class Document:
     captions: list[QueryCaptionResult]
     score: Optional[float] = None
     reranker_score: Optional[float] = None
+
 
 def create_df():
     df = pd.DataFrame(
@@ -80,6 +82,7 @@ def create_df():
         ]
     )
     return df
+
 
 def build_filter_by_content_category(filter_category):
     filters = []
@@ -216,7 +219,7 @@ async def retrieve_sources_content(keywords, num_search_results, filter, openai_
         vectors.append(await compute_text_embedding(keywords, openai_client))
 
     if USE_SEMANTIC_RANKER:
-        results = await search_client.search(  
+        results = await search_client.search(
             search_text=keywords,
             filter=filter,
             top=num_search_results,
@@ -229,15 +232,16 @@ async def retrieve_sources_content(keywords, num_search_results, filter, openai_
             semantic_query=keywords,
         )
     else:
-        results = await search_client.search(  
+        results = await search_client.search(
             search_text=keywords,
             filter=filter,
             top=num_search_results,
             vector_queries=vectors,
         )
 
-    sources_content = await get_sources_content(results, USE_SEMANTIC_CAPTIONS, use_image_citation=False) 
+    sources_content = await get_sources_content(results, USE_SEMANTIC_CAPTIONS, use_image_citation=False)
     return sources_content
+
 
 async def run_chat_completion(input, content, purpose, openai_client):
     if purpose == "generate_question":
@@ -247,7 +251,7 @@ async def run_chat_completion(input, content, purpose, openai_client):
     elif purpose == "generate_answer":
         SYSTEM_PROMPT = general_prompt.format(language="ENGLISH")
         NEW_USER_CONTENT = input + "\n\nSources:\n" + content
-        TEMPERATURE = TEMPERATURE_ANS     
+        TEMPERATURE = TEMPERATURE_ANS
 
     messages = build_messages(
         model=OPENAI_CHATGPT_MODEL,
@@ -271,26 +275,29 @@ async def run_chat_completion(input, content, purpose, openai_client):
 
     return chat_completion, input_tokens_log, output_tokens_log
 
+
 async def generate_by_content_category(keywords, filter, content_category, subpage, openai_client, search_client):
     logging.info("Generating question by content category")
     input_tokens = 0
     output_tokens = 0
     df = create_df()
-    
+
     sources_content = await retrieve_sources_content(keywords, SEARCH_MAX_RESULTS, filter, openai_client, search_client)
     combined_sources = get_combined_sources(sources_content, step=5, total_combined=3)
 
     for n in range(len(combined_sources)):
         content = "\n".join(combined_sources[n]["chunks"])
 
-        chat_coroutine, input_tokens_log_q, output_tokens_log_q = await run_chat_completion(keywords, content, "generate_question", openai_client)
+        chat_coroutine, input_tokens_log_q, output_tokens_log_q = await run_chat_completion(
+            keywords, content, "generate_question", openai_client
+        )
         response_text_qns = chat_coroutine.choices[0].message.content
         questions_list = ast.literal_eval(response_text_qns)
 
         input_tokens += input_tokens_log_q
         output_tokens += output_tokens_log_q
 
-        data = []        
+        data = []
         for question in questions_list:
             # chat_coroutine, input_tokens_log_a, output_tokens_log_a = await run_chat_completion(question, content, "generate_answer", openai_client)
             # input_tokens += input_tokens_log_a
@@ -316,6 +323,7 @@ async def generate_by_content_category(keywords, filter, content_category, subpa
         df = pd.concat([df, pd.DataFrame(data)], ignore_index=True)
     return df, input_tokens, output_tokens
 
+
 async def generate_by_page_views(df_percentile, keywords, content_category, subpage, openai_client, search_client):
     logging.info("Generating question by page views")
     input_tokens = 0
@@ -323,16 +331,20 @@ async def generate_by_page_views(df_percentile, keywords, content_category, subp
     df = create_df()
     cnt = 1
     for index, row in df_percentile.iterrows():
-        title = row["title"]
+        # title = row["title"]
         id = row["id"]
         logging.info("Building filter")
         filter = build_filter_by_parent_id(id)
 
-        sources_content = await retrieve_sources_content(keywords, SEARCH_MAX_RESULTS_ARTICLE, filter, openai_client, search_client)
+        sources_content = await retrieve_sources_content(
+            keywords, SEARCH_MAX_RESULTS_ARTICLE, filter, openai_client, search_client
+        )
         combined = concat_sources(sources_content, 0, len(sources_content))
         content = "\n".join(combined["chunks"])
 
-        chat_coroutine, input_tokens_log_q, output_tokens_log_q = await run_chat_completion(keywords,content, "generate_question", openai_client)
+        chat_coroutine, input_tokens_log_q, output_tokens_log_q = await run_chat_completion(
+            keywords, content, "generate_question", openai_client
+        )
         response_text_qns = chat_coroutine.choices[0].message.content
         questions_list = ast.literal_eval(response_text_qns)
 
@@ -367,21 +379,22 @@ async def generate_by_page_views(df_percentile, keywords, content_category, subp
         cnt += 1
     return df, input_tokens, output_tokens
 
+
 qns_generation_prompt = """Your task is to formulate a set of 3 unique questions from given context, satisfying the rules given below:
 1. All generated questions should precisely pertain to the keywords {keyword}, and it is imperative that the topic is explicitly included as an integral part of each question.
-2. The generated questions should be straightforward, using simple language that is accessible to a broad audience. 
+2. The generated questions should be straightforward, using simple language that is accessible to a broad audience.
 3. The generated questions should make sense to humans even when read without the given context.
-4. Prioritize clarity and brevity, ensuring that the questions are formulated in a way that reflect common language and would be easily comprehensible to the general public. 
+4. Prioritize clarity and brevity, ensuring that the questions are formulated in a way that reflect common language and would be easily comprehensible to the general public.
 5. Ensure that the questions generated are meaningful and relevant to the general public in understanding or exploring more about the given topic.
 7. Only generate questions that can be derived from the given context, including text and tables.
-8. Importantly, ensure uniqueness and non-repetition in the questions. 
+8. Importantly, ensure uniqueness and non-repetition in the questions.
 9. Additionally, all questions must have answers found within the given context.
 10. Do not use phrases like 'provided context', etc in the generated questions.
 11. A generated question should contain less than 15 words.
 12. Use simple language in the questions generated that are accessible to a broad audience.
 13. The question should be in first-person perspective.
 13. Each question should be enclosed in " ".
-14. Output as a list of questions separated by , and enclosed by [ ]. 
+14. Output as a list of questions separated by , and enclosed by [ ].
 
 Example of output:
 ["How can MediSave be used for outpatient treatments for newborns?", "What are the MediSave withdrawal limits for assisted conception procedures?", "How does MediShield Life help with payments for costly outpatient treatments?"]
@@ -403,8 +416,15 @@ if __name__ == "__main__":
         default="./input/final_kws_for_qns_generation.xlsx",
         help="The file path to read input file with topic keywords",
     )
-    parser.add_argument("--searchmaxresults", type=int, default=30, help="Number of search results for generation by content category")
-    parser.add_argument("--searchmaxresultspgviews", type=int, default=10, help="Number of search results for generation by top page views")
+    parser.add_argument(
+        "--searchmaxresults", type=int, default=30, help="Number of search results for generation by content category"
+    )
+    parser.add_argument(
+        "--searchmaxresultspgviews",
+        type=int,
+        default=10,
+        help="Number of search results for generation by top page views",
+    )
     parser.add_argument("--temperatureqns", type=float, default=0.3, help="Temperature for question generation")
     parser.add_argument("--temperatureans", type=float, default=0.0, help="Temperature for answer generation")
     parser.add_argument("--usevectorsearch", action="store_true", help="Use vector search (dense retrieval)")
@@ -435,13 +455,14 @@ if __name__ == "__main__":
     df_kws = pd.read_excel(input_file_path)
 
     nest_asyncio.apply()
+
     async def main():
         azure_credential = DefaultAzureCredential(exclude_shared_token_cache_credential=True)
         token_provider = get_bearer_token_provider(azure_credential, "https://cognitiveservices.azure.com/.default")
 
         async with AsyncAzureOpenAI(
             api_version=AZURE_OPENAI_API_VERSION,
-            azure_endpoint=f"https://apim-jisfkas7teqvm.azure-api.net", # https://{AZURE_OPENAI_SERVICE}.openai.azure.com
+            azure_endpoint="https://apim-jisfkas7teqvm.azure-api.net",  # https://{AZURE_OPENAI_SERVICE}.openai.azure.com
             azure_ad_token_provider=token_provider,
         ) as openai_client, SearchClient(
             endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net",
@@ -452,37 +473,43 @@ if __name__ == "__main__":
             total_input_tokens = 0
             total_output_tokens = 0
 
-            results_final=create_df()
-            for index,row in df_kws.iterrows():
-                method = row['method']
-                content_category = row['content_category']
-                subpage = row['subpage']
-                keywords = row['final_keywords']
+            results_final = create_df()
+            for index, row in df_kws.iterrows():
+                method = row["method"]
+                content_category = row["content_category"]
+                subpage = row["subpage"]
+                keywords = row["final_keywords"]
                 logging.info(f"Reading row {index}, {content_category}")
 
-                error_log = defaultdict(list) # to log rows with errors
+                error_log = defaultdict(list)  # to log rows with errors
                 try:
                     if method == "by_content_category":
                         logging.info("Building filter")
-                        if content_category.strip() == '[programs, program-sub-pages]':
+                        if content_category.strip() == "[programs, program-sub-pages]":
                             if subpage == "vaccinate":
-                                filter = build_filter_by_parent_id(1434610) #article_id of Vaccinate programs page with js
+                                filter = build_filter_by_parent_id(
+                                    1434610
+                                )  # article_id of Vaccinate programs page with js
                             else:
                                 filter = "content_category eq 'programs' or content_category eq 'program-sub-pages'"
                         else:
                             filter = build_filter_by_content_category(content_category)
 
-                        results_kws, input_tokens_log, output_tokens_log = await generate_by_content_category(keywords, filter, content_category, subpage, openai_client, search_client)
+                        results_kws, input_tokens_log, output_tokens_log = await generate_by_content_category(
+                            keywords, filter, content_category, subpage, openai_client, search_client
+                        )
 
                     elif method == "by_pg_views":
                         if content_category == "health-statistics":
-                            percentile = 0.75   # 4 out of 15 articles
+                            percentile = 0.75  # 4 out of 15 articles
                         elif content_category == "medications":
-                            percentile = 0.95   # 29 out of 579 articles
+                            percentile = 0.95  # 29 out of 579 articles
 
                         df_percentile = get_articles_df(content_category, percentile)
 
-                        results_kws, input_tokens_log, output_tokens_log = await generate_by_page_views(df_percentile, keywords, content_category, subpage, openai_client, search_client)
+                        results_kws, input_tokens_log, output_tokens_log = await generate_by_page_views(
+                            df_percentile, keywords, content_category, subpage, openai_client, search_client
+                        )
 
                     results_final = pd.concat([results_final, results_kws], ignore_index=True)
                     total_input_tokens += input_tokens_log
@@ -490,10 +517,10 @@ if __name__ == "__main__":
 
                 except Exception as e:
                     print(f"Error processing row {index} ({content_category}, {subpage}): {e}")
-                    error_log['row'].append(index)
-                    error_log['content_category'].append(content_category)
-                    error_log['subpage'].append(subpage)
-                    error_log['error'].append(e)
+                    error_log["row"].append(index)
+                    error_log["content_category"].append(content_category)
+                    error_log["subpage"].append(subpage)
+                    error_log["error"].append(e)
                     logging.info("Logging error")
 
             # Check cost of run
@@ -506,31 +533,31 @@ if __name__ == "__main__":
             print("Number of tokens")
             print(f"total_input_tokens: {total_input_tokens}")
             print(f"total_output_tokens: {total_output_tokens}")
-            print(f"\nTotal cost")
+            print("\nTotal cost")
             print(f"input: ${round(cost_input,4)}")
             print(f"output: ${round(cost_output,4)}")
             print(f"total: ${round(cost_input+cost_output,4)}")
 
             # Drop duplicate questions
-            results_final = results_final.drop_duplicates(subset='question')
+            results_final = results_final.drop_duplicates(subset="question")
 
             # Export in parquet and csv
             logging.info("Exporting files")
             now = datetime.now()
 
-            output_dir = 'input'
+            output_dir = "input"
             os.makedirs(output_dir, exist_ok=True)
-            
+
             save_filename = f"{output_dir}/question_bank_{now.strftime('%Y-%m-%d')}_{now.strftime('%H-%M')}"
             # results_final.to_parquet(f"{save_filename}.parquet",index=False)
-            results_final.to_excel(f"{save_filename}.xlsx",index=False)
+            results_final.to_excel(f"{save_filename}.xlsx", index=False)
             print("File saved in input folder.")
-            
+
             error_log_df = pd.DataFrame(error_log)
             if error_log_df.shape[0] >= 1:
                 save_filename_error_log = f"{output_dir}/error_log_{now.strftime("%Y-%m-%d")}_{now.strftime("%H-%M")}"
                 # results_final.to_parquet(f"{save_filename_error_log}.parquet",index=False)
-                results_final.to_excel(f"{save_filename_error_log}.xlsx",index=False)
+                results_final.to_excel(f"{save_filename_error_log}.xlsx", index=False)
                 print("Error log file saved in input folder.")
 
     # Run the main async function
