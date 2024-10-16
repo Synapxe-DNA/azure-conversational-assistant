@@ -31,9 +31,11 @@ def error_response(error: Exception, language: str = None) -> dict:
                 error_msg = SELF_HARM_MESSAGE_FILTER[language]
             else:
                 error_msg = FILTERED_CONTEXT_MESSAGE[language]
-        if error.code == "context_length_exceeded":
+        elif error.code == "context_length_exceeded":
             error_msg = EXCEED_CONTEXT_LENGTH_MESSAGE[language]
+        else:
+            error_msg = str(error)
+
     else:
-        print("tj=his")
         error_msg = str(error)
     return {"error": error_msg}

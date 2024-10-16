@@ -56,6 +56,8 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
       this.profile = this.profileService.getProfile(p.get("profileId")!);
     });
 
+    this.autoScroll = true;
+
     this.profile.subscribe(p => {
       if (!p) {
         return;
