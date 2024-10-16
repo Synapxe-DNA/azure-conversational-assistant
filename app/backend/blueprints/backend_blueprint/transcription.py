@@ -46,8 +46,11 @@ async def ws_transcribe():
                 await send_task  # Wait for the task to be cancelled
             except asyncio.CancelledError:
                 send_task = None
+
         stt_async.reset()
+
         start_transcription = False
+
         logging.info("Transcribed audio successfully")
 
     def handler(signum, frame):
@@ -68,8 +71,11 @@ async def ws_transcribe():
                 start_transcription = True
 
             if isinstance(data, str) and data == "completed":  # wait for frontend to send completed message
-                while not stt_async.finished_recognising:
-                    stt_async.getStream().write(b"")  # empty bytes needed to trigger recognition if audio too short
+                while (
+                    not stt_async.finished_recognising or stt_async.getQueue().empty()
+                ):  # stt_async.getQueue().empty() ensures that empty audio is transcribed
+                    stt_async.getStream().write(b" ")  # empty bytes needed to trigger recognition if audio too short
+
                 while not stt_async.getQueue().empty():  # Ensure all results are sent before stopping transcription
                     await asyncio.sleep(0.1)
                 await stop_transcription()
@@ -79,6 +85,8 @@ async def ws_transcribe():
         logging.info("WebSocket connection timed out")
     except asyncio.CancelledError:
         logging.info("WebSocket connection closed")
+    except Exception as e:
+        logging.error(f"WebSocket connection error: {e}")
     finally:
         try:
             await websocket.close(1000)
