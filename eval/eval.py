@@ -111,14 +111,14 @@ if __name__ == "__main__":
         description="Run deepeval to evaluate retrieval and generation performance of conversational assistant",
         epilog="""
         Example:
-            python eval.py --readfilepath output/generated_answers_for_eval_test.csv --model gpt-4o-mini --asyncmode
+            python eval.py --readfilepath output/generated_answers_for_eval.csv --model gpt-4o-mini --asyncmode
         """,
     )
 
     parser.add_argument(
         "--readfilepath",
         type=str,
-        default="./output/generated_answers_for_eval_test.csv",
+        default="./output/generated_answers_for_eval.csv",
         help="The file path to read input file",
     )
     parser.add_argument("--model", type=str, default="gpt-4o", help="Azure OpenAI GPT model for evaluation")
