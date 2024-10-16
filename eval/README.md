@@ -157,13 +157,15 @@ The following table details the command-line argument(s) available:
 
 If using gpt-4o-mini for evaluation, create a `.env` file in the `eval` folder with these credentials:
 
-```.env
+```shell
 # Azure OpenAI Services
 AZURE_OPENAI_API_TYPE="..."
 AZURE_OPENAI_API_VERSION="..."
-AZURE_OPENAI_CHATGPT_DEPLOYMENT="..."
-AZURE_OPENAI_SERVICE="..."
+AZURE_OPENAI_CHATGPT_DEPLOYMENT="..." # Deployment name
+AZURE_OPENAI_SERVICE="..." # Resource name
 ```
+
+Set the `AZURE_OPENAI_API_VERSION` to the latest version mentioned [here](https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation).
 
 #### Async vs Sync mode
 
