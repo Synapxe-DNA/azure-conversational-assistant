@@ -274,7 +274,7 @@ export class ConvoBrokerService {
    * @param message {string}
    * @param profile {Profile}
    */
-  async sendChat(message: string, profile: Profile) {
+  async sendChat(message: string, profile: Profile): Promise<void> {
     const newMessage: Message = {
       id: createId(),
       message: message,
@@ -290,21 +290,29 @@ export class ConvoBrokerService {
     await this.chatMessageService.insert(newMessage);
 
     const res = await this.endpointService.sendChat(newMessage, profile, history, this.$language.value || Language.Spoken);
-    res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
-      next: async d => {
-        if (!d || !d.response) {
-          return;
+
+    return new Promise((resolve, reject) => {
+      res.pipe(takeWhile(d => d?.status !== "DONE", true)).subscribe({
+        next: async d => {
+          if (!d || !d.response) {
+            return;
+          }
+          await this.chatMessageService.upsert({
+            id: responseMessageId,
+            profile_id: profile.id,
+            message: d.response,
+            timestamp: new Date().getTime(),
+            role: MessageRole.Assistant,
+            sources: d.sources
+          });
+        },
+        error: err => {
+          reject(err); // Reject the promise with the error
+        },
+        complete: () => {
+          resolve(); // Resolve the promise when complete if not already resolved
         }
-        await this.chatMessageService.upsert({
-          id: responseMessageId,
-          profile_id: profile.id,
-          message: d.response,
-          timestamp: new Date().getTime(),
-          role: MessageRole.Assistant,
-          sources: d.sources
-        });
-      },
-      error: console.error
+      });
     });
   }
 }

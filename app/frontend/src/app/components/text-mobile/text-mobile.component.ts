@@ -92,16 +92,24 @@ export class TextMobileComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  onMessageSent() {
-    console.log("Message sent");
-    this.loading = true;
-    this.autoScroll = true;
-
-    // Simulate message processing with a timeout
-    this.timeoutId = setTimeout(() => {
+  onMessageSent(isError: boolean) {
+    if (isError) {
       this.loading = false; // Hide the loading indicator after processing
-      this.showTimeoutMessage(); // Show timeout message if Assistant's message isn't received
-    }, APP_CONSTANTS.TEXT_TIMEOUT); // Adjust the timeout duration as needed
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null; // Reset the timeout reference
+      }
+      this.showTimeoutMessage();
+    } else {
+      console.log("Message sent");
+      this.loading = true;
+      this.autoScroll = true;
+      // Simulate message processing with a timeout
+      this.timeoutId = setTimeout(() => {
+        this.loading = false; // Hide the loading indicator after processing
+        this.showTimeoutMessage(); // Show timeout message if Assistant's message isn't received
+      }, APP_CONSTANTS.TEXT_TIMEOUT); // Adjust the timeout duration as needed
+    }
   }
 
   toggleChatMode() {

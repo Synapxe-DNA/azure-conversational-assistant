@@ -304,6 +304,7 @@ export class EndpointService {
         error: err => {
           clearTimeout(timeout); // Clear timeout if an error occurs
           console.error(err);
+          responseBS.error(err);
         }
       });
 
