@@ -19,6 +19,7 @@ async def voice_endpoint():
     try:
         # Receive data from the client
         data = await request.get_json()
+
         # Extract data from the JSON message
         voiceChatRequest = VoiceChatRequest(**RequestHandler.form_query_request(data).model_dump())
 
@@ -33,7 +34,6 @@ async def voice_endpoint():
         response = await ResponseHandler.construct_streaming_response(
             result, RequestType.VOICE, voiceChatRequest.language.lower()
         )
-        raise Exception("This is a test exception")
         return response, 200
     except Exception as error:
         logging.error(f"Exception in /voice/stream. {error}")
