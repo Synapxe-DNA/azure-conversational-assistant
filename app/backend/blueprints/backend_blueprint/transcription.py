@@ -89,6 +89,7 @@ async def ws_transcribe():
         logging.error(f"WebSocket connection error: {e}")
     finally:
         try:
+            await stop_transcription()  # Stop transcription if client closes connection
             await websocket.close(1000)
         except Exception:
             logging.info("WebSocket connection already closed")
