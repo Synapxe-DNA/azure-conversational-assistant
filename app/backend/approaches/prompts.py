@@ -151,3 +151,52 @@ Consider if the query is a continuation of a previous health-related topic.
 Respond only with 'True' if the query relates to one or more of these categories, and 'False' if it does not.
 If it is an empty query or 'no' to previous follow-up question, always respond 'False'.
 """
+
+check_and_profile_query_prompt = """
+Follow these steps to analyze the user query and generate an appropriate search query if applicable:
+
+Step 1: Analyze the user query
+Analyze the following user query in the context of the previous conversation.
+Determine if it is related to any of the following categories: health, healthy eating, healthy lifestyle, health programmes, medication, fitness, parenthood, or healthcare schemes and subsidies.
+Consider if it's a continuation of a previous health-related topic.
+
+Step 2: Respond or proceed
+If the query does not relate to any of these categories, or if it's an empty query or a 'no' response to a previous follow-up question, respond with 'False' and stop.
+If the query does relate to one or more of these categories, proceed to Step 3.
+
+Step 3: Generate search query
+If Step 2 determined the query is relevant, proceed as follows:
+Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base.
+You have access to Azure AI Search index with 100's of documents.
+Generate a search query based on the conversation and the new question.
+Take into account the user's profile as a {gender} {age_group}, age {age}, with pre-existing medical condition of {pre_conditions}.
+Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
+Do not include any text inside [] or <<>> in the search query terms.
+Do not include any special characters like '+'.
+If the question is not in English, translate the question to English before generating the search query.
+If you cannot generate a search query, return just the number 0.
+"""
+
+check_and_general_query_prompt = """
+Follow these steps to analyze the user query and generate an appropriate search query if applicable:
+
+Step 1: Analyze the user query
+Analyze the following user query in the context of the previous conversation.
+Determine if it is related to any of the following categories: health, healthy eating, healthy lifestyle, health programmes, medication, fitness, parenthood, or healthcare schemes and subsidies.
+Consider if it's a continuation of a previous health-related topic.
+
+Step 2: Respond or proceed
+If the query does not relate to any of these categories, or if it's an empty query or a 'no' response to a previous follow-up question, respond with 'False' and stop.
+If the query does relate to one or more of these categories, proceed to Step 3.
+
+Step 3: Generate search query
+If Step 2 determined the query is relevant, proceed as follows:
+Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base.
+You have access to Azure AI Search index with 100's of documents.
+Generate a search query based on the conversation and the new question.
+Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
+Do not include any text inside [] or <<>> in the search query terms.
+Do not include any special characters like '+'.
+If the question is not in English, translate the question to English before generating the search query.
+If you cannot generate a search query, return just the number 0.
+"""
