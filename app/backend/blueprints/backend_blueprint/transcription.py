@@ -83,10 +83,11 @@ async def ws_transcribe():
             stt_async.getStream().write(data)
     except asyncio.TimeoutError:
         logging.info("WebSocket connection timed out")
-        try:
-            await websocket.close(1000)
-        except Exception as e:
-            logging.error(f"Error closing websocket: {e}")
+        # Removed temporary, to add back eventually
+        # try:
+        #     await websocket.close(1000)
+        # except Exception as e:
+        #     logging.error(f"Error closing websocket: {e}")
     except asyncio.CancelledError:
         logging.info("WebSocket connection closed")
     except Exception as e:
