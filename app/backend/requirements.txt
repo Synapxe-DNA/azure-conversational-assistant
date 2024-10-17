@@ -448,7 +448,7 @@ wrapt==1.16.0
     #   opentelemetry-instrumentation-urllib3
 wsproto==1.2.0
     # via hypercorn
-yarl==1.15.3
+yarl==1.15.4
     # via aiohttp
 zipp==3.20.2
     # via importlib-metadata
