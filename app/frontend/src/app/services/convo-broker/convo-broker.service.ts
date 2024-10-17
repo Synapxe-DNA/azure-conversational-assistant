@@ -117,10 +117,10 @@ export class ConvoBrokerService {
    */
   handleStartRecording() {
     this.audioPlayer.stopAndClear();
-    this.audioPlayer.playStartVoiceAudio();
     this.$micState.next(MicState.ACTIVE);
     // this.recorder.start();
     this.recorder.startAudioCapture();
+    this.audioPlayer.playStartVoiceAudio();
   }
 
   /**
