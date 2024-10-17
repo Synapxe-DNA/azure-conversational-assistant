@@ -37,3 +37,7 @@ updates:
       - dependency-name: psutil
       - dependency-name: importlib-metadata
       - dependency-name: microsoft-kiota-abstractions
+      - dependency-name: microsoft-kiota-authentication-azure
+      - dependency-name: microsoft-kiota-http
+      - dependency-name: microsoft-kiota-serialization-json
+      - dependency-name: microsoft-kiota-serialization-text
