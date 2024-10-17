@@ -10,3 +10,4 @@ class ChatHistory(BaseModel):
     created_at: str
     last_modified: str
     chat_messages: List[ChatMessageWithSource]
+
