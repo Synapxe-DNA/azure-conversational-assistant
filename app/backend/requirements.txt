@@ -261,7 +261,7 @@ opentelemetry-instrumentation-flask==0.48b0
     # via azure-monitor-opentelemetry
 opentelemetry-instrumentation-httpx==0.48b0
     # via -r requirements.in
-opentelemetry-instrumentation-openai==0.32.2
+opentelemetry-instrumentation-openai==0.33.1
     # via -r requirements.in
 opentelemetry-instrumentation-psycopg2==0.48b0
     # via azure-monitor-opentelemetry
@@ -320,7 +320,7 @@ packaging==24.1
     # via opentelemetry-instrumentation-flask
 pendulum==3.0.0
     # via microsoft-kiota-serialization-json
-pillow==10.4.0
+pillow==11.0.0
     # via
     #   -r requirements.in
     #   openai-messages-token-helper
@@ -432,7 +432,7 @@ tzdata==2024.2
     # via pendulum
 urllib3==2.2.3
     # via requests
-uvicorn==0.31.1
+uvicorn==0.32.0
 websockets==13.1
     # via -r requirements.in
 werkzeug==3.0.4
@@ -448,7 +448,7 @@ wrapt==1.16.0
     #   opentelemetry-instrumentation-urllib3
 wsproto==1.2.0
     # via hypercorn
-yarl==1.15.2
+yarl==1.15.3
     # via aiohttp
 zipp==3.20.2
     # via importlib-metadata
