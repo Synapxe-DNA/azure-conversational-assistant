@@ -1,5 +1,25 @@
 # Azure Conversational Assistant
 
+## Table of Contents
+
+- [Features](#features)
+  - [Architecture Diagram](#architecture-diagram)
+- [Getting Started](#getting-started)
+  - [Local environment](#local-environment)
+- [Deploying](#deploying)
+  - [Deploying again](#deploying-again)
+    - [Sharing environments](#sharing-environments)
+- [Running locally](#running-locally)
+- [Running locally on other devices](#running-locally-on-other-devices)
+- [Using the app](#using-the-app)
+- [Install the Git Hook Scripts](#install-the-git-hook-scripts)
+  - [(Optional) Run `pre-commit run --all-files`](#optional-run-pre-commit-run---all-files)
+- [Workflow](#workflow)
+  - [Data](#data)
+  - [Frontend, Backend and Prompt](#frontend-backend-and-prompt)
+  - [Dependabot dependency updates](#dependabot-dependency-updates)
+- [Notebooks](#notebooks)
+
 ## Features
 
 - Chat (multi-turn) and Q&A (single turn) interfaces
@@ -109,7 +129,7 @@ You can only run locally **after** having successfully run the `azd up` command.
 
 See more tips in [the local development guide](docs/localdev.md).
 
-## Running webapp locally to test on other devices
+## Running locally on other devices
 
 To test the webapp locally on other devices in the same network, follow the steps below:
 
@@ -134,12 +154,59 @@ Once in the web app:
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
 
+## Install the Git Hook Scripts
+
+Run pre-commit install to set up the git hook scripts:
+
+```zsh
+pre-commit install
+
+> pre-commit installed at .git/hooks/pre-commit
+```
+
+This command sets up the git hooks and run them automatically before every commit. For more information, refer to the [pre-commit docs](https://pre-commit.com/). To see what hooks are used, refer to the [`.pre-commit-config.yaml`](.pre-commit-config.yaml) YAML file.
+
+### (Optional) Run `pre-commit run --all-files`
+
+Optionally, you can also run the command `pre-commit run --all-files` to lint and reformat your code. It's usually a good idea to run the hooks against all of the files when adding new hooks (usually pre-commit will only run on the changed files during git hooks).
+
+Alternatively, there is a [`Makefile`](Makefile) that can also lint and reformat your code base when you run the simpler command `make lint`.
+
+You should ensure that all cases are satisfied before you push to GitHub (you should see that all has passed). If not, please debug accordingly or your pull request may be rejected and closed.
+
+The [`run-checks.yml`](.github/workflows/run-checks.yml) is a GitHub workflow that kicks off several GitHub Actions when a pull request is made. These GitHub Actions check that your code have been properly linted and formatted before it is passed for review. Once all actions have passed and the PR approved, your changes will be merged to the `main` branch.
+
+> [!NOTE]
+> The `pre-commit` will run regardless if you forget to explicitly call it. Nonetheless, it is recommended to call it explicitly so you can make any necessary changes in advanced.
+
+## Workflow
+
+> [!NOTE]
+> Before making any commits/PR, ensure that you have setup [pre-commit](#install-the-git-hook-scripts) and passed all the checks.
+
+### Data
+
+- Any code changes for **Data** can be PR'd to `main` without going through `staging` branch.
+
+### Frontend, Backend and Prompt
+
+1. Any code changes for **Frontend, Backend and Prompt** must be PR'd to the `staging` branch instead of `main`.
+2. Ensure `staging` branch is stable before PR'ing to `main`. (@lyndonlim27)
+
+### Dependabot dependency updates
+
+1. Test the dependency updates requested by dependabot locally.
+2. If the updates are successful, PR the changes to the `staging` branch.
+3. Close the PR made by Dependabot and tag it with your new PR.
+
+> [!NOTE]
+>
+> 1. If updates are not possible due to dependency conflicts, add the dependency name to [`dependabot.yml`](.github/dependabot.yml) under `ignore` section.
+> 2. Create a PR to `staging` branch
+> 3. Close the PR made by Dependabot and tag it with your new PR.
+
 ## Notebooks
 
 1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
 2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
 3. `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
-
-> [!NOTE]
->
-> To find ipv4 address of the machine, run `ipconfig` on Windows or `ifconfig` on Linux/MacOS
