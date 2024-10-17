@@ -6,7 +6,7 @@ from config import CONFIG_CHAT_APPROACH
 from error.error import error_response
 from models.request_type import RequestType
 from models.voice import VoiceChatRequest
-from quart import Blueprint, current_app, request
+from quart import Blueprint, current_app, jsonify, request
 from utils.request_handler import RequestHandler
 from utils.response_handler import ResponseHandler
 
@@ -33,7 +33,8 @@ async def voice_endpoint():
         response = await ResponseHandler.construct_streaming_response(
             result, RequestType.VOICE, voiceChatRequest.language.lower()
         )
+        raise Exception("This is a test exception")
         return response, 200
     except Exception as error:
         logging.error(f"Exception in /voice/stream. {error}")
-        return error_response(error)
+        return jsonify(error_response(error)), 500
