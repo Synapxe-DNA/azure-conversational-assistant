@@ -1,5 +1,25 @@
 # Azure Conversational Assistant
 
+## Table of Contents
+
+- [Features](#features)
+  - [Architecture Diagram](#architecture-diagram)
+- [Getting Started](#getting-started)
+  - [Local environment](#local-environment)
+- [Deploying](#deploying)
+  - [Deploying again](#deploying-again)
+    - [Sharing environments](#sharing-environments)
+- [Running locally](#running-locally)
+- [Running locally on other devices](#running-locally-on-other-devices)
+- [Using the app](#using-the-app)
+- [Install the Git Hook Scripts](#install-the-git-hook-scripts)
+  - [(Optional) Run `pre-commit run --all-files`](#optional-run-pre-commit-run---all-files)
+- [Workflow](#workflow)
+  - [Data](#data)
+  - [Frontend, Backend and Prompt](#frontend-backend-and-prompt)
+  - [Dependabot dependency updates](#dependabot-dependency-updates)
+- [Notebooks](#notebooks)
+
 ## Features
 
 - Chat (multi-turn) and Q&A (single turn) interfaces
@@ -109,7 +129,7 @@ You can only run locally **after** having successfully run the `azd up` command.
 
 See more tips in [the local development guide](docs/localdev.md).
 
-## Running webapp locally to test on other devices
+## Running locally on other devices
 
 To test the webapp locally on other devices in the same network, follow the steps below:
 
@@ -190,7 +210,3 @@ The [`run-checks.yml`](.github/workflows/run-checks.yml) is a GitHub workflow th
 1. `azure_data_actual.ipynb` is the notebook to generate the data from the parquet file for ingestion into the index.
 2. `azure_data_testing.ipynb` is the notebook to generate the data from a subset of the parquet file for small ingestion into the index for testing.
 3. `azure_search_tutorial_v3.0.ipynb` is the notebook to ingest the data into the index.
-
-> [!NOTE]
->
-> To find ipv4 address of the machine, run `ipconfig` on Windows or `ifconfig` on Linux/MacOS

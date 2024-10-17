@@ -61,6 +61,7 @@ export class VoiceMobileComponent {
   isLoading: boolean = false;
   sendTimedOut: boolean = false;
   showTimeoutModal = false;
+  showErrorModal = false;
 
   voiceInterrupt: boolean = false;
   voiceDetectStart: boolean = false;
@@ -107,6 +108,11 @@ export class VoiceMobileComponent {
       if (this.sendTimedOut) {
         // Handle the timeout state in the UI (e.g., display an error message)
         this.showTimeoutPopup();
+      }
+    });
+    this.convoBroker.$hasServerError.subscribe(hasError => {
+      if (hasError) {
+        this.showErrorPopup();
       }
     });
   }
@@ -161,7 +167,7 @@ export class VoiceMobileComponent {
     this.showTimeoutModal = true;
   }
 
-  closeTimeoutPopup() {
-    this.showTimeoutModal = false;
+  showErrorPopup() {
+    this.showErrorModal = true;
   }
 }

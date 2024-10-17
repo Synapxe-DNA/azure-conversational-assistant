@@ -30,7 +30,6 @@ export class VoiceMicrophoneComponent {
   ) {}
 
   ngAfterViewInit() {
-    console.log("ngAfterViewInit called");
     this.audioPlayer.$playing.subscribe(playing => {
       this.isPlaying = playing;
     });

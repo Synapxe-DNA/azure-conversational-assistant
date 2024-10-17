@@ -7,7 +7,7 @@ from config import CONFIG_CHAT_APPROACH
 from error.error import error_response
 from models.request_type import RequestType
 from models.voice import VoiceChatRequest
-from quart import Blueprint, current_app, request
+from quart import Blueprint, current_app, jsonify, request
 from utils.request_handler import RequestHandler
 from utils.response_handler import ResponseHandler
 
@@ -23,6 +23,7 @@ async def voice_endpoint():
 
         # Receive data from the client
         data = await request.get_json()
+
         # Extract data from the JSON message
         voiceChatRequest = VoiceChatRequest(**RequestHandler.form_query_request(data).model_dump())
 
@@ -40,4 +41,4 @@ async def voice_endpoint():
         return response, 200
     except Exception as error:
         logging.error(f"Exception in /voice/stream. {error}")
-        return error_response(error)
+        return jsonify(error_response(error)), 500

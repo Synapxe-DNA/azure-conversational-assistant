@@ -15,7 +15,7 @@
       "value": "${AZURE_PRINCIPAL_ID}"
     },
     "groupPrincipalId": {
-      "value": "${AZURE_GROUP_PRINCIPAL_ID=ec479f24-9778-43b4-97e9-824dd1c53bfe}"
+      "value": "${AZURE_GROUP_PRINCIPAL_ID=3f347188-5137-4f5b-af90-c5ffcd231392}"
     },
     "tenantId": {
       "value": "${AZURE_TENANT_ID}"

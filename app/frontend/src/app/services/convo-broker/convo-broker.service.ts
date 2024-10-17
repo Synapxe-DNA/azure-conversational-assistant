@@ -33,6 +33,7 @@ export class ConvoBrokerService {
   $micState: BehaviorSubject<MicState> = new BehaviorSubject<MicState>(MicState.PENDING);
   $isWaitingForVoiceApi: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   $sendTimeout: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  $hasServerError: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private voiceSubscription: Subscription | null = null;
   private cancel$ = new Subject<void>();
@@ -116,10 +117,10 @@ export class ConvoBrokerService {
    */
   handleStartRecording() {
     this.audioPlayer.stopAndClear();
-    this.audioPlayer.playStartVoiceAudio();
     this.$micState.next(MicState.ACTIVE);
     // this.recorder.start();
     this.recorder.startAudioCapture();
+    this.audioPlayer.playStartVoiceAudio();
   }
 
   /**
@@ -130,7 +131,11 @@ export class ConvoBrokerService {
     this.audioPlayer.playStopVoiceAudio();
     this.$micState.next(MicState.DISABLED);
     this.recorder.stopAudioCapture().then(r => {
-      this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(console.error);
+      this.sendVoice(r, this.activeProfile.value || GeneralProfile).catch(e => {
+        this.$isWaitingForVoiceApi.next(false);
+        this.$hasServerError.next(true);
+        console.error("Error sending voice:", e);
+      });
     });
   }
 
@@ -189,7 +194,7 @@ export class ConvoBrokerService {
 
     const res = await this.endpointService.sendVoice(message, profile, history.slice(-8), this.$language.value || Language.Spoken);
 
-    const responsePromise = new Promise<void>(resolve => {
+    const responsePromise = new Promise<void>((resolve, reject) => {
       this.voiceSubscription = res
         .pipe(
           takeWhile(d => d?.status !== "DONE", true),
@@ -223,8 +228,8 @@ export class ConvoBrokerService {
           complete: () => {
             resolve(); // Complete the response handling
           },
-          error: () => {
-            resolve(); // Also resolve in case of an error
+          error: err => {
+            reject(err); // Also resolve in case of an error
           }
         });
     });
