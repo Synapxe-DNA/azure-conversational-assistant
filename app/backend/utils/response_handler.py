@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import re
+import time
 from typing import Any, AsyncGenerator, List
 
 import pytz
@@ -27,9 +28,7 @@ class ResponseHandler:
 
     @staticmethod
     async def construct_streaming_response(
-        result: AsyncGenerator[dict[str, Any], None],
-        request_type: RequestType,
-        language: str,
+        result: AsyncGenerator[dict[str, Any], None], request_type: RequestType, language: str, start_time: int
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
@@ -40,6 +39,7 @@ class ResponseHandler:
             tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
             apiLog = APILog()
             response_message = ""
+            count = 0
             async for res in JSONEncoder.format_as_ndjson(result, language):
                 res = json.loads(res)
                 error_msg = res.get("error", None)
@@ -75,7 +75,6 @@ class ResponseHandler:
                             sources=[],
                         )
                         yield response.model_dump_json()
-
                     else:
                         response_message += text_response_chunk
                         if bool(
@@ -89,6 +88,11 @@ class ResponseHandler:
                             )
                             yield response.model_dump_json()
                             response_message = ""
+
+                    # Get time of first stream
+                    if not count:
+                        apiLog.first_stream_time_taken = time.time() - start_time
+                        count += 1
 
             await send_custom_logs(apiLog)  # Send custom logs to app insights
             await store_chat_history(request.cookies.get("session"), apiLog)  # Store chat history in Cosmos DB
@@ -245,6 +249,7 @@ async def send_custom_logs(apiLog: APILog):
             span.set_attribute(f"Chunk {i} content", source.chunk)
     span.set_attribute("Response", apiLog.response_message)
     span.set_attribute("Session id", request.cookies.get("session"))
+    span.set_attribute("First stream time taken", apiLog.first_stream_time_taken)
     span.set_attribute("Total input tokens", apiLog.input_token_count)
     span.set_attribute("Total output tokens", apiLog.output_token_count)
     span.set_attribute("Total tokens", apiLog.input_token_count + apiLog.output_token_count)

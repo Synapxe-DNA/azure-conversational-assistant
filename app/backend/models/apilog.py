@@ -10,3 +10,4 @@ class APILog(BaseModel):
     retrieved_sources: List[SourceWithChunk] = []
     input_token_count: int = -1
     output_token_count: int = -1
+    first_stream_time_taken: int = -1
