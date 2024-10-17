@@ -160,7 +160,7 @@ The [`run-checks.yml`](.github/workflows/run-checks.yml) is a GitHub workflow th
 > The `pre-commit` will run regardless if you forget to explicitly call it. Nonetheless, it is recommended to call it explicitly so you can make any necessary changes in advanced.
 
 ## Workflow
->
+
 > [!NOTE]
 > Before making any commits/PR, ensure that you have setup [pre-commit](#install-the-git-hook-scripts) and passed all the checks.
 
