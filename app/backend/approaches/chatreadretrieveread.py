@@ -130,8 +130,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         llm_model = os.environ["AZURE_OPENAI_CHATGPT_MODEL"]
 
         selected_language = language.upper()
-        print(f"Selected language: {selected_language}")
-        print(f"Profile Type: {profile.profile_type}")
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -160,9 +158,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 user_query_request = "Generate search query for: " + original_user_query
             else:
                 user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
-
-        print(f"original_user_query: {original_user_query}")
-        print(f"user_query_request: {user_query_request}")
 
         tools: List[ChatCompletionToolParam] = [
             {
@@ -220,7 +215,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         total_output_tokens += query_check_response.usage.completion_tokens
 
         query_check_output = query_check_response.choices[0].message.content
-        print(f"query_check_output: {query_check_output}")
 
         # STEP 2: Generate an optimized keyword search query based on the chat history and the last question
         query_messages = build_messages(

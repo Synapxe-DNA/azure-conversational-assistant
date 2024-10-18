@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import cast
 
 from approaches.approach import Approach
@@ -17,18 +18,22 @@ chat = Blueprint("chat", __name__, url_prefix="/chat")
 @chat.route("/stream", methods=["POST"])
 async def chat_stream_endpoint():
     try:
+        # Get the start time
+        start_time = time.time()
+
         # Receive data from the client
         data = await request.get_json()
         textChatRequest = TextChatRequest(**RequestHandler.form_query_request(data).model_dump())
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
 
+        # Send text and data to LLM
         result = await approach.run_stream(
             messages=RequestHandler.form_message(textChatRequest.chat_history, textChatRequest.query),
             profile=textChatRequest.profile,
             language=textChatRequest.language.lower(),
         )
         response = await ResponseHandler.construct_streaming_response(
-            result, RequestType.CHAT, textChatRequest.language.lower()
+            result, RequestType.CHAT, textChatRequest.language.lower(), start_time
         )
         return response, 200
     except Exception as error:

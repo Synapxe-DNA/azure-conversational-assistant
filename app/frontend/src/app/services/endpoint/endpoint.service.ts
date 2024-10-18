@@ -216,7 +216,11 @@ export class EndpointService {
             }
           }
         },
-        error: console.error
+        error: err => {
+          clearTimeout(timeout); // Clear timeout if an error occurs
+          console.error(err);
+          responseBS.error(err);
+        }
       });
 
     return responseBS;
