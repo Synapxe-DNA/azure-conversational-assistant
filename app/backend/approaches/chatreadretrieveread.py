@@ -129,8 +129,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         llm_model = os.environ["AZURE_OPENAI_CHATGPT_MODEL"]
 
         selected_language = language.upper()
-        print(f"Selected language: {selected_language}")
-        print(f"Profile Type: {profile.profile_type}")
 
         if profile.user_age < 1:
             age_group = "Infant"
@@ -159,9 +157,6 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 user_query_request = "Generate search query for: " + original_user_query
             else:
                 user_query_request = f"Generate search query for: {original_user_query}, user profile: {age_group}, {profile.user_gender}, age {profile.user_age}, {profile.user_condition}"
-
-        print(f"original_user_query: {original_user_query}")
-        print(f"user_query_request: {user_query_request}")
 
         tools: List[ChatCompletionToolParam] = [
             {
