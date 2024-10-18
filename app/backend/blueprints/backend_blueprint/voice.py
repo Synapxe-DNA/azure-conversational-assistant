@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import cast
 
 from approaches.approach import Approach
@@ -17,6 +18,9 @@ voice = Blueprint("voice", __name__, url_prefix="/voice")
 async def voice_endpoint():
 
     try:
+        # Get the start time
+        start_time = time.time()
+
         # Receive data from the client
         data = await request.get_json()
 
@@ -32,7 +36,7 @@ async def voice_endpoint():
         )
 
         response = await ResponseHandler.construct_streaming_response(
-            result, RequestType.VOICE, voiceChatRequest.language.lower()
+            result, RequestType.VOICE, voiceChatRequest.language.lower(), start_time
         )
         return response, 200
     except Exception as error:
