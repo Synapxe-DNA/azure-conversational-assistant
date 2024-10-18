@@ -6,11 +6,10 @@ from approaches import config
 from approaches.approach import ThoughtStep
 from approaches.chatapproach import ChatApproach
 from approaches.prompts import (
+    check_and_general_query_prompt,
+    check_and_profile_query_prompt,
     general_prompt,
-    general_query_prompt,
     profile_prompt,
-    profile_query_prompt,
-    query_check_prompt,
 )
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import VectorQuery
@@ -180,10 +179,10 @@ class ChatReadRetrieveReadApproach(ChatApproach):
         ]
 
         if profile.profile_type == "general":
-            query_prompt = general_query_prompt
+            query_prompt = check_and_general_query_prompt
             answer_generation_prompt = general_prompt.format(language=selected_language)
         else:
-            query_prompt = profile_query_prompt.format(
+            query_prompt = check_and_profile_query_prompt.format(
                 gender=profile.user_gender,
                 age_group=age_group,
                 age=profile.user_age,
@@ -197,26 +196,7 @@ class ChatReadRetrieveReadApproach(ChatApproach):
                 pre_conditions=profile.user_condition,
             )
 
-        # STEP 1: LLM to check if the query is health-related
-        query_check_messages = build_messages(
-            model=self.chatgpt_model,
-            system_prompt=query_check_prompt,
-            new_user_content=original_user_query,
-            past_messages=messages[:-1],
-            max_tokens=self.chatgpt_token_limit - query_response_token_limit,
-        )
-
-        query_check_response = await self.openai_client.chat.completions.create(
-            # Azure OpenAI takes the deployment name as the model name
-            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
-            messages=query_check_messages,
-        )
-        total_input_tokens += query_check_response.usage.prompt_tokens
-        total_output_tokens += query_check_response.usage.completion_tokens
-
-        query_check_output = query_check_response.choices[0].message.content
-
-        # STEP 2: Generate an optimized keyword search query based on the chat history and the last question
+        # STEP 1: Generate an optimized keyword search query based on the chat history and the last question
         query_messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=query_prompt,
@@ -227,26 +207,27 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             max_tokens=self.chatgpt_token_limit - query_response_token_limit,
         )
 
-        if query_check_output == "False":
+        chat_completion: ChatCompletion = await self.openai_client.chat.completions.create(
+            messages=query_messages,  # type: ignore
+            # Azure OpenAI takes the deployment name as the model name
+            model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
+            temperature=0.0,  # Minimize creativity for search query generation
+            max_tokens=query_response_token_limit,  # Setting too low risks malformed JSON, setting too high may affect performance
+            n=1,
+            tools=tools,
+            seed=seed,
+        )
+        total_input_tokens += chat_completion.usage.prompt_tokens
+        total_output_tokens += chat_completion.usage.completion_tokens
+        query_output = self.get_search_query(chat_completion, original_user_query)
+
+        if query_output == "False":
             query_text = ""
             sources_content = ""
             results = ""
             content = ""
         else:
-            chat_completion: ChatCompletion = await self.openai_client.chat.completions.create(
-                messages=query_messages,  # type: ignore
-                # Azure OpenAI takes the deployment name as the model name
-                model=self.chatgpt_deployment if self.chatgpt_deployment else self.chatgpt_model,
-                temperature=0.0,  # Minimize creativity for search query generation
-                max_tokens=query_response_token_limit,  # Setting too low risks malformed JSON, setting too high may affect performance
-                n=1,
-                tools=tools,
-                seed=seed,
-            )
-            total_input_tokens += chat_completion.usage.prompt_tokens
-            total_output_tokens += chat_completion.usage.completion_tokens
-            query_text = self.get_search_query(chat_completion, original_user_query)
-
+            query_text = query_output
             vectors: list[VectorQuery] = []
             if use_vector_search:
                 vectors.append(await self.compute_text_embedding(query_text))
@@ -267,8 +248,9 @@ class ChatReadRetrieveReadApproach(ChatApproach):
             sources_content = self.get_sources_content(results, use_semantic_captions, use_image_citation=False)
 
             content = "\n".join(sources_content)
+        print(f"query_text: {query_text}")
 
-        # STEP 3: Generate a contextual and content specific answer using the search results and chat history
+        # STEP 2: Generate a contextual and content specific answer using the search results and chat history
         messages = build_messages(
             model=self.chatgpt_model,
             system_prompt=answer_generation_prompt,
