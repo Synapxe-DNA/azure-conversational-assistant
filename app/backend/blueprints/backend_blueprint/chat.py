@@ -26,6 +26,7 @@ async def chat_stream_endpoint():
         textChatRequest = TextChatRequest(**RequestHandler.form_query_request(data).model_dump())
         approach = cast(Approach, current_app.config[CONFIG_CHAT_APPROACH])
 
+        # Send text and data to LLM
         result = await approach.run_stream(
             messages=RequestHandler.form_message(textChatRequest.chat_history, textChatRequest.query),
             profile=textChatRequest.profile,

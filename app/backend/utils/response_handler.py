@@ -25,6 +25,9 @@ tracer = trace.get_tracer(__name__)
 
 
 class ResponseHandler:
+    """
+    A class to handle the response from the LLM and reconstruct it in our format
+    """
 
     @staticmethod
     async def construct_streaming_response(
@@ -32,6 +35,15 @@ class ResponseHandler:
     ) -> AsyncGenerator[str, None]:
         """
         Reconstructing the generator response from LLM to a new generator response in our format
+
+        Args:
+            result (AsyncGenerator[dict[str, Any], None]) : The generator response from LLM
+            request_type (RequestType): The type of request (chat or voice)
+            language (str): The language of the response chosen by the user
+            start_time (int): The time of the http request
+
+        Returns:
+            AsyncGenerator[str, None]: The generator response in our format
         """
 
         @stream_with_context
@@ -99,13 +111,18 @@ class ResponseHandler:
 
         return generator()
 
-    """
-    Construct a non-streaming response from the LLM response that will be returned to the frontend
-    Note: This function is only used for chat endpoint and not for voice
-    """
-
     @staticmethod
     def construct_non_streaming_response(data: dict) -> dict[str, Any]:
+        """
+        Construct a non-streaming response from the LLM response that will be returned to the frontend
+        Note: This function is only used for chat endpoint and not for voice
+
+        Args:
+            data (dict): The response from the LLM
+
+        Returns:
+            dict: The response in our format
+        """
         data = json.loads(json.dumps(data, ensure_ascii=False, cls=JSONEncoder) + "\n")
         thoughts = data.get("context", {}).get("thoughts", [])
         sources = extract_sources_with_chunks_from_thoughts(thoughts)
@@ -118,12 +135,19 @@ class ResponseHandler:
 
 # Helper functions
 
-"""
-Utility function to extract sources without chunks from the ThoughtStep returned by the LLM
-"""
-
 
 def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]) -> List[Source]:
+    """
+    Utility function to extract sources without chunks from the ThoughtStep returned by the LLM
+
+    Args:
+        thoughts (List[dict[str, Any]]): The list of thoughts returned by the LLM
+
+    Returns:
+        List[Source]: The list of sources without chunks extracted from the thoughts
+
+    """
+
     sources_desc = thoughts[2].get("description", [])  # thoughts[2] is search results
     sources = {}
     sources_url = set()
@@ -150,12 +174,16 @@ def extract_sources_from_thoughts(thoughts: List[dict[str, Any]]) -> List[Source
     return list(sources.values())
 
 
-"""
-Utility function to extract sources with chunks from the ThoughtStep returned by the LLM
-"""
-
-
 def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) -> List[SourceWithChunk]:
+    """
+    Utility function to extract sources with chunks from the ThoughtStep returned by the LLM
+
+    Args:
+        thoughts (List[dict[str, Any]]): The list of thoughts returned by the LLM
+
+    Returns:
+        List[SourceWithChunk]: The list of sources with chunks extracted from the thoughts
+    """
     sources_desc = thoughts[2].get("description", [])  # thoughts[2] is search results
     sources = []
     for source in sources_desc:
@@ -174,12 +202,17 @@ def extract_sources_with_chunks_from_thoughts(thoughts: List[dict[str, Any]]) ->
     return sources
 
 
-"""
-Utility function to extract time taken, user query and sources with chunks from the ThoughtStep returned by the LLM
-"""
-
-
 def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], log: APILog) -> APILog:
+    """
+    Utility function to extract time taken, user query and sources with chunks from the ThoughtStep returned by the LLM
+
+    Args:
+        thoughts (List[dict[str, Any]]): The list of thoughts returned by the LLM
+        log (APILog): The APILog object to store the extracted information
+
+    Returns:
+        APILog: The APILog object populated with new extracted information
+    """
     log.user_query = thoughts[5].get("description", "")  # thoughts[5] is user query
     log.input_token_count = thoughts[6].get("description", 0)  # thoughts[6] is input token count
     log.output_token_count = thoughts[7].get("description", 0)  # thoughts[7] is output token count
@@ -188,12 +221,19 @@ def extract_thoughts_for_logging(thoughts: List[dict[str, Any]], log: APILog) ->
     return log
 
 
-"""
-Utility function to construct error response from LLM into a json string
-"""
-
-
 def construct_error_response(error_msg: str, request_type: RequestType, language: str) -> str:
+    """
+    Utility function to construct error response from LLM into a json string
+
+    Args:
+        error_msg (str): The error message from the LLM
+        request_type (RequestType): The type of request (chat or voice)
+        language (str): The language of the response chosen by the user
+
+    Returns:
+        str: The error response in our json format
+    """
+
     tts = current_app.config[CONFIG_TEXT_TO_SPEECH_SERVICE]
 
     if request_type == RequestType.CHAT:
@@ -211,13 +251,17 @@ def construct_error_response(error_msg: str, request_type: RequestType, language
     return response.model_dump_json()
 
 
-"""
-Utility function to construct source response from LLM into a json string
-Note: This function is only used for voice endpoint and not for chat as sources will be streamed back first before the text response
-"""
-
-
 def construct_source_response(thoughts: List[dict[str, Any]], request_type: RequestType) -> str:
+    """
+    Utility function to construct source response from LLM into a json string
+
+    Args:
+        thoughts (List[dict[str, Any]]): The list of thoughts returned by the LLM
+        request_type (RequestType): The type of request (chat or voice)
+
+    Returns:
+        str: The source response in our json format
+    """
     sources = extract_sources_from_thoughts(thoughts)
 
     if request_type == RequestType.CHAT:
@@ -236,6 +280,13 @@ def construct_source_response(thoughts: List[dict[str, Any]], request_type: Requ
 
 @staticmethod
 async def send_custom_logs(apiLog: APILog):
+    """
+    Utility function to send custom logs to Application Insights
+
+    Args:
+        apiLog (APILog): The APILog object containing the logs to be sent
+
+    """
     span = trace.get_current_span()
     # sending custom logs to app insights
     span.set_attribute("Query", apiLog.user_query)
@@ -257,6 +308,13 @@ async def send_custom_logs(apiLog: APILog):
 
 @staticmethod
 async def store_chat_history(session_id, apiLog: APILog):
+    """
+    Utility function to store chat history in Cosmos DB
+
+    Args:
+        session_id (str): The session id of the chat
+        apiLog (APILog): The APILog object containing the logs that will be stored
+    """
     chat_history_client: ContainerProxy = current_app.config[CONFIG_CHAT_HISTORY_CONTAINER_CLIENT]
     response_message = ChatMessageWithSource(
         role="assistant", content=apiLog.response_message, sources=apiLog.retrieved_sources

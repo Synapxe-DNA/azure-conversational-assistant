@@ -14,11 +14,20 @@ from utils.utils import Utils
 
 class RequestHandler:
     """
-    Construct a response from client feedback that will be stored in the database
+    A class to handle request from client and reconstruct it to our own format
     """
 
     @staticmethod
     async def construct_feedback_for_storing(feedback_request: FeedbackRequest) -> FeedbackRequest:
+        """
+        Function to retrieve the text chunks for the sources in the chat history
+
+        Args:
+            feedback_request (FeedbackRequest): FeedbackRequest object to add the retrieved text chunks to
+
+        Returns:
+            FeedbackRequest object with the text chunks added to the sources
+        """
         search_client: SearchClient = current_app.config[CONFIG_SEARCH_CLIENT]
         for chatHistory in feedback_request.chat_history:
             sources: List[SourceWithChunk] = []
@@ -44,28 +53,38 @@ class RequestHandler:
 
         return feedback_request
 
-    """
-    Utility function to form a message from the chat history and query into the specified LLM input format
-    """
-
     @staticmethod
-    def form_message(chat_history_list: List[ChatMessage], query: ChatMessage) -> list[dict[str, Any]]:
+    def form_message(chat_history_list: List[ChatMessage], query: ChatMessage) -> List[dict[str, Any]]:
+        """
+        Utility function to form a message from the chat history and query into the specified LLM input format
+
+        Args:
+            chat_history_list (List[ChatMessage]): List of ChatMessage objects which represent the chat history between the user and LLM
+            query (ChatMessage): The ChatMessage object which represents the user query
+
+        Returns:
+            List[dict[str, Any]]: A list of dictionaries where each dictionary represents a message by the user or LLM
+        """
+
         messages = [chat_history.model_dump() for chat_history in chat_history_list] + [query.model_dump()]
         return messages
 
-    """
-    Utility function to form a Request object from json
-    """
-
     @staticmethod
     def form_query_request(data: dict) -> Request:
-        print(f"CHOSEN LANGUAGE: {data['language']}")
+        """
+        Utility function to form a Request object from json
+
+        Args:
+            data (dict): The json data received from the client
+
+        Returns:
+            Request: The Request object formed from the json data
+        """
         language = (
             Utils.get_language(data["query"]["content"])
             if data["language"] == LanguageSelected.SPOKEN.value
             else data["language"]
         )
-        print(f"DETECTED LANGUAGE: {language}")
 
         request = Request(
             chat_history=data["chat_history"],
@@ -75,12 +94,17 @@ class RequestHandler:
         )
         return request
 
-    """
-    Utility function to form a FeedbackRequest object from json
-    """
-
     @staticmethod
     def form_feedback_request(data: dict) -> FeedbackRequest:
+        """
+        Utility function to form a FeedbackRequest object from json
+
+        Args:
+            data (dict): The json data received from the client
+
+        Returns:
+            FeedbackRequest: The FeedbackRequest object formed from the json data
+        """
         feedback_request = FeedbackRequest(
             date_time=data["date_time"],
             feedback_type=data["feedback_type"],
